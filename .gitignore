@@ -11,3 +11,5 @@ nsg-*.tf
 rg-*.tf
 sub-*.tf
 vnet-*.tf
+terraform.*
+tf.*
