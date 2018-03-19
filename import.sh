@@ -8,7 +8,7 @@ if [ -n "$response" ]; then
 fi
 fi
 az account set -s $ARM_SUBSCRIPTION_ID
-mkdir $myrg
+mkdir tf.$myrg
 source ./setup-env.sh
 ./cleanup.sh
 ./scripts/01-rg.sh $myrg
@@ -22,10 +22,4 @@ source ./setup-env.sh
 terraform state list
 echo "Terraform Plan ..."
 terraform plan .
-cp vm-*.tf $myrg
-cp rg-*.tf $myrg
-cp stor-*.tf $myrg
-cp vnet-*.tf $myrg
-cp nic-*.tf $myrg
-cp nsg-*.tf $myrg
-cp sub-*.tf $myrg
+cp *-*.tf tf.$myrg
