@@ -1,7 +1,7 @@
 {
     "version": 3,
     "terraform_version": "0.11.3",
-    "serial": 480,
+    "serial": 473,
     "lineage": "d3fcb5b8-357b-431a-b13f-f1f1e3782e44",
     "modules": [
         {
@@ -10,86 +10,6 @@
             ],
             "outputs": {},
             "resources": {
-                "azurerm_network_interface.at-rh74l2g1-c436": {
-                    "type": "azurerm_network_interface",
-                    "depends_on": [],
-                    "primary": {
-                        "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/networkInterfaces/at-rh74l2g1-c436",
-                        "attributes": {
-                            "applied_dns_servers.#": "0",
-                            "dns_servers.#": "0",
-                            "enable_accelerated_networking": "false",
-                            "enable_ip_forwarding": "false",
-                            "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/networkInterfaces/at-rh74l2g1-c436",
-                            "internal_dns_name_label": "",
-                            "internal_fqdn": "",
-                            "ip_configuration.#": "1",
-                            "ip_configuration.0.application_security_group_ids.#": "0",
-                            "ip_configuration.0.load_balancer_backend_address_pools_ids.#": "0",
-                            "ip_configuration.0.load_balancer_inbound_nat_rules_ids.#": "0",
-                            "ip_configuration.0.name": "ipconfig1",
-                            "ip_configuration.0.primary": "true",
-                            "ip_configuration.0.private_ip_address": "",
-                            "ip_configuration.0.private_ip_address_allocation": "dynamic",
-                            "ip_configuration.0.public_ip_address_id": "",
-                            "ip_configuration.0.subnet_id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/virtualNetworks/vnet-rh7-packer-at1/subnets/front",
-                            "location": "uksouth",
-                            "mac_address": "00-22-48-07-54-FD",
-                            "name": "at-rh74l2g1-c436",
-                            "network_security_group_id": "",
-                            "private_ip_address": "192.168.9.68",
-                            "private_ip_addresses.#": "1",
-                            "private_ip_addresses.0": "192.168.9.68",
-                            "resource_group_name": "rg-Packer1",
-                            "tags.%": "0",
-                            "virtual_machine_id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Compute/virtualMachines/at-rh74L2g1-c"
-                        },
-                        "meta": {},
-                        "tainted": false
-                    },
-                    "deposed": [],
-                    "provider": "provider.azurerm"
-                },
-                "azurerm_network_interface.at-rh7at-c415": {
-                    "type": "azurerm_network_interface",
-                    "depends_on": [],
-                    "primary": {
-                        "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/networkInterfaces/at-rh7at-c415",
-                        "attributes": {
-                            "applied_dns_servers.#": "0",
-                            "dns_servers.#": "0",
-                            "enable_accelerated_networking": "false",
-                            "enable_ip_forwarding": "false",
-                            "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/networkInterfaces/at-rh7at-c415",
-                            "internal_dns_name_label": "",
-                            "internal_fqdn": "",
-                            "ip_configuration.#": "1",
-                            "ip_configuration.0.application_security_group_ids.#": "0",
-                            "ip_configuration.0.load_balancer_backend_address_pools_ids.#": "0",
-                            "ip_configuration.0.load_balancer_inbound_nat_rules_ids.#": "0",
-                            "ip_configuration.0.name": "ipconfig1",
-                            "ip_configuration.0.primary": "true",
-                            "ip_configuration.0.private_ip_address": "",
-                            "ip_configuration.0.private_ip_address_allocation": "dynamic",
-                            "ip_configuration.0.public_ip_address_id": "",
-                            "ip_configuration.0.subnet_id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/virtualNetworks/vnet-rh7-packer-at1/subnets/front",
-                            "location": "uksouth",
-                            "mac_address": "00-22-48-07-3D-23",
-                            "name": "at-rh7at-c415",
-                            "network_security_group_id": "",
-                            "private_ip_address": "192.168.9.69",
-                            "private_ip_addresses.#": "1",
-                            "private_ip_addresses.0": "192.168.9.69",
-                            "resource_group_name": "rg-Packer1",
-                            "tags.%": "0",
-                            "virtual_machine_id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Compute/virtualMachines/at-rh7at-c"
-                        },
-                        "meta": {},
-                        "tainted": false
-                    },
-                    "deposed": [],
-                    "provider": "provider.azurerm"
-                },
                 "azurerm_network_interface.at-win16326": {
                     "type": "azurerm_network_interface",
                     "depends_on": [],

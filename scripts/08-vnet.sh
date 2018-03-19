@@ -1,3 +1,4 @@
+echo "azurerm_virtual_network"
 source ./setup-vars.sh
 rgsource="rg-Packer1"
 myrg="rg-Packer1"
@@ -13,7 +14,6 @@ if [ -n "$response" ]; then
      rgsource=$response
 fi
 fi
-echo $rgsource 
 #
 net=`az network vnet list -g $myrg`
 vname=`echo $net | jq '.[].name' `
@@ -38,6 +38,6 @@ printf "\t\t address_prefix = %s\n" $snaddr >> vnet-$vn.tf
 printf "\t\t security_group = \"\${azurerm_network_security_group.%s.id}\"\n" $nsgnam >> vnet-$vn.tf
 printf "\t}\n" >> vnet-$vn.tf
 echo "}" >> vnet-$vn.tf
-cat vnet-$vn.tf
+#cat vnet-$vn.tf
 terraform state rm azurerm_virtual_network.$vn
 terraform import azurerm_virtual_network.$vn $vnid

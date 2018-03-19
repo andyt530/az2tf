@@ -1,6 +1,5 @@
+echo "azurerm_network_security_group"
 rgsource="rg-Packer1"
-myrg="rg-Packer1"
-myrg="rg-Packer1"
 myrg="rg-Packer1"
 if [ "$1" != "" ]; then
 rgsource=$1
@@ -11,8 +10,6 @@ if [ -n "$response" ]; then
      rgsource=$response
 fi
 fi
-echo $rgsource 
-echo $myrg 
 nsg=`az network nsg list -g $rgsource`
 count=`echo $nsg | jq '. | length'`
 count=`expr $count - 1`

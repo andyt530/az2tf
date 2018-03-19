@@ -1,3 +1,4 @@
+echo "azurerm_subnet"
 source ./setup-vars.sh
 rgsource="rg-Packer1"
 myrg="rg-Packer1"
@@ -12,9 +13,6 @@ if [ -n "$response" ]; then
      rgsource=$response
 fi
 fi
-echo $rgsource 
-echo $myrg 
-mkdir $myrg
 #
 #
 vnets=`az network vnet list -g $rgsource`
@@ -42,7 +40,7 @@ printf "\t address_prefix = \"%s\"\n" $sprefix >> sub-$sname.tf
 printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> sub-$sname.tf
 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\"\n" $snsg >> sub-$sname.tf
 printf "}\n" >> sub-$sname.tf
-cat sub-$sname.tf
+#cat sub-$sname.tf
 done
 done
 count=`echo $vnets | jq '. | length'`
@@ -50,7 +48,7 @@ count=`expr $count - 1`
 for j in `seq 0 $count`; do
 comm="echo"' $vnets'" | jq '.[$j].name'"
 vname=`eval $comm | tr -d '"'`
-echo $vname
+#echo $vname
 #
 subs=`az network vnet subnet list -g $rgsource --vnet-name $vname`
 scount=`echo $subs | jq '. | length'`

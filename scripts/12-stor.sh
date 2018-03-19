@@ -1,3 +1,4 @@
+echo "azurerm_virtual_network"
 myrg="stor"
 if [ "$1" != "" ]; then
 rgsource=$1
@@ -25,7 +26,7 @@ comm="echo"' $sal'" | jq '.[$i].encryption.services.blob.enabled'"
 saencrypt=`eval $comm | tr -d '"'`
 comm="echo"' $sal'" | jq '.[$i].enableHttpsTrafficOnly'"
 sahttps=`eval $comm | tr -d '"'`
-echo $saname
+#echo $saname
 printf "resource \"azurerm_storage_account\" \"%s\" {\n" $saname > $myrg-$saname.tf
 printf "\t name = \"%s\"\n" $saname >> $myrg-$saname.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $myrg-$saname.tf
@@ -37,7 +38,7 @@ printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $myrg-$saname.tf
 #
 printf "}\n" >> $myrg-$saname.tf
 #
-cat $myrg-$saname.tf
+#cat $myrg-$saname.tf
 done
 for i in `seq 0 $count`; do
 comm="echo"' $sal'" | jq '.[$i].id'"

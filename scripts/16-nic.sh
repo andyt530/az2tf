@@ -1,3 +1,4 @@
+echo "azurerm_network_interface"
 myrg="nic-"
 if [ "$1" != "" ]; then
 rgsource=$1
@@ -19,16 +20,26 @@ comm="echo"' $nic'" | jq '.[$i].ipConfigurations[0].privateIpAllocationMethod'"
 subipalloc=`eval $comm | tr -d '"'`
 comm="echo"' $nic'" | jq '.[$i].ipConfigurations[0].subnet.id'"
 subname=`eval $comm | cut -d'/' -f11 | tr -d '"'`
+comm="echo"' $nic'" | jq '.[$i].ipConfigurations[0].publicIpAddress.id'"
+subipid=`eval $comm | cut -d'/' -f9 | tr -d '"'`
+comm="echo"' $nic'" | jq '.[$i].networkSecurityGroup.id'"
+snsg=`eval $comm | cut -d'/' -f9 | tr -d '"'`
 
-echo $nicname
+#echo $nicname
 printf "resource \"azurerm_network_interface\" \"%s\" {\n" $nicname > $myrg-$nicname.tf
 printf "\t name = \"%s\"\n" $nicname >> $myrg-$nicname.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $myrg-$nicname.tf
 printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $myrg-$nicname.tf
+if [ "$snsg" != "null" ]; then
+printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\" \n"  $snsg >> $myrg-$nicname.tf
+fi
 printf "\t ip_configuration {\n" >> $myrg-$nicname.tf
 printf "\t\t name = \"%s\" \n"  "ipconfig1" >> $myrg-$nicname.tf
 printf "\t\t subnet_id = \"\${azurerm_subnet.%s.id}\" \n"  $subname >> $myrg-$nicname.tf
 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $myrg-$nicname.tf
+if [ "$subipid" != "null" ]; then
+printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s.id}\" \n"  $subipid >> $myrg-$nicname.tf
+fi
 printf "\t}\n" >> $myrg-$nicname.tf
 #
 printf "}\n" >> $myrg-$nicname.tf
@@ -40,7 +51,7 @@ comm="echo"' $nic'" | jq '.[$i].id'"
 nicid=`eval $comm | tr -d '"'`
 comm="echo"' $nic'" | jq '.[$i].name'"
 nicname=`eval $comm | tr -d '"'`
-echo $nicid
+#echo $nicid
 terraform state rm azurerm_network_interface.$nicname 
 terraform import azurerm_network_interface.$nicname $nicid
 done

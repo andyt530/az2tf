@@ -1,7 +1,7 @@
 {
     "version": 3,
     "terraform_version": "0.11.3",
-    "serial": 480,
+    "serial": 436,
     "lineage": "d3fcb5b8-357b-431a-b13f-f1f1e3782e44",
     "modules": [
         {
@@ -177,28 +177,6 @@
                             "resource_group_name": "rg-Packer1",
                             "security_rule.#": "0",
                             "tags.%": "0"
-                        },
-                        "meta": {},
-                        "tainted": false
-                    },
-                    "deposed": [],
-                    "provider": "provider.azurerm"
-                },
-                "azurerm_public_ip.at-win16-ip": {
-                    "type": "azurerm_public_ip",
-                    "depends_on": [],
-                    "primary": {
-                        "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/publicIPAddresses/at-win16-ip",
-                        "attributes": {
-                            "id": "/subscriptions/304e776d-6a37-425c-9304-cd3a77e4c6fe/resourceGroups/rg-Packer1/providers/Microsoft.Network/publicIPAddresses/at-win16-ip",
-                            "ip_address": "51.145.10.225",
-                            "location": "uksouth",
-                            "name": "at-win16-ip",
-                            "public_ip_address_allocation": "dynamic",
-                            "resource_group_name": "rg-Packer1",
-                            "sku": "Basic",
-                            "tags.%": "0",
-                            "zones.#": "0"
                         },
                         "meta": {},
                         "tainted": false
