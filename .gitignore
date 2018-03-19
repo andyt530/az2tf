@@ -13,3 +13,4 @@ sub-*.tf
 vnet-*.tf
 terraform.*
 tf.*
+git*.sh
