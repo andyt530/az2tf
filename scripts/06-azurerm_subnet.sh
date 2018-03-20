@@ -16,7 +16,8 @@ vnets=`az network vnet list -g $rgsource`
 count=`echo $vnets | jq '. | length'`
 count=`expr $count - 1`
 for j in `seq 0 $count`; do
-vname=`echo $vnets | jq ".[(${i})].name" | tr -d '"'`
+vname=`echo $vnets | jq ".[(${j})].name" | tr -d '"'`
+echo $vname
 #
 azr=`az network vnet subnet list -g $rgsource --vnet-name $vname`
 scount=`echo $azr | jq '. | length'`
@@ -26,7 +27,7 @@ name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
 id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
 sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
 snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
-printf "resource \"%s\" \"%s\" {\n" $ftp $name > $prefix-$name.tf
+printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
 printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
@@ -35,6 +36,6 @@ printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id
 printf "}\n" >> $prefix-$name.tf
 cat $prefix-$name.tf
 terraform state rm $tfp.$name
-terraform import $tfp.$name $sid
+terraform import $tfp.$name $id
 done
 done

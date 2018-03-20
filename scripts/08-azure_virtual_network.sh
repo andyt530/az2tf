@@ -18,9 +18,9 @@ azr=`az network vnet list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
-name=`echo $azr | jq '.[(${i})].name' | tr -d '"' `
-id=`echo $azr | jq '.[(${i})].id' | tr -d '"'`
-addsp=`echo $azr | jq '.[i(${i})].addressSpace.addressPrefixes[0]'`
+name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+addsp=`echo $azr | jq ".[(${i})].addressSpace.addressPrefixes[0]"`
 printf "resource \"%s\" \"%s\" { \n" $tfp $name > $prefix-$name.tf
 printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
@@ -32,13 +32,13 @@ printf "\taddress_space = [%s]\n" $addsp >> $prefix-$name.tf
 #
 #loop around subnets
 #
-subs=`echo $azr | jq '.subnets'`
+subs=`echo $azr | jq ".[(${i})].subnets"`
 count=`echo $subs | jq '. | length'`
 count=`expr $count - 1`
 for j in `seq 0 $count`; do
-snname=`echo $subs | jq '.[(${j})].name'`
-snaddr=`echo $subs | jq '.[i(${j})].addressPrefix'`
-snnsgid=`echo $subs | jq '.[i(${j})].networkSecurityGroup.id'`
+snname=`echo $subs | jq ".[(${j})].name"`
+snaddr=`echo $subs | jq ".[(${j})].addressPrefix"`
+snnsgid=`echo $subs | jq ".[(${j})].networkSecurityGroup.id"`
 nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
 printf "\tsubnet {\n"  >> $prefix-$name.tf
 printf "\t\t name = %s\n" $snname >> $prefix-$name.tf

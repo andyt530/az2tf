@@ -1,4 +1,4 @@
-tfp="azurerm_storage_account""
+tfp="azurerm_storage_account"
 prefix="stor"
 echo $tfp
 if [ "$1" != "" ]; then
@@ -15,12 +15,12 @@ count=`echo $azr | jq '. | length'`
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
 #echo $i
-name=`echo $azr | jq '.[(${i})].name' | tr -d '"'`
-id=`echo $azr | jq '.[(${i})].id' | tr -d '"'`
-satier=`echo $azr | jq '.[(${i})].sku.tier' | tr -d '"'`
-sartype=`echo $azr | jq '.[(${i})].sku.name' | cut -f2 -d'_' | tr -d '"'`
-saencrypt=`echo $azr | jq '.[(${i})].encryption.services.blob.enabled'  | tr -d '"'`
-sahttps=`echo $azr | jq '.[(${i})].enableHttpsTrafficOnly'  | tr -d '"'`
+name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
+sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
+saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`
+sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
 printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
