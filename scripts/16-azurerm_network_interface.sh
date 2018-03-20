@@ -14,15 +14,15 @@ azr=`az network nic list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
-name=`echo $azr | jq '.[(${i})].name' | tr -d '"'`
-id=`echo $azr | jq '.[(${i})].id' | tr -d '"'`
-subipalloc=`echo $azr | jq '.[(${i})].privateIpAllocationMethod' | tr -d '"'`
-snsg=`echo $azr | jq '.[(${i})].networkSecurityGroup.id' | cut -d'/' -f9 | tr -d '"'`
+name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
 #
 #
 #
-subname=`echo $azr | jq '.[(${i})].ipConfigurations[0].subnet.id' | cut -d'/' -f11 | tr -d '"'`
-subipid=`echo $azr | jq '.[(${i})].ipConfigurations[0].publicIpAddress.id' | cut -d'/' -f11 | tr -d '"'`
+subname=`echo $azr | jq ".[(${i})].ipConfigurations[0].subnet.id" | cut -d'/' -f11 | tr -d '"'`
+subipid=`echo $azr | jq ".[(${i})].ipConfigurations[0].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
+subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[0].privateIpAllocationMethod" | tr -d '"'`
 
 printf "resource \"azurerm_network_interface\" \"%s\" {\n" $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -36,6 +36,8 @@ printf "\t\t name = \"%s\" \n"  "ipconfig1" >> $prefix-$name.tf
 printf "\t\t subnet_id = \"\${azurerm_subnet.%s.id}\" \n"  $subname >> $prefix-$name.tf
 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
 if [ "$subipid" != "null" ]; then
+echo "pub ip "
+echo $subipid
 printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s.id}\" \n"  $subipid >> $prefix-$name.tf
 fi
 printf "\t}\n" >> $prefix-$name.tf

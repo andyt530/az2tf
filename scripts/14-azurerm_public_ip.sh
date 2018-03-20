@@ -14,9 +14,9 @@ azr=`az network public-ip list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
-name=`echo $azr | jq '.[(${i})].name' | tr -d '"'`
-id=`echo $azr | jq '.[(${i})].id' | tr -d '"'`
-subipalloc=`echo $azr | jq '.[(${i})].publicIpAllocationMethod' | tr -d '"'`
+name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+subipalloc=`echo $azr | jq ".[(${i})].publicIpAllocationMethod" | tr -d '"'`
 printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
