@@ -1,10 +1,6 @@
 tfp="azurerm_resource_group"
 echo $tfp
-source ./setup-vars.sh
 rgsource="rg-Packer1"
-myrg="rg-Packer1"
-rm terraform.*.backup
-az account set -s $ARM_SUBSCRIPTION_ID
 myrg="rg-Packer1"
 if [ "$1" != "" ]; then
 rgsource=$1
@@ -16,8 +12,7 @@ if [ -n "$response" ]; then
 fi
 fi
 mrg=`az group show -n $rgsource`
-comm="echo"' $mrg'" | jq '.id'"
-rgid=`eval $comm | tr -d '"'`
+rgid=`echo $mrg | jq '.id' | tr -d '"'`
 printf "resource \"%s\" \"%s\" {"  > $tfp $myrg rg-$myrg.tf
 printf "\t name = \"\${var.rgtarget}\"\n" >> rg-$myrg.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> rg-$myrg.tf
