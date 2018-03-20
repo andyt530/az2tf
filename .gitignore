@@ -1,4 +1,4 @@
-t1.sh
+t*.sh
 setup-vars.sh
 example1
 example2

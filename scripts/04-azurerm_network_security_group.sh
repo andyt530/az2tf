@@ -21,6 +21,7 @@ printf "\t name = \"%s\"  \n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
 printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
 printf "}\n" >> $prefix-$name.tf
+cat $prefix-$name.tf
 terraform state rm $tfp.$name 
 terraform import $tfp.$name $id
 done

@@ -1,7 +1,6 @@
 tfp="azurerm_resource_group"
 prefix="rg"
 echo $tfp
-rgsource=""
 if [ "$1" != "" ]; then
 rgsource=$1
 else
@@ -12,13 +11,14 @@ if [ -n "$response" ]; then
 fi
 fi
 azr=`az group show -n $rgsource`
+name=`echo $azr | jq '.name' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
-printf "resource \"%s\" \"%s\" {"  > $tfp ${var.rgtarget} $prefix-${var.rgtarget}.tf
-printf "\t name = \"\${var.rgtarget}\"\n" >> $prefix-${var.rgtarget}.tf
-printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-${var.rgtarget}.tf
-echo "}" >> $prefix-${var.rgtarget}.tf
-cat $prefix-${var.rgtarget}.tf
+printf "resource \"%s\" \"%s\" {\n"  $tfp $TF_VAR_rgtarget > $prefix-$TF_VAR_rgtarget.tf
+printf "\t name = \"\${var.rgtarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
+printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
+echo "}" >> $prefix-$TF_VAR_rgtarget.tf
+cat $prefix-$TF_VAR_rgtarget.tf
 #
-terraform state rm  $tfp.$rgsource 
-terraform import $tfp.$rgsource $rgid
+terraform state rm  $tfp.$name 
+terraform import $tfp.$name $id
 #
