@@ -2,15 +2,8 @@ t*.sh
 setup-vars.sh
 example1
 example2
-pip-*.tf
-nic-*.tf
-vm-*.tf
-stor-*.tf
-nic-*.tf
-nsg-*.tf
-rg-*.tf
-sub-*.tf
-vnet-*.tf
+*-*.tf
 terraform.*
 tf.*
 git*.sh
+todo*
