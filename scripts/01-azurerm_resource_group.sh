@@ -1,7 +1,7 @@
 tfp="azurerm_resource_group"
+prefix="rg"
 echo $tfp
-rgsource="rg-Packer1"
-myrg="rg-Packer1"
+rgsource=""
 if [ "$1" != "" ]; then
 rgsource=$1
 else
@@ -11,13 +11,13 @@ if [ -n "$response" ]; then
      rgsource=$response
 fi
 fi
-mrg=`az group show -n $rgsource`
-rgid=`echo $mrg | jq '.id' | tr -d '"'`
-printf "resource \"%s\" \"%s\" {"  > $tfp $myrg rg-$myrg.tf
-printf "\t name = \"\${var.rgtarget}\"\n" >> rg-$myrg.tf
-printf "\t location = \"\${var.loctarget}\"\n" >> rg-$myrg.tf
-echo "}" >> rg-$myrg.tf
-#cat rg-$myrg.tf
+azr=`az group show -n $rgsource`
+id=`echo $azr | jq '.id' | tr -d '"'`
+printf "resource \"%s\" \"%s\" {"  > $tfp ${var.rgtarget} $prefix-${var.rgtarget}.tf
+printf "\t name = \"\${var.rgtarget}\"\n" >> $prefix-${var.rgtarget}.tf
+printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-${var.rgtarget}.tf
+echo "}" >> $prefix-${var.rgtarget}.tf
+cat $prefix-${var.rgtarget}.tf
 #
 terraform state rm  $tfp.$rgsource 
 terraform import $tfp.$rgsource $rgid
