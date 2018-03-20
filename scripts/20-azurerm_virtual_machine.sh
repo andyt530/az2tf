@@ -24,8 +24,6 @@ vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | tr 
 vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
 vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
 vmosacctype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.storageAccountType" | tr -d '"'`
-echo $azr | jq ".[1].storageProfile.osDisk"
-echo $azr | jq ".[2].storageProfile.osDisk"
 echo $vmosacctype
 vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
 vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
