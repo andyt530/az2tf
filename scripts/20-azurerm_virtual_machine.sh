@@ -92,6 +92,10 @@ ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
 printf "storage_data_disk {\n"  >> $prefix-$name.tf
 printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
 printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
+if [ "$ddcreopt" = "Attach" ]; then
+ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
+printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s.id}\"\n" $ddmdid >> $prefix-$name.tf
+fi
 printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
 printf "}\n" >> $prefix-$name.tf
 fi
