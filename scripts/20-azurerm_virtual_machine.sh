@@ -20,7 +20,9 @@ id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
 vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
 vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
 vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
-vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | tr -d '"'`
+netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
+datadisks=`echo $azr | jq ".[(${i})].storageProfile.dataDisks"`
+vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f9 | tr -d '"'`
 vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
 vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
 vmosacctype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.storageAccountType" | tr -d '"'`
@@ -35,7 +37,7 @@ printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
 printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
 printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
-printf "\t network_interface_ids = [\"%s\"]\n" $vmnetid >> $prefix-$name.tf
+printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s.id}\"]\n" $vmnetid >> $prefix-$name.tf
 printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
 printf "\t delete_os_disk_on_termination = \"true\"\n"  >> $prefix-$name.tf
 #
@@ -77,6 +79,23 @@ echo "		key_data = \"$vmsshkey\""  >> $prefix-$name.tf
 printf "\t}\n" >> $prefix-$name.tf
 printf "}\n" >> $prefix-$name.tf
 fi
+#
+# Data disks
+#
+dcount=`echo $datadisks | jq '. | length'`
+dcount=`expr $count - 1`
+for j in `seq 0 $dcount`; do
+ddname=`echo $datadisks | jq ".[(${j})].name" | tr -d '"'`
+if [ "$ddname" != "null" ]; then
+ddcreopt=`echo $datadisks | jq ".[(${j})].createOption" | tr -d '"'`
+ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
+printf "storage_data_disk {\n"  >> $prefix-$name.tf
+printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
+printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
+printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
+printf "}\n" >> $prefix-$name.tf
+fi
+done
 printf "}\n" >> $prefix-$name.tf
 cat $prefix-$name.tf
 terraform state rm $tfp.$name 
