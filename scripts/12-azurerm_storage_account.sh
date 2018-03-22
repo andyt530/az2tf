@@ -12,6 +12,7 @@ fi
 fi
 azr=`az storage account list -g $rgsource`
 count=`echo $azr | jq '. | length'`
+if [ "$count" -gt "0" ]; then
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
 #echo $i
@@ -36,3 +37,4 @@ cat $prefix-$name.tf
 terraform state rm $tfp.$name 
 terraform import $tfp.$name $id
 done
+fi

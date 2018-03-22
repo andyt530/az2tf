@@ -1,6 +1,7 @@
 tfp="azurerm_resource_group"
 prefix="rg"
 echo $tfp
+echo $TF_VAR_rgtarget
 if [ "$1" != "" ]; then
 rgsource=$1
 else
