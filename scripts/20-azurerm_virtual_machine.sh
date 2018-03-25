@@ -15,9 +15,19 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
-echo $i
 name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
 id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+#
+#
+#
+tavs=`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
+
+avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
+for j in $tavs; do 
+uj=`echo $j | awk '{print toupper($0)}'`
+echo $uj  $j
+done
+echo "contunue"
 vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
 vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
 vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
@@ -37,6 +47,7 @@ printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
 printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
+printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $avsid >> $prefix-$name.tf
 printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
 printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s.id}\"]\n" $vmnetid >> $prefix-$name.tf
 printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
