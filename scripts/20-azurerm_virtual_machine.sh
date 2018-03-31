@@ -43,18 +43,24 @@ if [ "$count" -gt "0" ]; then
         vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
         vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
         vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
-        echo $vmosacctype
         vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
-        
+        #
         
         osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
         
-        
+        #
+        vmimid=`echo $azr | jq ".[(${i})].storageProfile.imageReference.id" | tr -d '"'`
+
+        vmimoffer=`echo $azr | jq ".[(${i})].storageProfile.imageReference.offer" | tr -d '"'`
+        vmimpublisher=`echo $azr | jq ".[(${i})].storageProfile.imageReference.publisher" | tr -d '"'`
+        vmimsku=`echo $azr | jq ".[(${i})].storageProfile.imageReference.sku" | tr -d '"'`
+        vmimversion=`echo $azr | jq ".[(${i})].storageProfile.imageReference.version" | tr -d '"'`
+        #
         vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
         vmdispw=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
         vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
-        
+        #
         printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
@@ -86,6 +92,18 @@ if [ "$count" -gt "0" ]; then
         printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $prefix-$name.tf
         printf "\tos_type = \"%s\" \n" $vmtype >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
+        #
+        #
+        #
+        echo vmimid $vmimid
+        if [ "$vmimid" = "null" ]; then
+            printf "storage_image_reference {\n"  >> $prefix-$name.tf
+            printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $prefix-$name.tf
+            printf "\t offer = \"%s\"\n"  $vmimoffer >> $prefix-$name.tf
+            printf "\t sku = \"%s\"\n"  $vmimsku >> $prefix-$name.tf
+            printf "\t version = \"%s\"\n"  $vmimversion >> $prefix-$name.tf
+            printf "}\n" >> $prefix-$name.tf
+        fi
         #
         #
         #
