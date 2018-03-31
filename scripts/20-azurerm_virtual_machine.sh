@@ -3,9 +3,9 @@ echo $tfp
 prefix="vm"
 if [ "$1" != "" ]; then
     rgsource=$1
-    else
-        echo -n "Enter name of Resource Group [$rgsource] > "
-        read response
+else
+    echo -n "Enter name of Resource Group [$rgsource] > "
+    read response
     if [ -n "$response" ]; then
         rgsource=$response
     fi
@@ -18,14 +18,14 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-    #
-    #
-    #
+        #
+        #
+        #
         tavs=`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
-
+        
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         uavsid=`echo $avsid | awk '{print toupper($0)}'`
-        for j in $tavs; do 
+        for j in $tavs; do
             uj=`echo $j | awk '{print toupper($0)}'`
             # echo $uj  $uavsid $j
             if [ "$uavsid" = "$uj" ] ; then
@@ -35,19 +35,26 @@ if [ "$count" -gt "0" ]; then
         echo "contunue"
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
         vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
+        vmdiags=`echo $azr | jq ".[(${i})].diagnosticsProfile" | tr -d '"'`
         vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
         netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
         datadisks=`echo $azr | jq ".[(${i})].storageProfile.dataDisks"`
         vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f9 | tr -d '"'`
         vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
         vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
-        vmosacctype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.storageAccountType" | tr -d '"'`
+        vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
         echo $vmosacctype
         vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
+        
+        
+        osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
+        
+        
         vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
         vmdispw=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
         vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
+        
         printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
@@ -64,20 +71,30 @@ if [ "$count" -gt "0" ]; then
         printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
         #
+        # OS Disk
+        #
+        echo vmosacctype $vmosacctype
         printf "storage_os_disk {\n"  >> $prefix-$name.tf
         printf "\tname = \"%s\" \n"  $vmosdiskname >> $prefix-$name.tf
         printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $prefix-$name.tf
-        if [ "$vmosacctype" != "null" ]; then
+        if [ "$vmosacctype" != "" ]; then
             printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $prefix-$name.tf
+        fi
+        if [ "$vmosvhd" != "null" ]; then
+            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $prefix-$name.tf
         fi
         printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $prefix-$name.tf
         printf "\tos_type = \"%s\" \n" $vmtype >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
         #
-        printf "boot_diagnostics {\n"  >> $prefix-$name.tf
-        printf "\t enabled = \"true\"\n"  >> $prefix-$name.tf
-        printf "\t storage_uri = \"%s\"\n" $vmbturi >> $prefix-$name.tf
-        printf "}\n" >> $prefix-$name.tf
+        #
+        #
+        if [ "$vmdiags" != "null" ]; then
+            printf "boot_diagnostics {\n"  >> $prefix-$name.tf
+            printf "\t enabled = \"true\"\n"  >> $prefix-$name.tf
+            printf "\t storage_uri = \"%s\"\n" $vmbturi >> $prefix-$name.tf
+            printf "}\n" >> $prefix-$name.tf
+        fi
         #
         if [ $vmtype = "Windows" ]; then
             vmwau=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
@@ -100,27 +117,34 @@ if [ "$count" -gt "0" ]; then
         #
         # Data disks
         #
+        echo $datadisks | jq .
         dcount=`echo $datadisks | jq '. | length'`
-        dcount=`expr $count - 1`
+        dcount=$(($dcount-1))
+        echo dcount $dcount
         for j in `seq 0 $dcount`; do
             ddname=`echo $datadisks | jq ".[(${j})].name" | tr -d '"'`
             if [ "$ddname" != "null" ]; then
                 ddcreopt=`echo $datadisks | jq ".[(${j})].createOption" | tr -d '"'`
                 ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
+                ddvhd=`echo $datadisks | jq ".[(${j})].vhd.uri" | tr -d '"'`
                 printf "storage_data_disk {\n"  >> $prefix-$name.tf
                 printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
                 printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
+                printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
                 if [ "$ddcreopt" = "Attach" ]; then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
                     printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s.id}\"\n" $ddmdid >> $prefix-$name.tf
                 fi
-                printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
+                if [ "$ddvhd" != "null" ]; then
+                    printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $prefix-$name.tf
+                fi
+                
                 printf "}\n" >> $prefix-$name.tf
             fi
         done
         printf "}\n" >> $prefix-$name.tf
         cat $prefix-$name.tf
-        terraform state rm $tfp.$name 
+        terraform state rm $tfp.$name
         terraform import $tfp.$name $id
     done
 fi
