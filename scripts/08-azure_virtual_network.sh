@@ -21,6 +21,7 @@ count=`expr $count - 1`
 for i in `seq 0 $count`; do
 name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
 id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
 dns1=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[0]"`
 dns2=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[1]"`
 echo $dns1
@@ -46,7 +47,8 @@ fi
 printf "resource \"%s\" \"%s\" { \n" $tfp $name > $prefix-$name.tf
 printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
-printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
+#printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
+printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
 printf "\t dns_servers = %s\n" $dns >> $prefix-$name.tf
 
 #

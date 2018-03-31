@@ -14,7 +14,8 @@ fi
 azr=`az group show -n $rgsource`
 name=`echo $azr | jq '.name' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
-printf "resource \"%s\" \"%s\" {\n"  $tfp $TF_VAR_rgtarget > $prefix-$TF_VAR_rgtarget.tf
+rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix-$TF_VAR_rgtarget.tf
 printf "\t name = \"\${var.rgtarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
 echo "}" >> $prefix-$TF_VAR_rgtarget.tf

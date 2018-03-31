@@ -26,13 +26,15 @@ scount=`expr $scount - 1`
 for i in `seq 0 $scount`; do
 name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
 id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
 sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
 snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
 printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
 printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
 printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
 printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
-printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
+#printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
+printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
 if [ "$snsg" != "null" ]; then
 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\"\n" $snsg >> $prefix-$name.tf
 fi
