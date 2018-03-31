@@ -5,7 +5,7 @@ if [ "$1" != "" ]; then
     rgsource=$1
     else
         echo -n "Enter name of Resource Group [$rgsource] > "
-r       ead response
+        read response
     if [ -n "$response" ]; then
         rgsource=$response
     fi

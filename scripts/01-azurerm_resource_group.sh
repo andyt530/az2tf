@@ -3,13 +3,13 @@ prefix="rg"
 echo $tfp
 echo $TF_VAR_rgtarget
 if [ "$1" != "" ]; then
-rgsource=$1
+    rgsource=$1
 else
-echo -n "Enter name of Resource Group [$rgsource] > "
-read response
-if [ -n "$response" ]; then
-     rgsource=$response
-fi
+    echo -n "Enter name of Resource Group [$rgsource] > "
+    read response
+    if [ -n "$response" ]; then
+        rgsource=$response
+    fi
 fi
 azr=`az group show -n $rgsource`
 name=`echo $azr | jq '.name' | tr -d '"'`
@@ -21,6 +21,6 @@ printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
 echo "}" >> $prefix-$TF_VAR_rgtarget.tf
 cat $prefix-$TF_VAR_rgtarget.tf
 #
-terraform state rm  $tfp.$name 
+terraform state rm  $tfp.$name
 terraform import $tfp.$name $id
 #
