@@ -1,5 +1,5 @@
 tfp="azurerm_availability_set"
-prefix="avs"
+prefixa="avs"
 echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
@@ -17,6 +17,7 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
         ud=`echo $azr | jq ".[(${i})].platformUpdateDomainCount" | tr -d '"'`

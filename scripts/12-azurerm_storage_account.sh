@@ -1,5 +1,5 @@
 tfp="azurerm_storage_account"
-prefix="stor"
+prefixa="stor"
 echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
@@ -19,6 +19,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
         saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`

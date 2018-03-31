@@ -1,5 +1,5 @@
 tfp="azurerm_network_interface"
-prefix="nic"
+prefixa="nic"
 echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
@@ -18,6 +18,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         #
         #

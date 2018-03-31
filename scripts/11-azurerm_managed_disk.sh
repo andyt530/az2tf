@@ -1,5 +1,5 @@
 tfp="azurerm_managed_disk"
-prefix="md"
+prefixa="md"
 echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
@@ -18,6 +18,8 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
+        echo $prefix
         dsize=`echo $azr | jq ".[(${i})].diskSizeGb" | tr -d '"'`
         ostyp=`echo $azr | jq ".[(${i})].osType" | tr -d '"'`
         creopt=`echo $azr | jq ".[(${i})].creationData.createOption" | tr -d '"'`

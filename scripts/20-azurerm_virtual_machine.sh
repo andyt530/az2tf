@@ -1,6 +1,6 @@
 tfp="azurerm_virtual_machine"
 echo $tfp
-prefix="vm"
+prefixa="vm"
 if [ "$1" != "" ]; then
     rgsource=$1
 else
@@ -18,6 +18,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
         #
         #
         #

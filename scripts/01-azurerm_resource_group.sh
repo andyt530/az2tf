@@ -1,5 +1,5 @@
 tfp="azurerm_resource_group"
-prefix="rg"
+prefixa="rg"
 echo $tfp
 echo $TF_VAR_rgtarget
 if [ "$1" != "" ]; then
@@ -16,6 +16,7 @@ azr=`az group show -n $rgsource`
 name=`echo $azr | jq '.name' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
 rg=$name
+prefix=`printf "%s_%s" $rg $prefixa`
 printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix-$TF_VAR_rgtarget.tf
 printf "\t name = \"%s\"\n" $rg >> $prefix-$TF_VAR_rgtarget.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf

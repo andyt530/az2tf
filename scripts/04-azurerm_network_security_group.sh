@@ -1,5 +1,5 @@
 tfp="azurerm_network_security_group"
-prefix="nsg"
+prefixa="nsg"
 echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
@@ -18,6 +18,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        prefix=`printf "%s_%s" $rg $prefixa`
         printf "resource \"%s\" \"%s\" { \n" $tfp $name > $prefix-$name.tf
         printf "\t name = \"%s\"  \n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
