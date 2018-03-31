@@ -12,11 +12,12 @@ else
     fi
 fi
 azr=`az group show -n $rgsource`
+
 name=`echo $azr | jq '.name' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
-rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+rg=$name
 printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix-$TF_VAR_rgtarget.tf
-printf "\t name = \"\${var.rgtarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
+printf "\t name = \"%s\"\n" $rg >> $prefix-$TF_VAR_rgtarget.tf
 printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
 echo "}" >> $prefix-$TF_VAR_rgtarget.tf
 cat $prefix-$TF_VAR_rgtarget.tf

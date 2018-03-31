@@ -18,12 +18,34 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+        fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
+        ud=`echo $azr | jq ".[(${i})].platformUpdateDomainCount" | tr -d '"'`
+        avm=`echo $azr | jq ".[(${i})].virtualMachines"`
+        skuname=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
+        rmtype="false"
+        echo skuname $skuname
+        if [ $skuname = "Aligned" ]; then
+            echo "skuname is true"
+            rmtype="true"
+        fi
         
+        #echo $avm
+        #ism="true"
+        #if [ "$vmcount" -eq "0" ]; then
+        ##vmcount=`echo $avm | jq '. | length'`
+        #    echo "vmcount is false"
+        #    #ism="false"
+        #fi
+        echo $vmcount
         printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
+        #printf "\t id = \"%s\"\n" $id >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+        printf "\t platform_fault_domain_count = \"%s\"\n" $fd >> $prefix-$name.tf
+        printf "\t platform_update_domain_count = \"%s\"\n" $ud >> $prefix-$name.tf
+        printf "\t managed = \"%s\"\n" $rmtype >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf
