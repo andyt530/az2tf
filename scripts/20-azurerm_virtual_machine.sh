@@ -66,7 +66,9 @@ if [ "$count" -gt "0" ]; then
         printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $avsid >> $prefix-$name.tf
+        if [ "$avsid" != "null" ]; then 
+            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $avsid >> $prefix-$name.tf
+        fi
         printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
         printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s.id}\"]\n" $vmnetid >> $prefix-$name.tf
         printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
