@@ -23,9 +23,8 @@ if [ "$count" -gt "0" ]; then
         avm=`echo $azr | jq ".[(${i})].virtualMachines"`
         skuname=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         rmtype="false"
-        echo skuname $skuname
         if [ $skuname = "Aligned" ]; then
-            echo "skuname is true"
+            #echo "skuname is true"
             rmtype="true"
         fi
         
@@ -36,7 +35,6 @@ if [ "$count" -gt "0" ]; then
         #    echo "vmcount is false"
         #    #ism="false"
         #fi
-        echo $vmcount
         printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         #printf "\t id = \"%s\"\n" $id >> $prefix-$name.tf

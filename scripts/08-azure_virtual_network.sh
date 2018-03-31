@@ -24,8 +24,6 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         dns1=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[0]"`
         dns2=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[1]"`
-        echo $dns1
-        echo $dns2
         dns="null"
         if [ "$dns1" != "null" ]; then
             dns=`printf "[%s]" $dns1`
