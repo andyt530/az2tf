@@ -31,7 +31,7 @@ export TF_VAR_rgtarget=$myrg
 #az account set -s $ARM_SUBSCRIPTION_ID
 rm terraform*.backup
 cp stub/*.tf .
-for j in `seq 2 2`; do
+for j in `seq 1 3`; do
     echo $i
     trgs=`az group list`
     count=`echo $trgs | jq '. | length'`
