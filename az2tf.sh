@@ -1,25 +1,62 @@
 if [ "$1" != "" ]; then
-myrg=$1
+    myrg=$1
 else
-echo -n "Enter name of Resource Group [$rgsource] > "
-read response
-if [ -n "$response" ]; then
-     myrg=$response
+    echo -n "Enter name of Resource Group [$rgsource] > "
+    read response
+    if [ -n "$response" ]; then
+        myrg=$response
+    fi
 fi
-fi
-az account set -s $ARM_SUBSCRIPTION_ID
-mkdir tf.$myrg
-source ./setup-env.sh
-./cleanup.sh
-./scripts/01-rg.sh $myrg
-./scripts/04-nsg.sh $myrg
-./scripts/06-subnets.sh $myrg
-./scripts/08-vnet.sh $myrg
-./scripts/12-stor.sh $myrg
-./scripts/14-pip.sh $myrg
-./scripts/16-nic.sh $myrg
-./scripts/20-vm.sh $myrg
-terraform state list
+comm[1]="./scripts/01-azurerm_resource_group.sh"
+comm[2]="./scripts/03-azurerm_route_table.sh"
+comm[6]="./scripts/02-azurerm_availability_set.sh $myrg"
+comm[5]="./scripts/04-azurerm_network_security_group.sh $myrg"
+comm[3]="./scripts/06-azurerm_subnet.sh $myrg"
+comm[4]="./scripts/08-azure_virtual_network.sh $myrg"
+comm[7]="./scripts/11-azurerm_managed_disk.sh $myrg"
+comm[8]="./scripts/12-azurerm_storage_account.sh $myrg"
+comm[9]="./scripts/14-azurerm_public_ip.sh $myrg"
+comm[10]="./scripts/16-azurerm_network_interface.sh $myrg"
+comm[11]="./scripts/20-azurerm_virtual_machine.sh $myrg"
+source ./setup-vars.sh
+export ARM_SUBSCRIPTION_ID=""
+export ARM_CLIENT_SECRET=""
+export ARM_TENANT_ID=""
+export ARM_SUBSCRIPTION_ID=""
+export TF_VAR_rgtarget=$myrg
+#echo "Clean Dir"
+#./cleanup.sh
+#echo "Clean terraform"
+#./cleanstate.sh
+#az account set -s $ARM_SUBSCRIPTION_ID
+rm terraform*.backup
+cp stub/*.tf .
+for j in `seq 2 2`; do
+    echo $i
+    trgs=`az group list`
+    count=`echo $trgs | jq '. | length'`
+    if [ "$count" -gt "0" ]; then
+        count=`expr $count - 1`
+        for i in `seq 0 $count`; do
+            myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
+            echo $i of $count  RG=$myrg
+            mkdir -p tf.$myrg
+            docomm=`echo ${comm[$j]} $myrg`
+            #echo $docomm
+            eval $docomm
+            cp *_*-*.tf tf.$myrg
+        done
+    fi
+    rm terraform*.backup
+done
+#
+#Cleanup
+rm *cloud-shell-storage*.tf
+states=`terraform state list | grep cloud-shell-storage`
+echo $states
+terraform state rm $states
+#
+#terraform state list
 echo "Terraform Plan ..."
 terraform plan .
-cp *-*.tf tf.$myrg
+

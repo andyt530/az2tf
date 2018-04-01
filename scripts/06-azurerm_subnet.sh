@@ -34,6 +34,7 @@ if [ "$count" -gt "0" ]; then
             sep1=`echo $azr | jq ".[(${i})].serviceEndpoints[0].service"`
             sep2=`echo $azr | jq ".[(${i})].serviceEndpoints[1].service"`
             sep="null"
+            rtbid="null"
             if [ "$sep1" != "null" ]; then
                 sep=`printf "[%s]" $sep1`
             fi
@@ -46,17 +47,18 @@ if [ "$count" -gt "0" ]; then
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
+            rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | tr -d '"'`
             #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
             printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
             if [ "$snsg" != "null" ]; then
                 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\"\n" $snsg >> $prefix-$name.tf
             fi
             if [ "$sep" != "null" ]; then
-            printf "\t service_endpoints = %s\n" $sep >> $prefix-$name.tf
+                printf "\t service_endpoints = %s\n" $sep >> $prefix-$name.tf
             fi
-            #if [ "$rtid" != "null" ]; then
-            #printf "\t route_table_id = %s\n" $rtid >> $prefix-$name.tf
-            #fi
+            if [ "$rtbid" != "null" ]; then
+                printf "\t route_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rg $rtbid >> $prefix-$name.tf
+            fi
 
             printf "}\n" >> $prefix-$name.tf
             cat $prefix-$name.tf
