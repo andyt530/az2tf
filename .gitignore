@@ -3,6 +3,7 @@ setup-vars.sh
 example1
 example2
 *-*.tf
+terraform.tfstate
 terraform.*
 tf.*
 git*.sh
