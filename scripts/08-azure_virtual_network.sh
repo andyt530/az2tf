@@ -48,7 +48,9 @@ if [ "$count" -gt "0" ]; then
         printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t dns_servers = %s\n" $dns >> $prefix-$name.tf
+        if [ "$dns" != "null" ]; then
+            printf "\t dns_servers = %s\n" $dns >> $prefix-$name.tf
+        fi
         
         #
         # need to loop around prefixes
