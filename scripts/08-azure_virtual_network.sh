@@ -72,8 +72,9 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t security_group = \"\${azurerm_network_security_group.%s.id}\"\n" $nsgnam >> $prefix-$name.tf
             fi
             printf "\t}\n" >> $prefix-$name.tf
-            echo "}" >> $prefix-$name.tf
+            
         done
+        echo "}" >> $prefix-$name.tf
         #
         #
         cat $prefix-$name.tf
