@@ -29,6 +29,18 @@ if [ "$count" -gt "0" ]; then
             rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
             prefix=`printf "%s_%s" $rg $prefixa`
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
+            
+            seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
+            sep1=`echo $azr | jq ".[(${i})].serviceEndpoints[0].service"`
+            sep2=`echo $azr | jq ".[(${i})].serviceEndpoints[1].service"`
+            sep="null"
+            if [ "$sep1" != "null" ]; then
+                sep=`printf "[%s]" $sep1`
+            fi
+            if [ "$sep2" != "null" ]; then
+                sep=`printf "[%s,%s]" $sep1 $sep2`
+            fi
+            echo got sep= $sep
             snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -39,6 +51,13 @@ if [ "$count" -gt "0" ]; then
             if [ "$snsg" != "null" ]; then
                 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\"\n" $snsg >> $prefix-$name.tf
             fi
+            if [ "$sep" != "null" ]; then
+            printf "\t service_endpoints = %s\n" $sep >> $prefix-$name.tf
+            fi
+            #if [ "$rtid" != "null" ]; then
+            #printf "\t route_table_id = %s\n" $rtid >> $prefix-$name.tf
+            #fi
+
             printf "}\n" >> $prefix-$name.tf
             cat $prefix-$name.tf
             statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
