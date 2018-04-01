@@ -27,7 +27,7 @@ if [ "$count" -gt "0" ]; then
             name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
             id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
             rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-            prefix=`printf "%s_%s" $rg $prefixa`
+            prefix=`printf "%s_%s" $prefixa $rg`
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
             
             seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
@@ -41,7 +41,7 @@ if [ "$count" -gt "0" ]; then
             if [ "$sep2" != "null" ]; then
                 sep=`printf "[%s,%s]" $sep1 $sep2`
             fi
-            echo got sep= $sep
+            
             snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf

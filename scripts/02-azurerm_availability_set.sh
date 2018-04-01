@@ -17,7 +17,7 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        prefix=`printf "%s_%s" $rg $prefixa`
+        prefix=`printf "%s_%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
         ud=`echo $azr | jq ".[(${i})].platformUpdateDomainCount" | tr -d '"'`

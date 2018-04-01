@@ -19,7 +19,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        prefix=`printf "%s_%s" $rg $prefixa`
+        prefix=`printf "%s_%s" $prefixa $rg`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
         saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`

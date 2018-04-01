@@ -17,7 +17,7 @@ for i in `seq 0 $count`; do
     name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
     id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
     rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-    prefix=`printf "%s_%s" $rg $prefixa`
+    prefix=`printf "%s_%s" $prefixa $rg`
 
     printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
     printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
