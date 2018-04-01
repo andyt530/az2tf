@@ -43,7 +43,7 @@ if [ "$count" -gt "0" ]; then
         if [ "$addsp2" != "null" ]; then
             addsp=`printf "[%s,%s]" $addsp1 $addsp2`
         fi
-        printf "resource \"%s\" \"%s\" { \n" $tfp $name > $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
@@ -80,7 +80,10 @@ if [ "$count" -gt "0" ]; then
         #
         #
         cat $prefix-$name.tf
-        terraform state rm $tfp.$name
-        terraform import $tfp.$name $id
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        eval $statecomm
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        eval $evalcomm
+        
     done
 fi

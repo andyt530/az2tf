@@ -30,7 +30,7 @@ if [ "$count" -gt "0" ]; then
             prefix=`printf "%s_%s" $rg $prefixa`
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
             snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
-            printf "resource \"%s\" \"%s\" {\n" $tfp $name > $prefix-$name.tf
+            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
@@ -41,8 +41,10 @@ if [ "$count" -gt "0" ]; then
             fi
             printf "}\n" >> $prefix-$name.tf
             cat $prefix-$name.tf
-            terraform state rm $tfp.$name
-            terraform import $tfp.$name $id
+            statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+            eval $statecomm
+            evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+            eval $evalcomm
         done
     done
 fi

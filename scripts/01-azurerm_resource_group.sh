@@ -16,12 +16,12 @@ azr=`az group show -n $rgsource`
 name=`echo $azr | jq '.name' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
 rg=$name
-prefix=`printf "%s_%s" $rg $prefixa`
-printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix-$TF_VAR_rgtarget.tf
-printf "\t name = \"%s\"\n" $rg >> $prefix-$TF_VAR_rgtarget.tf
-printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$TF_VAR_rgtarget.tf
-echo "}" >> $prefix-$TF_VAR_rgtarget.tf
-cat $prefix-$TF_VAR_rgtarget.tf
+prefix=`printf "%s_%s" $prefixa $rg`
+printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix.tf
+printf "\t name = \"%s\"\n" $rg >> $prefix.tf
+printf "\t location = \"\${var.loctarget}\"\n" >> $prefix.tf
+echo "}" >> $prefix.tf
+cat $prefix.tf
 #
 terraform state rm  $tfp.$name
 terraform import $tfp.$name $id
