@@ -22,9 +22,13 @@ if [ "$count" -gt "0" ]; then
         #
         #
         #
-        tavs=`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
-        
+        #`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
+         for tavs in `terraform state list | grep azurerm_availability_set`; do
+         echo $tavs
+         done
+
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
+        avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
         uavsid=`echo $avsid | awk '{print toupper($0)}'`
         for j in $tavs; do
             uj=`echo $j | awk '{print toupper($0)}'`
@@ -41,6 +45,7 @@ if [ "$count" -gt "0" ]; then
         netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
         datadisks=`echo $azr | jq ".[(${i})].storageProfile.dataDisks"`
         vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f9 | tr -d '"'`
+        vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f5 | tr -d '"'`
         vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
         vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
         vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
@@ -68,10 +73,10 @@ if [ "$count" -gt "0" ]; then
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$avsid" != "null" ]; then 
-            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $avsid >> $prefix-$name.tf
+            printf "\t availability_set_id = \"\${azurerm_availability_set.%s__%s.id}\"\n" $avsrg $avsid >> $prefix-$name.tf
         fi
         printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
-        printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s.id}\"]\n" $vmnetid >> $prefix-$name.tf
+        printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
         printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
         printf "\t delete_os_disk_on_termination = \"true\"\n"  >> $prefix-$name.tf
         #
@@ -154,7 +159,8 @@ if [ "$count" -gt "0" ]; then
                 printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
                 if [ "$ddcreopt" = "Attach" ]; then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
-                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s.id}\"\n" $ddmdid >> $prefix-$name.tf
+                    ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
+                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $ddmdrg $ddmdid >> $prefix-$name.tf
                 fi
                 if [ "$ddvhd" != "null" ]; then
                     printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $prefix-$name.tf
