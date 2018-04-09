@@ -12,7 +12,7 @@ And finally runs a
 
 There should hopefully be no subsequent additions or deletions as all the approriate tarraform configuration files will have have automatically been created.
 
-## Supported Resource Types
+## Supported Resource Types
 
 The following terraform resource types are supported by this tool at this time:
 
@@ -30,6 +30,11 @@ The following terraform resource types are supported by this tool at this time:
 
 ## Running the tool
 
+Running the tool required these steps:
+1. Unzip or clone this git repo into an empty directory
+1. login to the Azure cli2  (az login)
+1. Set the environent variable TF_loctarget
+1. run the tool giving the id of a subscription as a paremeter  (az2tf.sh  xxxx-xxxx-xxxx-xxxx-xxxxxx)
 
 
 ## Planned Additions
