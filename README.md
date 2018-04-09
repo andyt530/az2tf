@@ -1,11 +1,18 @@
 # az2tf
 
-Reads an Azure Resource Group and generates all the required terraform configuration files and then imports the terraform state 
+This utility Azure to Terraform (az2tf) 
+Reads an Azure Subscription and generates all the required terraform configuration files from each of the composite Resource Groups
+It also imports the terraform state using a
 
-"terraform import ...."
+"terraform import ...." command
 
-A subsequent 
+And finally runs a 
 
-"terraform plan ."  
+"terraform plan ."  command 
 
-Should report no changes required as the automatically az2tf generated terraform configuration files should match the terraform import state.
+There should hopefully be no subsequent additions or deletions as all the approriate tarraform configuration files will have have automatically been created.
+
+The following terraform resource types are supported by this tool at this time:
+
+* azure_resource_group
+* azure_availability_set
