@@ -1,4 +1,5 @@
 t*.sh
+login.sh
 setup-vars.sh
 example1
 example2

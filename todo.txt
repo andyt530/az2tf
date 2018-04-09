@@ -1,8 +1,0 @@
-route table
-avial set
-load bal int/etx
-keyvault
-er gw
-automation
-log anal
-
