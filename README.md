@@ -45,3 +45,13 @@ Running the tool required these steps:
 
 
 ## Planned Additions
+
+Further support for route tables
+Support for KeyVaults
+NSG rules
+Load Balancers
+storage containers / storage firewall rules
+manage disks and storage disk encryption settings & source id
+
+
+
