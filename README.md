@@ -12,6 +12,8 @@ And finally runs a
 
 There should hopefully be no subsequent additions or deletions as all the approriate tarraform configuration files will have have automatically been created.
 
+## Supported Resource Types
+
 The following terraform resource types are supported by this tool at this time:
 
 * azurerm_resource_group
@@ -25,3 +27,9 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_public_ip
 * azurerm_network_interface
 * azurerm_virtual_machine
+
+## Running the tool
+
+
+
+## Planned Additions
