@@ -1,5 +1,7 @@
 # az2tf
 
+If you've found this via a searh - IT IS STILL UNDER DEVELOPMENT
+
 This utility 'Azure to Terraform' (az2tf) 
 reads an Azure Subscription and generates all the required terraform configuration files from each of the composite Azure Resource Groups
 It also imports the terraform state using a
