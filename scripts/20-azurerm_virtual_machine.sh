@@ -23,20 +23,20 @@ if [ "$count" -gt "0" ]; then
         #
         #
         #`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
-         for tavs in `terraform state list | grep azurerm_availability_set`; do
-         echo $tavs
-         done
+        # for tavs in `terraform state list | grep azurerm_availability_set`; do
+        # echo $tavs
+        # done
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
-        uavsid=`echo $avsid | awk '{print toupper($0)}'`
-        for j in $tavs; do
-            uj=`echo $j | awk '{print toupper($0)}'`
-            # echo $uj  $uavsid $j
-            if [ "$uavsid" = "$uj" ] ; then
-                avsid=$j
-            fi
-        done
+        avsid=`echo $avsid | awk '{print tolower($0)}'`
+        #for j in $tavs; do
+        #    uj=`echo $j | awk '{print toupper($0)}'`
+        #    # echo $uj  $uavsid $j
+        #    if [ "$uavsid" = "$uj" ] ; then
+        #        avsid=$j
+        #    fi
+        #done
         echo "contunue"
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
         vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
