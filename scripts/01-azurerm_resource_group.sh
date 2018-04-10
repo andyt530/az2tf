@@ -13,7 +13,7 @@ else
 fi
 azr=`az group show -n $rgsource`
 
-name=`echo $azr | jq '.name' | tr -d '"'`
+name=`echo $azr | jq '.name' | tr -d '"' | awk '{print tolower($0)}'`
 id=`echo $azr | jq '.id' | tr -d '"'`
 rg=$name
 prefix=`printf "%s_%s" $prefixa $rg`

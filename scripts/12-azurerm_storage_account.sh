@@ -16,9 +16,11 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         #echo $i
-        name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+        name=`echo $azr | jq ".[(${i})].name" | tr -d '"' | awk '{print tolower($0)}'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"' | awk '{print tolower($0)}'`
+ 
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+
         prefix=`printf "%s_%s" $prefixa $rg`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`

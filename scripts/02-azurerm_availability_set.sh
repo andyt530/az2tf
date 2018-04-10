@@ -15,11 +15,8 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
-        name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        # fix availability set names to lowercase
-        name=`echo $name | awk '{print tolower($0)}'`
-
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        name=`echo $azr | jq ".[(${i})].name" | tr -d '"' | awk '{print tolower($0)}'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"' | awk '{print tolower($0)}'`
         prefix=`printf "%s_%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
