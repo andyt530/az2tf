@@ -157,10 +157,18 @@ if [ "$count" -gt "0" ]; then
                 printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
                 printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
                 printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
+
                 if [ "$ddcreopt" = "Attach" ]; then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
                     ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
-                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $ddmdrg $ddmdid >> $prefix-$name.tf
+                ## ddmdrg  from cut is upper case - not good
+                ## probably safe to assume managed disk in same RG as VM ??
+                # check id lowercase rg = ddmdrg if so use rg
+                #
+                #if not will have to get from terraform state - convert ddmdrg to lc and terraform state output
+                #
+                
+                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rg $ddmdid >> $prefix-$name.tf
                 fi
                 if [ "$ddvhd" != "null" ]; then
                     printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $prefix-$name.tf
