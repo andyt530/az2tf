@@ -24,7 +24,7 @@ if [ "$count" -gt "0" ]; then
         scount=`echo $azr | jq '. | length'`
         scount=`expr $scount - 1`
         for i in `seq 0 $scount`; do
-            name=`echo $azr | jq ".[(${i})].name" | tr -d '"' | awk '{print tolower($0)}'`
+            name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
             rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
             id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
 

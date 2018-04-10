@@ -16,7 +16,7 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         #echo $i
-        name=`echo $azr | jq ".[(${i})].name" | tr -d '"' | awk '{print tolower($0)}'`
+        name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
  
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`

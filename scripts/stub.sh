@@ -14,7 +14,7 @@ azr=`az network nic list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 count=`expr $count - 1`
 for i in `seq 0 $count`; do
-    name=`echo $azr | jq ".[(${i})].name" | tr -d '"' | awk '{print tolower($0)}'`
+    name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
     rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`  
     id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
 
