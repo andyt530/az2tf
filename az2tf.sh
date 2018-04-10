@@ -41,15 +41,16 @@ for j in `seq 1 11`; do      # 7 - managed disk - needs work
         count=`expr $count - 1`
         for i in `seq 0 $count`; do
             myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-            echo $i of $count  sub=$myrg
+            echo $i of $count  RG=$myrg
             docomm=`echo ${comm[$j]} $myrg`
             #echo $docomm
             eval $docomm
-            cp *_*-*.tf tf.$mysub
+            
         done
     fi
     rm terraform*.backup
 done
+cp *_*-*.tf tf.$mysub
 #
 #Cleanup
 rm *cloud-shell-storage*.tf
