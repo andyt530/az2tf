@@ -37,8 +37,7 @@ if [ "$count" -gt "0" ]; then
         vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
         netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
         datadisks=`echo $azr | jq ".[(${i})].storageProfile.dataDisks"`
-        vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f9 | tr -d '"'`
-        vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[0].id" | cut -d'/' -f5 | tr -d '"'`
+
         vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
         vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
         vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
@@ -69,7 +68,21 @@ if [ "$count" -gt "0" ]; then
             printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $prefix-$name.tf
         fi
         printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
-        printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+        #
+        # Multiples
+        #
+        icount=`echo $netifs | jq '. | length'`
+        if [ "$icount" -gt "0" ]; then
+            icount=`expr $icount - 1`
+            for j in `seq 0 $icount`; do
+                vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f9 | tr -d '"'`
+                vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | tr -d '"'`
+                vmnetpri=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].primary" | tr -d '"'`
+                printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+            done
+        fi
+        #
+        #
         printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
         printf "\t delete_os_disk_on_termination = \"true\"\n"  >> $prefix-$name.tf
         #
