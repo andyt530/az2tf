@@ -19,8 +19,11 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
 
+        ipfor=`echo $azr | jq ".[(${i})].enableIpForwarding" | tr -d '"'`
+
         prefix=`printf "%s_%s" $prefixa $rg`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
+        
         #
         #
         #
@@ -33,6 +36,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
+         printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$snsg" != "null" ]; then
             printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $rg $snsg >> $prefix-$name.tf

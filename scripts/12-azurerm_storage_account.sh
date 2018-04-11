@@ -23,6 +23,7 @@ if [ "$count" -gt "0" ]; then
 
         prefix=`printf "%s_%s" $prefixa $rg`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
+        sakind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
         saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`
         sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
@@ -32,6 +33,7 @@ if [ "$count" -gt "0" ]; then
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t account_tier = \"%s\"\n" $satier >> $prefix-$name.tf
+        printf "\t account_kind = \"%s\"\n" $sakind >> $prefix-$name.tf
         printf "\t account_replication_type = \"%s\"\n" $sartype >> $prefix-$name.tf
         printf "\t enable_blob_encryption = \"%s\"\n" $saencrypt >> $prefix-$name.tf
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
