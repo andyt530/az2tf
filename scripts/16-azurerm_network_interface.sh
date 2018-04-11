@@ -24,13 +24,8 @@ if [ "$count" -gt "0" ]; then
         prefix=`printf "%s_%s" $prefixa $rg`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         
-        #
-        #
-        #
-        subname=`echo $azr | jq ".[(${i})].ipConfigurations[0].subnet.id" | cut -d'/' -f11 | tr -d '"'`
-        subrg=`echo $azr | jq ".[(${i})].ipConfigurations[0].subnet.id" | cut -d'/' -f5 | tr -d '"'`
-        subipid=`echo $azr | jq ".[(${i})].ipConfigurations[0].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
-        subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[0].privateIpAllocationMethod" | tr -d '"'`
+        ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`
+
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -41,17 +36,37 @@ if [ "$count" -gt "0" ]; then
         if [ "$snsg" != "null" ]; then
             printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $rg $snsg >> $prefix-$name.tf
         fi
-        printf "\t ip_configuration {\n" >> $prefix-$name.tf
-        printf "\t\t name = \"%s\" \n"  "ipconfig1" >> $prefix-$name.tf
-        printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
-        printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-        if [ "$subipid" != "null" ]; then
-            echo "pub ip "
-            echo $subipid
-            printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
-        fi
-        printf "\t}\n" >> $prefix-$name.tf
+
+        
+        icount=`echo $ipcon | jq '. | length'`
+        if [ "$icount" -gt "0" ]; then
+            icount=`expr $icount - 1`
+            for j in `seq 0 $icount`; do
+                ipcname=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
+                subname=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
+                subrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f5 | tr -d '"'`
+                subipid=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
+                subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
+                echo subname $subname
+                echo subrg $subrg
+                printf "\t ip_configuration {\n" >> $prefix-$name.tf
+                printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
+                printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
+                printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                if [ "$subipid" != "null" ]; then
+                    echo "pub ip "
+                    echo $subipid
+                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
+                fi
+                printf "\t}\n" >> $prefix-$name.tf
         #
+
+        done
+        fi
+
+
+
+
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf

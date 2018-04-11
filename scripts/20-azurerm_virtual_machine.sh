@@ -143,7 +143,7 @@ if [ "$count" -gt "0" ]; then
         #
         # Data disks
         #
-        echo $datadisks | jq .
+        #echo $datadisks | jq .
         dcount=`echo $datadisks | jq '. | length'`
         dcount=$(($dcount-1))
         echo dcount $dcount
