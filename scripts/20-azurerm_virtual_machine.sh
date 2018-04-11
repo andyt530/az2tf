@@ -19,25 +19,18 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
-        #
-        #
-        #
-        #`terraform state list | grep azurerm_availability_set | cut -f2 -d'.'`
-        # for tavs in `terraform state list | grep azurerm_availability_set`; do
-        # echo $tavs
-        # done
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
-        avsid=`echo $avsid | awk '{print tolower($0)}'`
-        #for j in $tavs; do
-        #    uj=`echo $j | awk '{print toupper($0)}'`
-        #    # echo $uj  $uavsid $j
-        #    if [ "$uavsid" = "$uj" ] ; then
-        #        avsid=$j
-        #    fi
-        #done
-        echo "contunue"
+        lavs=`printf "%s__%s" $avsrg $avsid`
+        lavs=`echo $lavs | awk '{print tolower($0)}'`
+        for tavs in `terraform state list | grep azurerm_availability_set | grep $avsrg`; do     
+            uavs=`echo $tavs | cut -f2 -d'.' | awk '{print tolower($0)}'` 
+            if [ "$uavs" == "$lavs" ]; then            
+                myavs=`echo $tavs | cut -f2 -d'.'` 
+            fi 
+        done
+
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
         vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
         vmdiags=`echo $azr | jq ".[(${i})].diagnosticsProfile" | tr -d '"'`
@@ -73,7 +66,7 @@ if [ "$count" -gt "0" ]; then
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$avsid" != "null" ]; then 
-            printf "\t availability_set_id = \"\${azurerm_availability_set.%s__%s.id}\"\n" $avsrg $avsid >> $prefix-$name.tf
+            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $prefix-$name.tf
         fi
         printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
         printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
@@ -87,7 +80,7 @@ if [ "$count" -gt "0" ]; then
         #
         # OS Disk
         #
-        echo vmosacctype $vmosacctype
+
         printf "storage_os_disk {\n"  >> $prefix-$name.tf
         printf "\tname = \"%s\" \n"  $vmosdiskname >> $prefix-$name.tf
         printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $prefix-$name.tf
@@ -146,7 +139,7 @@ if [ "$count" -gt "0" ]; then
         #echo $datadisks | jq .
         dcount=`echo $datadisks | jq '. | length'`
         dcount=$(($dcount-1))
-        echo dcount $dcount
+     
         for j in `seq 0 $dcount`; do
             ddname=`echo $datadisks | jq ".[(${j})].name" | tr -d '"'`
             if [ "$ddname" != "null" ]; then
