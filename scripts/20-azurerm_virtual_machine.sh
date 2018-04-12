@@ -59,6 +59,10 @@ if [ "$count" -gt "0" ]; then
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
         vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
         #
+        vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`
+        vmplprod=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`
+        vmplpub=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`   
+        #
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
@@ -79,6 +83,9 @@ if [ "$count" -gt "0" ]; then
                 vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | tr -d '"'`
                 vmnetpri=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].primary" | tr -d '"'`
                 printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+                if [ "$vmnetpri" == "true" ]; then
+                    printf "\t primary_network_interface_id = \"\${azurerm_network_interface.%s__%s.id}\"\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+                fi
             done
         fi
         #
@@ -116,6 +123,13 @@ if [ "$count" -gt "0" ]; then
             printf "\t offer = \"%s\"\n"  $vmimoffer >> $prefix-$name.tf
             printf "\t sku = \"%s\"\n"  $vmimsku >> $prefix-$name.tf
             printf "\t version = \"%s\"\n"  $vmimversion >> $prefix-$name.tf
+            printf "}\n" >> $prefix-$name.tf
+        fi
+        if [ "$vmplname" != "null" ]; then
+            printf "plan {\n"  >> $prefix-$name.tf
+            printf "\t name = \"%s\"\n" $vmplname  >> $prefix-$name.tf
+            printf "\t publisher = \"%s\"\n" $vmplpub  >> $prefix-$name.tf
+            printf "\t product = \"%s\"\n" $vmplprod  >> $prefix-$name.tf
             printf "}\n" >> $prefix-$name.tf
         fi
         #
