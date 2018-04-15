@@ -43,13 +43,69 @@ if [ "$count" -gt "0" ]; then
         #
         pcount=`echo $ap | jq '. | length'`
         if [ "$pcount" -gt "0" ]; then
-        echo $pcount
-           for j in `seq 1 $pcount`; do
-           echo $j
-              printf "\taccess_policy {\n" >> $prefix-$name.tf
-                echo $ap | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'
-               printf "\t}\n" >> $prefix-$name.tf
-           done
+            echo $pcount
+            pcount=`expr $pcount - 1`
+            for j in `seq 0 $pcount`; do
+                echo $j
+                printf "\taccess_policy {\n" >> $prefix-$name.tf
+                echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'
+                echo $kvshow | jq ".properties.accessPolicies[(${j})].objectId" | tr -d '"'
+                apten=`echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'`
+                apoid=`echo $kvshow | jq ".properties.accessPolicies[(${j})].objectId" | tr -d '"'`
+                printf "\t\t tenant_id=\"%s\"\n" $apten >> $prefix-$name.tf
+                printf "\t\t object_id=\"%s\"\n" $apoid >> $prefix-$name.tf
+                
+                kl=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.keys" | jq '. | length'`
+                sl=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.secrets" | jq '. | length'`
+                cl=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates" | jq '. | length'`
+               
+                kl=`expr $kl - 1`
+                sl=`expr $sl - 1`
+                cl=`expr $cl - 1`
+          
+                
+                if [ "$kl" -gt "0" ]; then
+                    printf "\t\t key_permissions = [\n" >> $prefix-$name.tf
+                    for k in `seq 0 $kl`; do
+                        tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.keys[(${k})]"`
+                        if [ $k -lt $kl ]; then
+                            tk=`printf "%s," $tk`
+                        fi
+                        printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                    done
+                    printf "\t\t ]\n" >> $prefix-$name.tf
+                fi
+                
+                
+                if [ "$sl" -gt "0" ]; then
+                    printf "\t\t secret_permissions = [\n" >> $prefix-$name.tf
+                    for k in `seq 0 $sl`; do
+                        tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.secrets[(${k})]"`
+                        if [ $k -lt $sl ]; then
+                            tk=`printf "%s," $tk`
+                        fi
+                        printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                    done
+                    printf "\t\t ]\n" >> $prefix-$name.tf
+                fi
+                echo "cert length= "  $cl
+                if [ "$cl" -gt "0" ]; then
+                    printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
+                    for k in `seq 0 $cl`; do
+                        tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
+                        echo $tk
+                        if [ "$tk" != "Recover" ]; then
+                            if [ $k -lt $cl ]; then
+                                tk=`printf "%s," $tk`
+                            fi
+                            printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                        fi
+                    done
+                    printf "\t\t ]\n" >> $prefix-$name.tf
+                fi
+                
+                printf "\t}\n" >> $prefix-$name.tf
+            done
         fi
         
         #
