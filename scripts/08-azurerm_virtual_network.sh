@@ -68,11 +68,12 @@ if [ "$count" -gt "0" ]; then
             snaddr=`echo $subs | jq ".[(${j})].addressPrefix"`
             snnsgid=`echo $subs | jq ".[(${j})].networkSecurityGroup.id"`
             nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
+            nsgrg=`echo $snnsgid | cut -d'/' -f5 | tr -d '"'`
             printf "\tsubnet {\n"  >> $prefix-$name.tf
             printf "\t\t name = %s\n" $snname >> $prefix-$name.tf
             printf "\t\t address_prefix = %s\n" $snaddr >> $prefix-$name.tf
             if [ "$nsgnam" != "null" ]; then
-                printf "\t\t security_group = \"\${azurerm_network_security_group.%s.id}\"\n" $nsgnam >> $prefix-$name.tf
+                printf "\t\t security_group = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $nsgrg $nsgnam >> $prefix-$name.tf
             fi
             printf "\t}\n" >> $prefix-$name.tf
             

@@ -59,9 +59,7 @@ if [ "$count" -gt "0" ]; then
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
         vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
         #
-        vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`
-        vmplprod=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`
-        vmplpub=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`   
+        vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -126,6 +124,8 @@ if [ "$count" -gt "0" ]; then
             printf "}\n" >> $prefix-$name.tf
         fi
         if [ "$vmplname" != "null" ]; then
+            vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
+            vmplpub=`echo $azr | jq ".[(${i})].plan.publisher" | tr -d '"'` 
             printf "plan {\n"  >> $prefix-$name.tf
             printf "\t name = \"%s\"\n" $vmplname  >> $prefix-$name.tf
             printf "\t publisher = \"%s\"\n" $vmplpub  >> $prefix-$name.tf

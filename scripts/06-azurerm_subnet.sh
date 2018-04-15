@@ -44,6 +44,7 @@ if [ "$count" -gt "0" ]; then
             fi
             
             snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
+            snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | tr -d '"'`
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
@@ -52,7 +53,7 @@ if [ "$count" -gt "0" ]; then
             #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
             printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
             if [ "$snsg" != "null" ]; then
-                printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s.id}\"\n" $snsg >> $prefix-$name.tf
+                printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $prefix-$name.tf
             fi
             if [ "$sep" != "null" ]; then
                 printf "\t service_endpoints = %s\n" $sep >> $prefix-$name.tf
