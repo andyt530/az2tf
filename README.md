@@ -35,6 +35,7 @@ The following terraform resource types are supported by this tool at this time:
 ## Requirements & Prerequisites
 The tool is written for the bash shell script and has been tested on a MAC
 Azure cli2 needs to be installed and you need a login with at least "Read" priviledges
+
 terrafrom needs to be installed
 
 
