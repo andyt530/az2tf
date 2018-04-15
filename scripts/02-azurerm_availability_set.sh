@@ -48,6 +48,10 @@ if [ "$count" -gt "0" ]; then
         printf "\t managed = \"%s\"\n" $rmtype >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
         #
+
+
+
+        
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         eval $statecomm
