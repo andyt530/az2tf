@@ -29,6 +29,8 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_public_ip
 * azurerm_network_interface
 * azurerm_virtual_machine
+* azurerm_key_vault
+* azurerm_lb
 
 ## Requirements & Prerequisites
 The tool is written for the bash shell script and has been tested on a MAC
