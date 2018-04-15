@@ -12,7 +12,7 @@ And finally runs a
 
 "terraform plan ."  command 
 
-There should hopefully be no subsequent additions or deletions as all the approriate tarraform configuration files will have have automatically been created.
+There should hopefully be no subsequent additions or deletions reported by the terraform plan command as all the approriate tarraform configuration files will have have automatically been created.
 
 ## Supported Resource Types
 
