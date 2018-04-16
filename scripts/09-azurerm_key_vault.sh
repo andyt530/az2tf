@@ -19,10 +19,18 @@ if [ "$count" -gt "0" ]; then
         kvshow=`az keyvault show -n $name`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+        loc=`echo $azr | jq ".[(${i})].location"`
+        echo "Loc = " $loc
         
         sku=`echo $kvshow | jq ".properties.sku.name" | tr -d '"'`
         ten=`echo $kvshow | jq ".properties.tenantId" | tr -d '"'`
+
+        endep=`echo $kvshow | jq ".properties.enabledForDeployment" | tr -d '"'`
+        endisk=`echo $kvshow | jq ".properties.enabledForDiskEncryption" | tr -d '"'`
+        entemp=`echo $kvshow | jq ".properties.enabledForTemplateDeployment" | tr -d '"'`
+
+
+
         #echo $tags | jq .
         ap=`echo $kvshow | jq ".properties.accessPolicies"`
         
@@ -30,7 +38,7 @@ if [ "$count" -gt "0" ]; then
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        echo "location = $loc" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         #
         printf "\t sku { \n" >> $prefix-$name.tf
@@ -38,6 +46,10 @@ if [ "$count" -gt "0" ]; then
         printf "\t } \n" >> $prefix-$name.tf
         
         printf "\t tenant_id=\"%s\"\n" $ten >> $prefix-$name.tf
+        printf "\t enabled_for_deployment=\"%s\"\n" $endep >> $prefix-$name.tf
+        printf "\t enabled_for_disk_encryption=\"%s\"\n" $endisk >> $prefix-$name.tf
+        printf "\t enabled_for_template_deployment=\"%s\"\n" $entemp >> $prefix-$name.tf
+
         #
         # Access Policies
         #
@@ -48,10 +60,10 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $pcount`; do
                 echo $j
                 printf "\taccess_policy {\n" >> $prefix-$name.tf
-                echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'
-                echo $kvshow | jq ".properties.accessPolicies[(${j})].objectId" | tr -d '"'
+
                 apten=`echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'`
                 apoid=`echo $kvshow | jq ".properties.accessPolicies[(${j})].objectId" | tr -d '"'`
+
                 printf "\t\t tenant_id=\"%s\"\n" $apten >> $prefix-$name.tf
                 printf "\t\t object_id=\"%s\"\n" $apoid >> $prefix-$name.tf
                 
@@ -63,9 +75,9 @@ if [ "$count" -gt "0" ]; then
                 sl=`expr $sl - 1`
                 cl=`expr $cl - 1`
           
-                
-                if [ "$kl" -gt "0" ]; then
-                    printf "\t\t key_permissions = [\n" >> $prefix-$name.tf
+                printf "\t\t key_permissions = [\n" >> $prefix-$name.tf
+                if [ "$kl" -ge "0" ]; then
+                    
                     for k in `seq 0 $kl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.keys[(${k})]"`
                         if [ $k -lt $kl ]; then
@@ -73,11 +85,11 @@ if [ "$count" -gt "0" ]; then
                         fi
                         printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
                     done
-                    printf "\t\t ]\n" >> $prefix-$name.tf
+                    #printf "\t\t ]\n" >> $prefix-$name.tf
                 fi
+                printf "\t\t ]\n" >> $prefix-$name.tf
                 
-                
-                if [ "$sl" -gt "0" ]; then
+                if [ "$sl" -ge "0" ]; then
                     printf "\t\t secret_permissions = [\n" >> $prefix-$name.tf
                     for k in `seq 0 $sl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.secrets[(${k})]"`
@@ -89,7 +101,7 @@ if [ "$count" -gt "0" ]; then
                     printf "\t\t ]\n" >> $prefix-$name.tf
                 fi
                 echo "cert length= "  $cl
-                if [ "$cl" -gt "0" ]; then
+                if [ "$cl" -gt "99" ]; then  # codes to prevent cert permissions
                     printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
