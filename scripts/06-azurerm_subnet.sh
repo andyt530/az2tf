@@ -27,7 +27,7 @@ if [ "$count" -gt "0" ]; then
             name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
             rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
             id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-            loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+            # subnets don't have a location
             prefix=`printf "%s_%s" $prefixa $rg`
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
             
@@ -47,7 +47,7 @@ if [ "$count" -gt "0" ]; then
             snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | tr -d '"'`
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-            printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+            
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
             rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | tr -d '"'`

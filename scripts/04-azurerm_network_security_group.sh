@@ -31,7 +31,7 @@ if [ "$count" -gt "0" ]; then
         # Security Rules
         #
         scount=`echo $srules | jq '. | length'`
-        echo $scount
+        #echo $scount
         if [ "$scount" -gt "0" ]; then
         scount=`expr $scount - 1`
             for j in `seq 0 $scount`; do    
@@ -39,6 +39,11 @@ if [ "$count" -gt "0" ]; then
             printf "\t security_rule { \n" >> $prefix-$name.tf
             srname=`echo $azr | jq ".[(${i})].securityRules[(${j})].name" | tr -d '"'`                       
             printf "\t\t name = \"%s\"  \n" $srname >> $prefix-$name.tf
+            srdesc=`echo $azr | jq ".[(${i})].securityRules[(${j})].description"`                       
+            if [ "$srdesc" != "null" ]; then
+                echo "              description = $srdesc  "  >> $prefix-$name.tf   # printf does multiple lines with space delimited values
+            fi
+
             sraccess=`echo $azr | jq ".[(${i})].securityRules[(${j})].access" | tr -d '"'`                       
             printf "\t\t access = \"%s\"  \n" $sraccess >> $prefix-$name.tf
             srpri=`echo $azr | jq ".[(${i})].securityRules[(${j})].priority" | tr -d '"'` 
