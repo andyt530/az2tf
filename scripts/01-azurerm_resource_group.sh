@@ -29,16 +29,16 @@ tags=`echo $azr | jq ".tags"`
 tcount=`echo $tags | jq '. | length'`
 echo $tcount
 if [ "$tcount" -gt "0" ]; then
-    printf "\t tags { \n" >> $prefix-$name.tf
+    printf "\t tags { \n" >> $prefix.tf
     tt=`echo $tags | jq .`
     for j in `seq 1 $tcount`; do
         atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
         tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
         tval=`echo $atag | cut -d':' -f2`
-        printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+        printf "\t\t%s = %s \n" $tkey $tval >> $prefix.tf
         
     done
-    printf "\t}\n" >> $prefix-$name.tf
+    printf "\t}\n" >> $prefix.tf
 fi
 
 

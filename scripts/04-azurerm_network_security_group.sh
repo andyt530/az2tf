@@ -43,8 +43,8 @@ if [ "$count" -gt "0" ]; then
             printf "\t\t access = \"%s\"  \n" $sraccess >> $prefix-$name.tf
             srpri=`echo $azr | jq ".[(${i})].securityRules[(${j})].priority" | tr -d '"'` 
             printf "\t\t priority = \"%s\"  \n" $srpri >> $prefix-$name.tf
-            srproto=`echo $azr | jq ".[(${i})].securityRules[(${j})].protocol" | tr -d '"'` 
-            printf "\t\t protocol = \"%s\"  \n" $srproto >> $prefix-$name.tf
+            srproto=`echo $azr | jq ".[(${i})].securityRules[(${j})].protocol"` 
+            printf "\t\t protocol = %s  \n" $srproto >> $prefix-$name.tf
             srdir=`echo $azr | jq ".[(${i})].securityRules[(${j})].direction" | tr -d '"'` 
             printf "\t\t direction = \"%s\"  \n" $srdir >> $prefix-$name.tf
             srsp=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRange"` 
