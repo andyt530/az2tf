@@ -23,6 +23,7 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_availability_set
 * azurerm_subnet
 * azurerm_virtual_network
+* azurerm_virtual_network_peering
 * azurerm_network_security_group
 * azurerm_managed_disk
 * azurerm_storage_account
@@ -31,6 +32,7 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_virtual_machine
 * azurerm_key_vault
 * azurerm_lb
+
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
