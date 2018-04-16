@@ -22,7 +22,8 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-
+        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+        
         prefix=`printf "%s_%s" $prefixa $rg`
         dns1=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[0]"`
         dns2=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[1]"`
@@ -46,7 +47,7 @@ if [ "$count" -gt "0" ]; then
         fi
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
+        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$dns" != "null" ]; then
@@ -78,6 +79,26 @@ if [ "$count" -gt "0" ]; then
             printf "\t}\n" >> $prefix-$name.tf
             
         done
+
+        #
+        # Tags block
+        #
+        tags=`echo $azr | jq ".[(${i})].tags"`
+        tcount=`echo $tags | jq '. | length'`
+        #echo $tcount
+        if [ "$tcount" -gt "0" ]; then
+            printf "\t tags { \n" >> $prefix-$name.tf
+            tt=`echo $tags | jq .`
+            for j in `seq 1 $tcount`; do
+                atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
+                tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
+                tval=`echo $atag | cut -d':' -f2`
+                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+                
+            done
+            printf "\t}\n" >> $prefix-$name.tf
+        fi
+
         echo "}" >> $prefix-$name.tf
         #
         #

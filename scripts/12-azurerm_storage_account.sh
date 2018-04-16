@@ -20,6 +20,8 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
  
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+
 
         prefix=`printf "%s_%s" $prefixa $rg`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
@@ -29,7 +31,7 @@ if [ "$count" -gt "0" ]; then
         sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
+        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t account_tier = \"%s\"\n" $satier >> $prefix-$name.tf

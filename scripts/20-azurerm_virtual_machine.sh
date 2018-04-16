@@ -18,6 +18,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
@@ -63,7 +64,7 @@ if [ "$count" -gt "0" ]; then
         #
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"\${var.loctarget}\"\n"  >> $prefix-$name.tf
+        printf "\t location = \"%s\"\n"  $loc >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$avsid" != "null" ]; then 
@@ -197,6 +198,26 @@ if [ "$count" -gt "0" ]; then
                 printf "}\n" >> $prefix-$name.tf
             fi
         done
+
+        #
+        # Tags block
+        #
+        tags=`echo $azr | jq ".[(${i})].tags"`
+        tcount=`echo $tags | jq '. | length'`
+        #echo $tcount
+        if [ "$tcount" -gt "0" ]; then
+            printf "\t tags { \n" >> $prefix-$name.tf
+            tt=`echo $tags | jq .`
+            for j in `seq 1 $tcount`; do
+                atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
+                tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
+                tval=`echo $atag | cut -d':' -f2`
+                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+                
+            done
+            printf "\t}\n" >> $prefix-$name.tf
+        fi
+
         printf "}\n" >> $prefix-$name.tf
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`

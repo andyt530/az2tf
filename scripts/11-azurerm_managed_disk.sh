@@ -18,7 +18,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-
+        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
         echo $prefix
         dsize=`echo $azr | jq ".[(${i})].diskSizeGb" | tr -d '"'`
@@ -36,7 +36,7 @@ if [ "$count" -gt "0" ]; then
        
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"\${var.loctarget}\"\n" >> $prefix-$name.tf
+        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t disk_size_gb = \"%s\"\n" $dsize >> $prefix-$name.tf
