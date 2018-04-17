@@ -24,7 +24,7 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         echo "about to get peers" $vnname $rg
         peers=`az network vnet peering list -g $rg --vnet $name`
-        echo $peers | jq .
+        #echo $peers | jq .
      
         pcount=`echo $peers | jq '. | length'`
         echo $pcount
