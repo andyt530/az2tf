@@ -1,2 +1,0 @@
-variable "rgtarget" {}
-variable "loctarget" {}
