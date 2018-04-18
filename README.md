@@ -18,6 +18,9 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 The following terraform resource types are supported by this tool at this time:
 
+* azurerm_role_definition
+* azurerm_role_assignment
+
 * azurerm_resource_group
 * azurerm_route_table
 * azurerm_availability_set
