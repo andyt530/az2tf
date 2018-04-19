@@ -38,7 +38,7 @@ if [ "$count" -gt "0" ]; then
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        echo "location = $loc" >> $prefix-$name.tf
+        printf "location = %s\n" "$loc" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         #
         printf "\t sku { \n" >> $prefix-$name.tf

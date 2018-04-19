@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az role definition list --custom-role-only`
+azr=`az role definition list`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -30,9 +30,9 @@ if [ "$count" -gt "0" ]; then
 
  #       printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$rdid.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
-        echo "name = $name"  >> $prefix-$rdid.tf
+        printf "name = %s\n" "$name"  >> $prefix-$rdid.tf
         printf "role_definition_id = \"%s\"\n" >> $prefix-$rdid.tf
-        echo "description = $desc" >> $prefix-$rdid.tf
+        printf "description = %s\n" "$desc" >> $prefix-$rdid.tf
 #        printf "scope = \"\${data.azurerm_subscription.primary.id}\"\n"  >> $prefix-$rdid.tf
 #        printf "scope = \"/subscriptions/%s\"\n" $rgsource >> $prefix-$rdid.tf
         printf "scope = \"\"\n"  >> $prefix-$rdid.tf

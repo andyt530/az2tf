@@ -20,7 +20,7 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-        loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+        loc=`echo $azr | jq ".[(${i})].location"``
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
         ud=`echo $azr | jq ".[(${i})].platformUpdateDomainCount" | tr -d '"'`
         avm=`echo $azr | jq ".[(${i})].virtualMachines"`
@@ -41,7 +41,7 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         #printf "\t id = \"%s\"\n" $id >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t platform_fault_domain_count = \"%s\"\n" $fd >> $prefix-$name.tf

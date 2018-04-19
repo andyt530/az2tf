@@ -20,16 +20,17 @@ if [ "$count" -gt "0" ]; then
         scope=`echo $azr | jq ".[(${i})].properties.scope"`
         rdid=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         prid=`echo $azr | jq ".[(${i})].properties.principalId"`
-        roledefid=`echo $azr | jq ".[(${i})].properties.roleDefinitionId"`
+        roledefid=`echo $azr | jq ".[(${i})].properties.roleDefinitionId" | cut -d'/' -f7 | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg="roleAssignments"
         prefix=`printf "%s_%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
-        echo "name = $name"  >> $prefix-$rdid.tf
-        printf "role_definition_id = %s\n" $roledefid >> $prefix-$rdid.tf
-        printf "principal_id = %s\n" $prid >> $prefix-$rdid.tf
-        printf "scope = %s\n" $scope  >> $prefix-$rdid.tf
+        printf "name = %s\n" "$name"  >> $prefix-$rdid.tf
+        printf "role_definition_id = \"\${azurerm_role_definition.%s__%s.id}\"\n" "roleDefinitions" $roledefid >> $prefix-$rdid.tf
+        
+        printf "principal_id = %s\n" "$prid" >> $prefix-$rdid.tf
+        printf "scope = %s\n" "$scope"  >> $prefix-$rdid.tf
    
         printf "}\n" >> $prefix-$rdid.tf
         

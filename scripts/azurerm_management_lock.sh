@@ -1,0 +1,54 @@
+tfp="azurerm_management_lock"
+prefixa="lck"
+echo $tfp
+if [ "$1" != "" ]; then
+    rgsource=$1
+else
+    echo -n "Enter name of Resource Group [$rgsource] > "
+    read response
+    if [ -n "$response" ]; then
+        rgsource=$response
+    fi
+fi
+azr=`az lock list -g $rgsource`
+count=`echo $azr | jq '. | length'`
+if [ "$count" -gt "0" ]; then
+    count=`expr $count - 1`
+    for i in `seq 0 $count`; do
+        name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+        level=`echo $azr | jq ".[(${i})].level"`
+        notes=`echo $azr | jq ".[(${i})].notes"`
+        id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
+        echo $azr | jq ".[(${i})]"
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        #echo "name =" $name rg=$rg
+        #
+        # scope is in the id
+        #
+        t=`echo $id | awk -F 'Microsoft.Authorization' '{print $1}' `
+        scope=`echo ${t%/providers/}`
+        echo scope = $scope
+
+
+        prefix=`printf "%s_%s" $prefixa $rg`
+        
+
+ #      printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
+        printf "name = \"%s\"\n"  $name  >> $prefix-$name.tf
+        printf "lock_level = %s\n" "$level" >> $prefix-$name.tf
+        printf "notes = %s \n" "$notes" >> $prefix-$name.tf
+        printf "scope = \"%s\" \n"  "$scope" >> $prefix-$name.tf
+        #
+       
+        printf "}\n" >> $prefix-$name.tf
+        
+        cat $prefix-$name.tf
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        eval $statecomm
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        eval $evalcomm
+        
+        
+    done
+fi
