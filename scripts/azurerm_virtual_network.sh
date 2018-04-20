@@ -104,9 +104,10 @@ if [ "$count" -gt "0" ]; then
         #
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
-        eval $statecomm
+        echo $statecomm >> tf-staterm.sh
+        eval $statecomm 
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         eval $evalcomm
-        
+        echo $evalcomm >> tf-stateimp.sh
     done
 fi
