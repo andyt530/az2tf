@@ -35,8 +35,10 @@ if [ "$count" -gt "0" ]; then
         
         cat $prefix-$rdid.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rdid`
+        echo $statecomm >> tf-staterm.sh
         eval $statecomm
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rdid $id`
+        echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
         
         

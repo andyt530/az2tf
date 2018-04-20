@@ -27,7 +27,11 @@ if [ "$count" -gt "0" ]; then
         sakind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
         saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`
+        fiencrypt=`echo $azr | jq ".[(${i})].encryption.services.file.enabled" | tr -d '"'`
         sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
+        nrs=`echo $azr | jq ".[(${i})].networkRuleSet" | tr -d '"'`
+ 
+ 
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
@@ -37,14 +41,48 @@ if [ "$count" -gt "0" ]; then
         printf "\t account_kind = \"%s\"\n" $sakind >> $prefix-$name.tf
         printf "\t account_replication_type = \"%s\"\n" $sartype >> $prefix-$name.tf
         printf "\t enable_blob_encryption = \"%s\"\n" $saencrypt >> $prefix-$name.tf
+        printf "\t enable_file_encryption = \"%s\"\n" $fiencrypt >> $prefix-$name.tf
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
         #
+
+        pcount=`echo $peers | jq '. | length'`
+        echo $pcount
+        if [ "$pcount" -gt "0" ]; then
+            pcount=`expr $pcount - 1`
+            for j in `seq 0 $pcount`; do
+            echo "inner loop " $j
+
+
+            done
+        fi
+
+
+        # Tags block
+        #
+        tags=`echo $azr | jq ".[(${i})].tags"`
+        tcount=`echo $tags | jq '. | length'`
+        #echo $tcount
+        if [ "$tcount" -gt "0" ]; then
+            printf "\t tags { \n" >> $prefix-$name.tf
+            tt=`echo $tags | jq .`
+            for j in `seq 1 $tcount`; do
+                atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
+                tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
+                tval=`echo $atag | cut -d':' -f2`
+                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+                
+            done
+            printf "\t}\n" >> $prefix-$name.tf
+        fi
+
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        echo $statecomm >> tf-staterm.sh
         eval $statecomm
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done
 fi

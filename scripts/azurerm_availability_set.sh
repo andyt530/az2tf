@@ -30,13 +30,7 @@ if [ "$count" -gt "0" ]; then
             rmtype="true"
         fi
         
-        #echo $avm
-        #ism="true"
-        #if [ "$vmcount" -eq "0" ]; then
-        ##vmcount=`echo $avm | jq '. | length'`
-        #    echo "vmcount is false"
-        #    #ism="false"
-        #fi
+
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         #printf "\t id = \"%s\"\n" $id >> $prefix-$name.tf
@@ -71,8 +65,10 @@ if [ "$count" -gt "0" ]; then
         printf "}\n" >> $prefix-$name.tf
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
-        eval $statecomm
+        echo $statecomm >> tf-staterm.sh
+        eval $statecomm 
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done
 fi
