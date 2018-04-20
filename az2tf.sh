@@ -46,6 +46,8 @@ pfx[51]="rdf"
 res[51]="azurerm_role_definition"
 pfx[52]="ras"
 res[52]="azurerm_role_assignment"
+pfx[53]="pdf"
+res[53]="azurerm_policy_definition"
 
 source ../setup-vars.sh
 export ARM_SUBSCRIPTION_ID=""
@@ -63,7 +65,7 @@ echo "init"
 terraform init
 
 
-for j in `seq 51 52`; do
+for j in `seq 51 53`; do
 
 docomm="../scripts/${res[$j]}.sh $mysub"
     echo $docomm

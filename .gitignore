@@ -10,3 +10,4 @@ tf.*
 git*.sh
 todo*
 clean*.sh
+.terraform*
