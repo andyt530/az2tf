@@ -62,10 +62,10 @@ Running the tool required these steps:
 
 ## Know problems
 
-# KeyVault:
+### KeyVault:
 certificate permissions are ignored due to terraform issue - awaiting azurerm 1.4.0 provider
 
-# Virtual machines:
+### Virtual machines:
 These attributes always set to true - may need to manually override
 
 delete_data_disks_on_termination:           "" => "true"
