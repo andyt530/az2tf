@@ -53,8 +53,6 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
                 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 if [ "$subipid" != "null" ]; then
-                    echo "pub ip "
-                    echo $subipid
                     printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
                 fi
                 printf "\t}\n" >> $prefix-$name.tf
