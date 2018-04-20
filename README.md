@@ -72,3 +72,6 @@ delete_data_disks_on_termination:           "" => "true"
 
 delete_os_disk_on_termination:              "" => "true"
 
+### Storage Account
+
+awaiting terraform support for VNet service endpoints/firewalling
