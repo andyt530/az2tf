@@ -60,5 +60,15 @@ Running the tool required these steps:
 + Policies
 + AKS
 
+## Know problems
 
+### KeyVault:
+certificate permissions are ignored due to terraform issue - awaiting azurerm 1.4.0 provider
+
+### Virtual machines:
+These attributes always set to true - may need to manually override
+
+delete_data_disks_on_termination:           "" => "true"
+
+delete_os_disk_on_termination:              "" => "true"
 
