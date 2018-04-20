@@ -48,19 +48,16 @@ The following terraform resource types are supported by this tool at this time:
 Running the tool required these steps:
 1. Unzip or clone this git repo into an empty directory
 1. login to the Azure cli2  (az login)
-1. run 'terraform init'
-1. Set the environent variable TF_loc_target
 1. run the tool giving the id of a subscription as a paremeter  (./az2tf.sh  xxxx-xxxx-xxxx-xxxx-xxxxxx)
 
 
 ## Planned Additions
 
 + Further support for route tables
-+ Support for KeyVaults
 + Load Balancers (deeper support)
 + Storage containers / storage firewall rules
 + Policies
-+ VNet peering
++ AKS
 
 
 
