@@ -69,5 +69,6 @@ certificate permissions are ignored due to terraform issue - awaiting azurerm 1.
 These attributes always set to true - may need to manually override
 
 delete_data_disks_on_termination:           "" => "true"
+
 delete_os_disk_on_termination:              "" => "true"
 
