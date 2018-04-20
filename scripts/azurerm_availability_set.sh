@@ -20,7 +20,7 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
-        loc=`echo $azr | jq ".[(${i})].location"``
+        loc=`echo $azr | jq ".[(${i})].location"`
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`
         ud=`echo $azr | jq ".[(${i})].platformUpdateDomainCount" | tr -d '"'`
         avm=`echo $azr | jq ".[(${i})].virtualMachines"`

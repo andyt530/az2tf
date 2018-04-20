@@ -54,11 +54,7 @@ export ARM_TENANT_ID=""
 export ARM_SUBSCRIPTION_ID="$mysub"
 
 az account set -s $mysub
-#echo "Clean Dir"
-#./cleanup.sh
-#echo "Clean terraform"
-#./cleanstate.sh
-#az account set -s $ARM_SUBSCRIPTION_ID
+
 
 rm terraform*.backup
 rm tf*.sh
