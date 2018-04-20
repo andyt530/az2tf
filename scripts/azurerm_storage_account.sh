@@ -45,17 +45,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
         #
 
-        pcount=`echo $peers | jq '. | length'`
-        echo $pcount
-        if [ "$pcount" -gt "0" ]; then
-            pcount=`expr $pcount - 1`
-            for j in `seq 0 $pcount`; do
-            echo "inner loop " $j
-
-
-            done
-        fi
-
+        
 
         # Tags block
         #
