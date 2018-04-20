@@ -1,6 +1,5 @@
 tfp="azurerm_public_ip"
 prefixa="pip"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

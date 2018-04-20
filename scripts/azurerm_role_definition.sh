@@ -1,6 +1,5 @@
 tfp="azurerm_role_definition"
 prefixa="rdf"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

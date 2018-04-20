@@ -1,6 +1,5 @@
 tfp="azurerm_virtual_network_peering"
 prefixa="vnp"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

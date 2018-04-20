@@ -1,6 +1,5 @@
 tfp="azurerm_management_lock"
 prefixa="lck"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

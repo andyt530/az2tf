@@ -1,6 +1,5 @@
 tfp="azurerm_network_security_group"
 prefixa="nsg"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

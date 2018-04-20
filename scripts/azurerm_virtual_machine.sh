@@ -1,5 +1,4 @@
 tfp="azurerm_virtual_machine"
-echo $tfp
 prefixa="vm"
 if [ "$1" != "" ]; then
     rgsource=$1

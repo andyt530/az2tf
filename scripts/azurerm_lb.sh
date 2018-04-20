@@ -1,6 +1,5 @@
 tfp="azurerm_lb"
 prefixa="lb"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

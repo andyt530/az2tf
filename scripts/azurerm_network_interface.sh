@@ -1,6 +1,5 @@
 tfp="azurerm_network_interface"
 prefixa="nic"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

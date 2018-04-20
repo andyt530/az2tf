@@ -1,6 +1,5 @@
 tfp="azurerm_route_table"
 prefixa="rtb"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

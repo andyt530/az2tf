@@ -1,6 +1,5 @@
 tfp="azurerm_storage_account"
 prefixa="stor"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

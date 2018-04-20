@@ -1,6 +1,5 @@
 tfp="azurerm_subnet"
 prefixa="sub"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

@@ -1,6 +1,5 @@
 tfp="azurerm_key_vault"
 prefixa="kv"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else

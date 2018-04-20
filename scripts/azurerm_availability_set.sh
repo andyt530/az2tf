@@ -1,6 +1,5 @@
 tfp="azurerm_availability_set"
 prefixa="avs"
-echo $tfp
 if [ "$1" != "" ]; then
     rgsource=$1
 else
