@@ -37,11 +37,8 @@ if [ "$count" -gt "0" ]; then
             printf "policy_type = \"%s\"\n" "$pt" >> $prefix-$rdid.tf
             printf "mode = \"%s\"\n" $mode >> $prefix-$rdid.tf
             printf "description = %s\n" "$desc" >> $prefix-$rdid.tf
-            echo "params"= $params
-            
-             
-            echo "meta=" $meta
-            printf "matadata =<<META\n"  >> $prefix-$rdid.tf
+
+            printf "metadata =<<META\n"  >> $prefix-$rdid.tf
             printf "%s\n" "$meta" >> $prefix-$rdid.tf
             printf "META\n" >> $prefix-$rdid.tf
 
