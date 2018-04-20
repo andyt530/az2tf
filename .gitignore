@@ -9,3 +9,4 @@ terraform.*
 tf.*
 git*.sh
 todo*
+clean*.sh
