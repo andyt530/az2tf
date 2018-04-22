@@ -25,7 +25,7 @@ printf "\t location = \"%s\"\n" $loc >> $prefix.tf
 #
 # Tags block
 #
-tags=`echo $azr | jq ".[(${i})].tags"`
+tags=`echo $azr | jq ".tags"`
 tt=`echo $tags | jq .`
 tcount=`echo $tags | jq '. | length'`
 if [ "$tcount" -gt "0" ]; then

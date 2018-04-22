@@ -37,10 +37,13 @@ pfx[12]="nic"
 res[12]="azurerm_network_interface"
 pfx[13]="lb"
 res[13]="azurerm_lb"
-pfx[14]="vm"
-res[14]="azurerm_virtual_machine"
-pfx[15]="lck"
-res[15]="azurerm_management_lock"
+pfx[14]="lbbe"
+res[14]="azurerm_lb_backend_address_pool"
+
+pfx[15]="vm"
+res[15]="azurerm_virtual_machine"
+pfx[16]="lck"
+res[16]="azurerm_management_lock"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -48,6 +51,8 @@ pfx[52]="ras"
 res[52]="azurerm_role_assignment"
 pfx[53]="pdf"
 res[53]="azurerm_policy_definition"
+pfx[54]="pas"
+res[54]="azurerm_policy_assignment"
 
 source ../setup-vars.sh
 export ARM_SUBSCRIPTION_ID=""
@@ -57,7 +62,6 @@ export ARM_SUBSCRIPTION_ID="$mysub"
 
 az account set -s $mysub
 
-
 rm terraform*.backup
 rm tf*.sh
 cp ../stub/*.tf .
@@ -65,16 +69,21 @@ echo "init"
 terraform init
 
 
-for j in `seq 51 53`; do
+for j in `seq 51 54`; do
 
 docomm="../scripts/${res[$j]}.sh $mysub"
     echo $docomm
     eval $docomm
 done
 
+# sequence starts at 2
 
-for j in `seq 1 15`; do  
-
+for j in `seq 1 16`; do  
+    
+    #for t in `terraform state list | grep azurerm_availability_set`
+    #    do
+    #    terraform state rm $i
+    #done
 
     trgs=`az group list`
     count=`echo $trgs | jq '. | length'`
@@ -82,7 +91,7 @@ for j in `seq 1 15`; do
         count=`expr $count - 1`
         for i in `seq 0 $count`; do
             myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-            echo $i of $count  RG=$myrg
+            echo -n $i of $count " "
             #pwd
             docomm="../scripts/${res[$j]}.sh $myrg"
             echo $docomm
