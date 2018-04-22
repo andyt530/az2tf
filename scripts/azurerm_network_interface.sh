@@ -20,7 +20,7 @@ if [ "$count" -gt "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         ipfor=`echo $azr | jq ".[(${i})].enableIpForwarding" | tr -d '"'`
 
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         
         ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`

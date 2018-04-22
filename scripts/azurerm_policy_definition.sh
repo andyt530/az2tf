@@ -14,6 +14,7 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
+        echo $i " of " $count
         pt=`echo $azr | jq ".[(${i})].policyType" | tr -d '"'`
         
         if [ $pt = "Custom" ]; then
@@ -29,15 +30,16 @@ if [ "$count" -gt "0" ]; then
             prules=`echo $azr | jq ".[(${i})].policyRule"`
             meta=`echo $azr | jq ".[(${i})].metadata"`
             
-            prefix=`printf "%s_%s" $prefixa $rg`
+            prefix=`printf "%s__%s" $prefixa $rg`
             
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
             printf "name = \"%s\"\n" "$rdid"  >> $prefix-$rdid.tf
             printf "display_name = %s\n" "$dname"  >> $prefix-$rdid.tf
             printf "policy_type = \"%s\"\n" "$pt" >> $prefix-$rdid.tf
             printf "mode = \"%s\"\n" $mode >> $prefix-$rdid.tf
-            printf "description = %s\n" "$desc" >> $prefix-$rdid.tf
-
+            if [ "$desc" != "null" ]; then
+                printf "description = %s\n" "$desc" >> $prefix-$rdid.tf
+            fi 
             printf "metadata =<<META\n"  >> $prefix-$rdid.tf
             printf "%s\n" "$meta" >> $prefix-$rdid.tf
             printf "META\n" >> $prefix-$rdid.tf

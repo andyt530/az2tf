@@ -14,11 +14,12 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
-        name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+        # note the fixup to name - as some folks put ".vhd" in the name
+        oname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
        
         dsize=`echo $azr | jq ".[(${i})].diskSizeGb" | tr -d '"'`
         ostyp=`echo $azr | jq ".[(${i})].osType" | tr -d '"'`
@@ -32,9 +33,12 @@ if [ "$count" -gt "0" ]; then
 
         stopt=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         imid=`echo $azr | jq ".[(${i})].creationData.imageReference.id" | tr -d '"'`
-       
+        name=`echo ${oname/.vhd/_vhd}` 
+        echo "name=" $name
+
+
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
+        printf "\t name = \"%s\"\n" $oname >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf

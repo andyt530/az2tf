@@ -20,15 +20,15 @@ The following terraform resource types are supported by this tool at this time:
 
 * azurerm_role_definition (subscription level)
 * azurerm_role_assignment (subscription level)
-* azurerm_policy_definition
+* azurerm_policy_definition (custom)
 * azurerm_policy_assignment
 
-* azurerm_resource_group
+* azurerm_resource_group (full)
 * azurerm_route_table
 * azurerm_availability_set
-* azurerm_subnet
+* azurerm_subnet (full)
 * azurerm_virtual_network
-* azurerm_virtual_network_peering
+* azurerm_virtual_network_peering (full)
 * azurerm_network_security_group
 * azurerm_managed_disk
 * azurerm_storage_account
@@ -39,7 +39,7 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_management_lock
 
 In progress ..
-* azurerm_lb
+* azurerm_lb (full)
 * azurerm_lb_backend_address_pool
 
 

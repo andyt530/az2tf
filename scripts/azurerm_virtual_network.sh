@@ -23,7 +23,7 @@ if [ "$count" -gt "0" ]; then
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
         
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         dns1=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[0]"`
         dns2=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers[1]"`
         dns="null"

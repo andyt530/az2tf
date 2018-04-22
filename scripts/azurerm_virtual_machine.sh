@@ -18,7 +18,7 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`

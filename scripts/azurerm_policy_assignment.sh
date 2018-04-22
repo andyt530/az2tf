@@ -26,7 +26,7 @@ if [ "$count" -gt "0" ]; then
         params=`echo $azr | jq ".[(${i})].parameters"`
         
         
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
         printf "name = \"%s\"\n" "$rdid"  >> $prefix-$rdid.tf

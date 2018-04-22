@@ -14,6 +14,7 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
+        echo $i " of " $count
         name=`echo $azr | jq ".[(${i})].name"`
         echo name - $name
         scope=`echo $azr | jq ".[(${i})].scope"`
@@ -22,7 +23,7 @@ if [ "$count" -gt "0" ]; then
         roledefid=`echo $azr | jq ".[(${i})].roleDefinitionId" | cut -d'/' -f7 | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg="roleAssignments"
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
         printf "name = %s\n" "$name"  >> $prefix-$rdid.tf

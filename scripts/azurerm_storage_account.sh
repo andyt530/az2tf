@@ -22,7 +22,7 @@ if [ "$count" -gt "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
 
 
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         sakind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`

@@ -19,7 +19,6 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
-        echo "Loc = " $loc
         
         sku=`echo $kvshow | jq ".properties.sku.name" | tr -d '"'`
         ten=`echo $kvshow | jq ".properties.tenantId" | tr -d '"'`
@@ -28,12 +27,10 @@ if [ "$count" -gt "0" ]; then
         endisk=`echo $kvshow | jq ".properties.enabledForDiskEncryption" | tr -d '"'`
         entemp=`echo $kvshow | jq ".properties.enabledForTemplateDeployment" | tr -d '"'`
 
-
-
         #echo $tags | jq .
         ap=`echo $kvshow | jq ".properties.accessPolicies"`
         
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -54,10 +51,10 @@ if [ "$count" -gt "0" ]; then
         #
         pcount=`echo $ap | jq '. | length'`
         if [ "$pcount" -gt "0" ]; then
-            echo $pcount
+        
             pcount=`expr $pcount - 1`
             for j in `seq 0 $pcount`; do
-                echo $j
+                
                 printf "\taccess_policy {\n" >> $prefix-$name.tf
 
                 apten=`echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'`
@@ -99,8 +96,8 @@ if [ "$count" -gt "0" ]; then
                     done
                     printf "\t\t ]\n" >> $prefix-$name.tf
                 fi
-                echo "cert length= "  $cl
-                if [ "$cl" -gt "99" ]; then  # codes to prevent cert permissions
+                
+                if [ "$cl" -gt "99" ]; then  # coded to prevent cert permissions until fix in tf provider
                     printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`

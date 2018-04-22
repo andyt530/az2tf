@@ -27,7 +27,7 @@ if [ "$count" -gt "0" ]; then
         t=`echo $id | awk -F 'Microsoft.Authorization' '{print $1}' `
         scope=`echo ${t%/providers/}`
 
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
  #      printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf

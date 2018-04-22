@@ -16,7 +16,7 @@ name=`echo $azr | jq '.name' | tr -d '"'`
 loc=`echo $azr | jq '.location' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
 rg=$name
-prefix=`printf "%s_%s" $prefixa $rg`
+prefix=`printf "%s__%s" $prefixa $rg`
 printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix.tf
 printf "\t name = \"%s\"\n" $rg >> $prefix.tf
 printf "\t location = \"%s\"\n" $loc >> $prefix.tf

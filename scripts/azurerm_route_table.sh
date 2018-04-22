@@ -19,7 +19,7 @@ for i in `seq 0 $count`; do
     id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
     loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
     routes=`echo $azr | jq ".[(${i})].routes"`
-    prefix=`printf "%s_%s" $prefixa $rg`
+    prefix=`printf "%s__%s" $prefixa $rg`
 
     printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
     printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf

@@ -14,6 +14,7 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
+        echo $i " of " $count
         name=`echo $azr | jq ".[(${i})].roleName"`
  
         rdid=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
@@ -26,7 +27,7 @@ if [ "$count" -gt "0" ]; then
         nactions=`echo $azr | jq ".[(${i})].permissions[0].notActions"`
 
 
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
 
  #       printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$rdid.tf

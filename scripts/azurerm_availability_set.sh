@@ -17,7 +17,7 @@ if [ "$count" -gt "0" ]; then
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         #name=`echo $name | awk '{print tolower($0)}'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
         fd=`echo $azr | jq ".[(${i})].platformFaultDomainCount" | tr -d '"'`

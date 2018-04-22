@@ -40,7 +40,7 @@ if [ "$count" -gt "0" ]; then
             avna=`echo $peers | jq ".[(${j})].allowVirtualNetworkAccess" | tr -d '"'`
             urg=`echo $peers | jq ".[(${j})].useRemoteGateways" | tr -d '"'`
 
-            prefix=`printf "%s_%s" $prefixa $rg`
+            prefix=`printf "%s__%s" $prefixa $rg`
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
             #nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
             #nsgrg=`echo $snnsgid | cut -d'/' -f5 | tr -d '"'`

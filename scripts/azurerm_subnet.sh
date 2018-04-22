@@ -27,7 +27,7 @@ if [ "$count" -gt "0" ]; then
             rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
             id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
             # subnets don't have a location
-            prefix=`printf "%s_%s" $prefixa $rg`
+            prefix=`printf "%s__%s" $prefixa $rg`
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
             
             seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
@@ -50,6 +50,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $prefix-$name.tf
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $prefix-$name.tf
             rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | tr -d '"'`
+            rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | tr -d '"'`
             #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
             printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
             if [ "$snsg" != "null" ]; then
@@ -59,7 +60,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t service_endpoints = %s\n" $sep >> $prefix-$name.tf
             fi
             if [ "$rtbid" != "null" ]; then
-                printf "\t route_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rg $rtbid >> $prefix-$name.tf
+                printf "\t route_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $prefix-$name.tf
             fi
 
             printf "}\n" >> $prefix-$name.tf

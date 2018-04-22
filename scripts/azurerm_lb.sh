@@ -14,7 +14,7 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
-        echo $i
+       
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
@@ -22,7 +22,7 @@ if [ "$count" -gt "0" ]; then
         sku=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         fronts=`echo $azr | jq ".[(${i})].frontendIpConfigurations"`
         
-        prefix=`printf "%s_%s" $prefixa $rg`
+        prefix=`printf "%s__%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -31,7 +31,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t sku = \"%s\"\n" $sku >> $prefix-$name.tf
            
         icount=`echo $fronts | jq '. | length'`
-        echo "icount=" $icount
+       
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
@@ -42,25 +42,26 @@ if [ "$count" -gt "0" ]; then
                 pubrg=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f5 | tr -d '"'`
                 pubname=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
                 
-                subrg=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet" | cut -d'/' -f5 | tr -d '"'`
-                subname=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet" | cut -d'/' -f9 | tr -d '"'`
+                subrg=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet.id" | cut -d'/' -f5 | tr -d '"'`
+                subname=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
                 privalloc=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 
-                printf "\tfrontend_ip_configuration {\n" >> $prefix-$name.tf
+                printf "\t frontend_ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $fname >> $prefix-$name.tf
+                if [ "$subname" != "null" ]; then
+                    printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
+                fi
                 if [ "$priv" != "null" ]; then
                     printf "\t\t private_ip_address = \"%s\" \n"  $priv >> $prefix-$name.tf
+                fi            
+                if [ "$privalloc" != "null" ]; then
+                    printf "\t\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $prefix-$name.tf
                 fi
                 if [ "$pubname" != "null" ]; then
                     printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubrg $pubname >> $prefix-$name.tf
                 fi
-                if [ "$subname" != "null" ]; then
-                    printf "\t\t subnet_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
-                fi
-                if [ "$privalloc" != "null" ]; then
-                    printf "\t\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $prefix-$name.tf
-                fi
-                printf "\t}\n" >> $prefix-$name.tf
+
+                printf "\t }\n" >> $prefix-$name.tf
                 
             done
         fi
