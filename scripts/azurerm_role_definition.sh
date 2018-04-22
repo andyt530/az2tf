@@ -40,10 +40,10 @@ if [ "$count" -gt "0" ]; then
         #
         printf "permissions { \n" >> $prefix-$rdid.tf
     
-        printf "actions = \n" $actions >> $prefix-$rdid.tf
+        printf "actions = \n" >> $prefix-$rdid.tf
         printf "%s\n" $actions >> $prefix-$rdid.tf
     
-        printf "not_actions = \n" $nactions >> $prefix-$rdid.tf
+        printf "not_actions = \n"  >> $prefix-$rdid.tf
         printf "%s\n" $nactions >> $prefix-$rdid.tf
     
         printf "} \n" >> $prefix-$rdid.tf

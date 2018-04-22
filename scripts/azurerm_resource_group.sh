@@ -21,24 +21,27 @@ printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix.tf
 printf "\t name = \"%s\"\n" $rg >> $prefix.tf
 printf "\t location = \"%s\"\n" $loc >> $prefix.tf
 
+
 #
 # Tags block
 #
-tags=`echo $azr | jq ".tags"`
+tags=`echo $azr | jq ".[(${i})].tags"`
+tt=`echo $tags | jq .`
 tcount=`echo $tags | jq '. | length'`
-
 if [ "$tcount" -gt "0" ]; then
-    printf "\t tags { \n" >> $prefix.tf
+    printf "\t tags { \n" >> $prefix-$name.tf
     tt=`echo $tags | jq .`
     for j in `seq 1 $tcount`; do
         atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
         tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
-        tval=`echo $atag | cut -d':' -f2`
-        printf "\t\t%s = %s \n" $tkey $tval >> $prefix.tf
+        tval=`echo $atag | awk -F '": ' '{print $2}' | tr -d '"'`
+        printf "\t\t%s = \"%s\" \n" $tkey $tval >> $prefix-$name.tf
         
     done
-    printf "\t}\n" >> $prefix.tf
+    printf "\t}\n" >> $prefix-$name.tf
 fi
+
+
 
 
 echo "}" >> $prefix.tf

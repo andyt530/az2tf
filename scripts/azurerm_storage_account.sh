@@ -45,25 +45,24 @@ if [ "$count" -gt "0" ]; then
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
         #
 
-        
-
+        #
         # Tags block
         #
         tags=`echo $azr | jq ".[(${i})].tags"`
+        tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
-        #echo $tcount
         if [ "$tcount" -gt "0" ]; then
             printf "\t tags { \n" >> $prefix-$name.tf
             tt=`echo $tags | jq .`
             for j in `seq 1 $tcount`; do
                 atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
                 tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
-                tval=`echo $atag | cut -d':' -f2`
-                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+                tval=`echo $atag | awk -F '": ' '{print $2}' | tr -d '"'`
+                printf "\t\t%s = \"%s\" \n" $tkey $tval >> $prefix-$name.tf
                 
             done
             printf "\t}\n" >> $prefix-$name.tf
-        fi
+        fi        
 
         printf "}\n" >> $prefix-$name.tf
         #

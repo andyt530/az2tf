@@ -114,7 +114,6 @@ if [ "$count" -gt "0" ]; then
         #
         #
         #
-        echo vmimid $vmimid
         if [ "$vmimid" = "null" ]; then
             printf "storage_image_reference {\n"  >> $prefix-$name.tf
             printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $prefix-$name.tf
@@ -202,20 +201,36 @@ if [ "$count" -gt "0" ]; then
         # Tags block
         #
         tags=`echo $azr | jq ".[(${i})].tags"`
+        tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
-        #echo $tcount
         if [ "$tcount" -gt "0" ]; then
             printf "\t tags { \n" >> $prefix-$name.tf
             tt=`echo $tags | jq .`
             for j in `seq 1 $tcount`; do
                 atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
                 tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
-                tval=`echo $atag | cut -d':' -f2`
-                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
+                tval=`echo $atag | awk -F '": ' '{print $2}' | tr -d '"'`
+                printf "\t\t%s = \"%s\" \n" $tkey $tval >> $prefix-$name.tf
                 
             done
             printf "\t}\n" >> $prefix-$name.tf
         fi
+
+        #echo "tcount=" $tcount
+        #if [ "$tcount" -gt "0" ]; then
+        #    printf "\t tags " >> $prefix-$name.tf
+
+        #    printf "%s\n" $tags >>  $prefix-$name.tf
+
+  
+        #fi
+
+
+
+
+
+
+
 
         printf "}\n" >> $prefix-$name.tf
         cat $prefix-$name.tf

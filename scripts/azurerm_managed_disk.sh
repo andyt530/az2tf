@@ -19,7 +19,7 @@ if [ "$count" -gt "0" ]; then
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         prefix=`printf "%s_%s" $prefixa $rg`
-        echo $prefix
+       
         dsize=`echo $azr | jq ".[(${i})].diskSizeGb" | tr -d '"'`
         ostyp=`echo $azr | jq ".[(${i})].osType" | tr -d '"'`
         creopt=`echo $azr | jq ".[(${i})].creationData.createOption" | tr -d '"'`
