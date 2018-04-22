@@ -16,10 +16,10 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name"`
         echo name - $name
-        scope=`echo $azr | jq ".[(${i})].properties.scope"`
+        scope=`echo $azr | jq ".[(${i})].scope"`
         rdid=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        prid=`echo $azr | jq ".[(${i})].properties.principalId"`
-        roledefid=`echo $azr | jq ".[(${i})].properties.roleDefinitionId" | cut -d'/' -f7 | tr -d '"'`
+        prid=`echo $azr | jq ".[(${i})].principalId"`
+        roledefid=`echo $azr | jq ".[(${i})].roleDefinitionId" | cut -d'/' -f7 | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg="roleAssignments"
         prefix=`printf "%s_%s" $prefixa $rg`

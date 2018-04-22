@@ -26,11 +26,11 @@ if [ "$count" -gt "0" ]; then
         #echo $peers | jq .
      
         pcount=`echo $peers | jq '. | length'`
-        echo $pcount
+        
         if [ "$pcount" -gt "0" ]; then
             pcount=`expr $pcount - 1`
             for j in `seq 0 $pcount`; do
-            echo "inner loop " $j
+            
             name=`echo $peers | jq ".[(${j})].name" | tr -d '"'`
             rg=`echo $peers | jq ".[(${j})].resourceGroup" | tr -d '"'`
             id=`echo $peers | jq ".[(${j})].id" | tr -d '"'`
