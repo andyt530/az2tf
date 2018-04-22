@@ -45,7 +45,7 @@ In progress ..
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 version 2.0.31 or higher needs to be installed and you need a login with at least "Read" priviledges
++ Azure cli2 **version 2.0.31 or higher** needs to be installed and you need a login with at least "Read" priviledges
 + terrafrom needs to be installed
 
 
@@ -59,11 +59,9 @@ Running the tool required these steps:
 
 ## Planned Additions
 
-+ Further support for route tables
 + Load Balancers (deeper support)
 + Storage containers / storage firewall rules
-+ Policies
-+ AKS
++ ACR & AKS
 
 ## Know problems
 
@@ -80,3 +78,7 @@ delete_os_disk_on_termination:              "" => "true"
 ### Storage Account
 
 awaiting terraform support for VNet service endpoints/firewalling
+
+###
+
+PMS - terraform supports in but Azure cli2 doesn't as yet.
