@@ -153,10 +153,12 @@ if [ "$count" -gt "0" ]; then
         if [ $vmtype = "Linux" ]; then
             printf "os_profile_linux_config {\n"  >> $prefix-$name.tf
             printf "\tdisable_password_authentication = \"%s\" \n" $vmdispw >> $prefix-$name.tf
-            printf "\tssh_keys {\n"  >> $prefix-$name.tf
-            printf "\t\tpath = \"%s\" \n" $vmsshpath >> $prefix-$name.tf
-            echo "		key_data = \"$vmsshkey\""  >> $prefix-$name.tf
-            printf "\t}\n" >> $prefix-$name.tf
+            if [ "$vmdispw" != "false" ]; then
+                printf "\tssh_keys {\n"  >> $prefix-$name.tf
+                printf "\t\tpath = \"%s\" \n" $vmsshpath >> $prefix-$name.tf
+                echo "		key_data = \"$vmsshkey\""  >> $prefix-$name.tf
+                printf "\t}\n" >> $prefix-$name.tf
+            fi
             printf "}\n" >> $prefix-$name.tf
         fi
         #

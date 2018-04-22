@@ -30,11 +30,22 @@ if [ "$count" -gt "0" ]; then
                 
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
                 lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
+
+                fep=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].frontendPort" | tr -d '"'`
+                bep=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].backendPort" | tr -d '"'`
+                proto=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].protocol" | tr -d '"'`
+                feipc=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].frontendIpConfiguration.id" | cut -d'/' -f11 | tr -d '"'`
+
                 
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
                 printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $prefix-$name.tf
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
+                printf "\t\t backend_port = \"%s\" \n"  $bep >> $prefix-$name.tf
+                printf "\t\t frontend_port = \"%s\" \n"  $fep >> $prefix-$name.tf
+                printf "\t\t protocol = \"%s\" \n"  $proto >> $prefix-$name.tf
+                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $prefix-$name.tf
+
 
                 printf "}\n" >> $prefix-$name.tf
         #

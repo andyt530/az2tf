@@ -36,14 +36,26 @@ res[11]="azurerm_public_ip"
 pfx[12]="nic"
 res[12]="azurerm_network_interface"
 pfx[13]="lb"
-res[13]="azurerm_lb"
-pfx[14]="lbbe"
-res[14]="azurerm_lb_backend_address_pool"
+res[13]="azurerm_lb"   # move to end ?
 
-pfx[15]="vm"
-res[15]="azurerm_virtual_machine"
-pfx[16]="lck"
-res[16]="azurerm_management_lock"
+pfx[14]="lbnr"
+res[14]="azurerm_lb_nat_rule"
+pfx[15]="lbnp"
+res[15]="azurerm_lb_nat_pool"
+
+
+pfx[16]="lbbe"
+res[16]="azurerm_lb_backend_address_pool"
+pfx[17]="lbpr"
+res[17]="azurerm_lb_probe"
+pfx[18]="lbr"
+res[18]="azurerm_lb_rule"
+
+
+pfx[19]="vm"
+res[19]="azurerm_virtual_machine"
+pfx[20]="lck"
+res[20]="azurerm_management_lock"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -76,15 +88,8 @@ docomm="../scripts/${res[$j]}.sh $mysub"
     eval $docomm
 done
 
-# sequence starts at 2
-
-for j in `seq 1 16`; do  
+for j in `seq 1 20`; do  
     
-    #for t in `terraform state list | grep azurerm_availability_set`
-    #    do
-    #    terraform state rm $i
-    #done
-
     trgs=`az group list`
     count=`echo $trgs | jq '. | length'`
     if [ "$count" -gt "0" ]; then
