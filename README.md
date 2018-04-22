@@ -20,6 +20,8 @@ The following terraform resource types are supported by this tool at this time:
 
 * azurerm_role_definition (subscription level)
 * azurerm_role_assignment (subscription level)
+* azurerm_policy_definition
+* azurerm_policy_assignment
 
 * azurerm_resource_group
 * azurerm_route_table
@@ -35,12 +37,13 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_virtual_machine
 * azurerm_key_vault
 * azurerm_lb
+* azurerm_backend_address_pool
 * azurerm_management_lock
 
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 needs to be installed and you need a login with at least "Read" priviledges
++ Azure cli2 version 2.0.31 or higher needs to be installed and you need a login with at least "Read" priviledges
 + terrafrom needs to be installed
 
 

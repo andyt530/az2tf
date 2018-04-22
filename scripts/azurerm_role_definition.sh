@@ -14,15 +14,17 @@ count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
-        name=`echo $azr | jq ".[(${i})].properties.roleName"`
+        name=`echo $azr | jq ".[(${i})].roleName"`
+ 
         rdid=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        desc=`echo $azr | jq ".[(${i})].properties.description"`
+        desc=`echo $azr | jq ".[(${i})].description"`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg="roleDefinitions"
 
-        scopes=`echo $azr | jq ".[(${i})].properties.assignableScopes"`
-        actions=`echo $azr | jq ".[(${i})].properties.permissions[0].actions"`
-        nactions=`echo $azr | jq ".[(${i})].properties.permissions[0].notActions"`
+        scopes=`echo $azr | jq ".[(${i})].assignableScopes"`
+        actions=`echo $azr | jq ".[(${i})].permissions[0].actions"`
+        nactions=`echo $azr | jq ".[(${i})].permissions[0].notActions"`
+
 
         prefix=`printf "%s_%s" $prefixa $rg`
         
