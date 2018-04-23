@@ -7,7 +7,6 @@ else
         mysub=$response
     fi
 fi
-
 mkdir -p tf.$mysub
 cd tf.$mysub
 
@@ -74,47 +73,65 @@ export ARM_SUBSCRIPTION_ID="$mysub"
 
 az account set -s $mysub
 
-rm terraform*.backup
-rm tf*.sh
+if [ "$2" != "" ]; then
+    # check provided resource group exists in subscription
+    exists=`az group exists -g $2`
+    if  ! $exists ; then
+        echo "Resource Group $2 does not exists in subscription $mysub  Exit ....."
+        exit
+    fi
+    
+fi
+
+# cleanup from any previous runs
+rm -f terraform*.backup
+rm -f tf*.sh
 cp ../stub/*.tf .
-echo "init"
+echo "terraform init"
 terraform init
 
-
+# subscription level stuff - roles & policies
 for j in `seq 51 54`; do
-
-docomm="../scripts/${res[$j]}.sh $mysub"
+    
+    docomm="../scripts/${res[$j]}.sh $mysub"
     echo $docomm
     eval $docomm
 done
 
-for j in `seq 1 20`; do  
-    
-    trgs=`az group list`
-    count=`echo $trgs | jq '. | length'`
-    if [ "$count" -gt "0" ]; then
-        count=`expr $count - 1`
-        for i in `seq 0 $count`; do
-            myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-            echo -n $i of $count " "
-            #pwd
-            docomm="../scripts/${res[$j]}.sh $myrg"
-            echo $docomm
-            eval $docomm
-            
-        done
+# loop through providers
+for j in `seq 1 20`; do
+    if [ "$2" != "" ]; then
+        myrg=$2
+        echo $myrg
+        docomm="../scripts/${res[$j]}.sh $myrg"
+        echo $docomm
+        eval $docomm
+    else
+        trgs=`az group list`
+        count=`echo $trgs | jq '. | length'`
+        if [ "$count" -gt "0" ]; then
+            count=`expr $count - 1`
+            for i in `seq 0 $count`; do
+                myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
+                echo -n $i of $count " "
+                #pwd
+                docomm="../scripts/${res[$j]}.sh $myrg"
+                echo $docomm
+                eval $docomm
+                
+            done
+        fi
     fi
     rm terraform*.backup > /dev/null
 done
 
 #
-#Cleanup Cloud Shell
-rm *cloud-shell-storage*.tf
+# Cleanup Cloud Shell
+rm -f *cloud-shell-storage*.tf
 states=`terraform state list | grep cloud-shell-storage`
 echo $states
 terraform state rm $states
 #
-#terraform state list
 echo "Terraform Plan ..."
 terraform plan .
 exit
