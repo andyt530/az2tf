@@ -11,3 +11,4 @@ git*.sh
 todo*
 clean*.sh
 .terraform*
+backup
