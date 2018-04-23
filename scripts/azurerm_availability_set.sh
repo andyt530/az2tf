@@ -30,7 +30,7 @@ if [ "$count" -gt "0" ]; then
             rmtype="true"
         fi
         
-
+        
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         #printf "\t id = \"%s\"\n" $id >> $prefix-$name.tf
@@ -40,31 +40,34 @@ if [ "$count" -gt "0" ]; then
         printf "\t platform_fault_domain_count = \"%s\"\n" $fd >> $prefix-$name.tf
         printf "\t platform_update_domain_count = \"%s\"\n" $ud >> $prefix-$name.tf
         printf "\t managed = \"%s\"\n" $rmtype >> $prefix-$name.tf
-
+        
+        
+        
         #
-        # Tags block
-        #
+        # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
             printf "\t tags { \n" >> $prefix-$name.tf
             tt=`echo $tags | jq .`
-            for j in `seq 1 $tcount`; do
-                atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
-                tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
-                tval=`echo $atag | awk -F '": ' '{print $2}' | tr -d '"'`
-                printf "\t\t%s = \"%s\" \n" $tkey $tval >> $prefix-$name.tf
-                
+            keys=`echo $tags | jq 'keys'`
+            tcount=`expr $tcount - 1`
+            for j in `seq 0 $tcount`; do
+                k1=`echo $keys | jq ".[(${j})]"`
+                tval=`echo $tt | jq .$k1`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
             done
             printf "\t}\n" >> $prefix-$name.tf
         fi
-
+            
+        
         printf "}\n" >> $prefix-$name.tf
         cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
-        eval $statecomm 
+        eval $statecomm
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm

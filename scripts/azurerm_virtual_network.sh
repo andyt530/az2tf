@@ -79,24 +79,25 @@ if [ "$count" -gt "0" ]; then
             
         done
 
-        #
-        # Tags block
-        #
-        tags=`echo $azr | jq ".[(${i})].tags"`
-        tcount=`echo $tags | jq '. | length'`
-        #echo $tcount
-        if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            #
+            # New Tags block
+            tags=`echo $azr | jq ".[(${i})].tags"`
             tt=`echo $tags | jq .`
-            for j in `seq 1 $tcount`; do
-                atag=`echo $tt | cut -d',' -f$j | tr -d '{' | tr -d '}'`
-                tkey=`echo $atag | cut -d':' -f1 | tr -d '"'`
-                tval=`echo $atag | cut -d':' -f2`
-                printf "\t\t%s = %s \n" $tkey $tval >> $prefix-$name.tf
-                
-            done
-            printf "\t}\n" >> $prefix-$name.tf
-        fi
+            tcount=`echo $tags | jq '. | length'`
+            if [ "$tcount" -gt "0" ]; then
+                printf "\t tags { \n" >> $prefix-$name.tf
+                tt=`echo $tags | jq .`
+                keys=`echo $tags | jq 'keys'`
+                tcount=`expr $tcount - 1`
+                for j in `seq 0 $tcount`; do
+                    k1=`echo $keys | jq ".[(${j})]"`
+                    tval=`echo $tt | jq .$k1`
+                    tkey=`echo $k1 | tr -d '"'`
+                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                done
+                printf "\t}\n" >> $prefix-$name.tf
+            fi
+
 
         echo "}" >> $prefix-$name.tf
         #
