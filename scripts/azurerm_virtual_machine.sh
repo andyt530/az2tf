@@ -89,8 +89,8 @@ if [ "$count" -gt "0" ]; then
         fi
         #
         #
-        printf "\t delete_data_disks_on_termination = \"true\"\n"  >> $prefix-$name.tf
-        printf "\t delete_os_disk_on_termination = \"true\"\n"  >> $prefix-$name.tf
+        printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $prefix-$name.tf
+        printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $prefix-$name.tf
         #
         printf "os_profile {\n"  >> $prefix-$name.tf
         printf "\tcomputer_name = \"%s\" \n"  $name >> $prefix-$name.tf
