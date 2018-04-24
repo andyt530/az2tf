@@ -73,6 +73,7 @@ Running the tool required these steps:
 
 ### KeyVault:
 certificate permissions are ignored due to terraform issue - awaiting azurerm 1.4.0 provider
+
 Can fail if your login/SPN doesn't have acccess to the KeyVault
 
 ### Virtual machines:
@@ -89,6 +90,7 @@ Terraform doesn't seem to pull through the LB's Frontend IP configuration during
 ### Storage Account
 
 awaiting terraform support for VNet service endpoints/firewalling
+
 Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 
 ###
