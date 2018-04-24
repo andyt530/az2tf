@@ -75,9 +75,9 @@ delete_data_disks_on_termination:           "" => "true"
 
 delete_os_disk_on_termination:              "" => "true"
 
-### Load Balancer
+### Load Balancer:
 
-Terraform doesn't seem to pull through the frontend IP configuration during an import - issue logged
+Terraform doesn't seem to pull through the LB's Frontend IP configuration during an import - issue logged
 
 ### Storage Account
 
@@ -85,4 +85,4 @@ awaiting terraform support for VNet service endpoints/firewalling
 
 ###
 
-OMS - terraform supports in but Azure cli2 doesn't as yet.
+OMS - terraform supports - but Azure cli2 doesn't as yet.
