@@ -60,11 +60,11 @@ In progress ..
 Running the tool required these steps:
 1. Unzip or clone this git repo into an empty directory
 1. login to the Azure cli2  (az login)
-1. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  <Your subscription ID> 
+1. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  Your-subscription-ID 
 
 Or for smaller tests where all resources are contained in a single Resource Group run 
 
-./az2tf.sh <Your subscription ID>  <RG-Name>
+./az2tf.sh Your-subscription-ID  RG-Name
 
 
 ## Planned Additions
