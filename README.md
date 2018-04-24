@@ -31,16 +31,22 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_virtual_network_peering (full)
 * azurerm_network_security_group
 * azurerm_managed_disk
-* azurerm_storage_account
+* azurerm_storage_account 
 * azurerm_public_ip
 * azurerm_network_interface
 * azurerm_virtual_machine
-* azurerm_key_vault
+* azurerm_key_vault (see known issue)
 * azurerm_management_lock
+* azurerm_lb (see known issue)
+* azurerm_lb_backend_address_pool
+* azurerm_lb_rule
+* azurerm_lb_probe
 
 In progress ..
-* azurerm_lb (full)
-* azurerm_lb_backend_address_pool
+
+* azure_nat_rule
+* azure_nat_pool
+
 
 
 ## Requirements & Prerequisites
@@ -67,6 +73,7 @@ Running the tool required these steps:
 
 ### KeyVault:
 certificate permissions are ignored due to terraform issue - awaiting azurerm 1.4.0 provider
+Can fail if your login/SPN doesn't have acccess to the KeyVault
 
 ### Virtual machines:
 These attributes always set to true - may need to manually override
@@ -82,6 +89,7 @@ Terraform doesn't seem to pull through the LB's Frontend IP configuration during
 ### Storage Account
 
 awaiting terraform support for VNet service endpoints/firewalling
+Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 
 ###
 
