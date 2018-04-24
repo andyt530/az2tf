@@ -65,10 +65,11 @@ res[53]="azurerm_policy_definition"
 pfx[54]="pas"
 res[54]="azurerm_policy_assignment"
 
-source ../setup-vars.sh
-export ARM_SUBSCRIPTION_ID=""
-export ARM_CLIENT_SECRET=""
-export ARM_TENANT_ID=""
+#
+# uncomment following line if you want to use an SPN login
+#../setup-env.sh
+
+
 export ARM_SUBSCRIPTION_ID="$mysub"
 
 az account set -s $mysub
