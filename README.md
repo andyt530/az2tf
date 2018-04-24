@@ -97,6 +97,6 @@ awaiting terraform support for VNet service endpoints/firewalling
 
 Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 
-###
+### OMS
 
-OMS - terraform supports - but Azure cli2 doesn't as yet.
+Terraform supports OMS - but Azure cli2 doesn't as yet.
