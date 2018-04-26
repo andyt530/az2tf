@@ -49,12 +49,15 @@ pfx[17]="lbpr"
 res[17]="azurerm_lb_probe"
 pfx[18]="lbr"
 res[18]="azurerm_lb_rule"
+pfx[19]="acr"
+res[19]="azurerm_container_registry"
+pfx[20]="rsv"
+res[20]="azurerm_recovery_services_vault"
 
-
-pfx[19]="vm"
-res[19]="azurerm_virtual_machine"
-pfx[20]="lck"
-res[20]="azurerm_management_lock"
+pfx[21]="vm"
+res[21]="azurerm_virtual_machine"
+pfx[22]="lck"
+res[22]="azurerm_management_lock"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -100,7 +103,7 @@ for j in `seq 51 54`; do
 done
 
 # loop through providers
-for j in `seq 1 20`; do
+for j in `seq 1 22`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg

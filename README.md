@@ -3,7 +3,7 @@
 If you've found this via a search - IT IS STILL UNDER DEVELOPMENT
 
 This utility 'Azure to Terraform' (az2tf) 
-reads an Azure Subscription and generates all the required terraform configuration files from each of the composite Azure Resource Groups
+reads an Azure Subscription and generates all the required terraform configuration files (.tf) from each of the composite Azure Resource Groups
 It also imports the terraform state using a
 
 "terraform import ...." command
@@ -41,6 +41,8 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_lb_backend_address_pool
 * azurerm_lb_rule
 * azurerm_lb_probe
+* azurerm_container_registry
+* azurerm_recovery_services_vault
 
 In progress ..
 
@@ -71,12 +73,11 @@ Or for smaller tests where all resources are contained in a single Resource Grou
 
 + Load Balancers (deeper support)
 + Storage containers / storage firewall rules
-+ ACR & AKS
++ AKS
 
 ## Know problems
 
 ### KeyVault:
-certificate permissions are ignored due to terraform issue - awaiting azurerm 1.4.0 provider
 
 Can fail if your login/SPN doesn't have acccess to the KeyVault
 
