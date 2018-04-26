@@ -50,7 +50,7 @@ if [ "$count" != "0" ]; then
         #
         printf "}\n" >> $prefix-$name.tf
         #
-        cat $prefix__$name.tf
+        cat $prefix-$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
