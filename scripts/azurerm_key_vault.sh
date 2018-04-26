@@ -97,7 +97,7 @@ if [ "$count" -gt "0" ]; then
                     printf "\t\t ]\n" >> $prefix-$name.tf
                 fi
                 
-                if [ "$cl" -gt "99" ]; then  # coded to prevent cert permissions until fix in tf provider
+                if [ "$cl" -ge "0" ]; then  
                     printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
