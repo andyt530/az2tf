@@ -12,12 +12,11 @@ And finally runs a
 
 "terraform plan ."  command 
 
-There should hopefully be no subsequent additions or deletions reported by the terraform plan command as all the approriate tarraform configuration files will have have automatically been created.
+There should hopefully be no subsequent additions or deletions reported by the terraform plan command as all the approriate terraform configuration files will have have automatically been created.
 
 ## Supported Resource Types
 
 The following terraform resource types are supported by this tool at this time:
-(full) = full support for all teraform attributes
 
 * azurerm_role_definition (subscription level)
 * azurerm_role_assignment (subscription level)
@@ -50,7 +49,7 @@ In progress ..
 * azure_nat_rule
 * azure_nat_pool
 
-
+(full) = full support for all terraform attributes
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
