@@ -94,11 +94,10 @@ It is quite slow to loop around everything in large subscriptions, there are way
 Can fail if your login/SPN doesn't have acccess to the KeyVault
 
 ### Virtual machines:
-These attributes always set to true - may need to manually override
+These attributes always get reported in terraform plan set to false by default  - may need to manually override
 
-delete_data_disks_on_termination:           "" => "true"
-
-delete_os_disk_on_termination:              "" => "true"
++ delete_data_disks_on_termination:           "" => "false"
++ delete_os_disk_on_termination:              "" => "false"
 
 ### Load Balancer:
 
