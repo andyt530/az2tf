@@ -64,7 +64,14 @@ Running the tool required these steps:
 1. login to the Azure cli2  (az login)
 1. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  Your-subscription-ID 
 
-Or for smaller tests where all resources are contained in a single Resource Group run 
+Be patient - lots of output is given as az2tf:
+
++ Loops for each provider through your resource groups &
++ Creates the requited *.tf configuration files
++ Performs the necessary 'terraform import' commands
++ And finally runs a 'terraform plan'
+
+For smaller tests where all resources are contained in a single Resource Group run 
 
 ./az2tf.sh Your-subscription-ID  RG-Name
 
@@ -77,6 +84,10 @@ Or for smaller tests where all resources are contained in a single Resource Grou
 + Other terraform providers where terraform & Azure cli2 mutually support
 
 ## Know problems
+
+### Speed
+
+It is quite slow to loop around everything in large subscriptions, there are ways to speed this tool up (make fewer az cli command calls) but it would also make it harder to debug, I may look at doing this after I finish building out support for more providers.
 
 ### KeyVault:
 
