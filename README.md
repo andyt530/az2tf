@@ -17,10 +17,11 @@ There should hopefully be no subsequent additions or deletions reported by the t
 ## Supported Resource Types
 
 The following terraform resource types are supported by this tool at this time:
+(full) = full support for all teraform attributes
 
 * azurerm_role_definition (subscription level)
 * azurerm_role_assignment (subscription level)
-* azurerm_policy_definition (custom)
+* azurerm_policy_definition (custom poicies only)
 * azurerm_policy_assignment
 
 * azurerm_resource_group (full)
@@ -41,8 +42,8 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_lb_backend_address_pool
 * azurerm_lb_rule
 * azurerm_lb_probe
-* azurerm_container_registry
-* azurerm_recovery_services_vault
+* azurerm_container_registry (full)
+* azurerm_recovery_services_vault (full)
 
 In progress ..
 
@@ -72,8 +73,9 @@ Or for smaller tests where all resources are contained in a single Resource Grou
 ## Planned Additions
 
 + Load Balancers (deeper support)
-+ Storage containers / storage firewall rules
++ Storage containers with storage firewall rules
 + AKS
++ Other terraform providers where terraform & Azure cli2 mutually support
 
 ## Know problems
 
