@@ -126,7 +126,7 @@ for j in `seq 1 22`; do
             done
         fi
     fi
-    rm terraform*.backup > /dev/null
+    rm -f terraform*.backup 
 done
 
 #

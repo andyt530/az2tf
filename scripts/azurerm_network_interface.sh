@@ -28,13 +28,19 @@ if [ "$count" -gt "0" ]; then
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
-         printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         if [ "$snsg" != "null" ]; then
             printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $rg $snsg >> $prefix-$name.tf
         fi
+        
+        #printf "\t internal_dns_name_label  = \"%s\"\n" $ipfor >> $prefix-$name.tf
+        printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $prefix-$name.tf
+        #printf "\t enable_accelerated_networking  = \"%s\"\n" $ipfor >> $prefix-$name.tf
+        #printf "\t dns_servers  = \"%s\"\n" $ipfor >> $prefix-$name.tf
+
+
+        
 
         
         icount=`echo $ipcon | jq '. | length'`
@@ -50,17 +56,41 @@ if [ "$count" -gt "0" ]; then
                 printf "\t ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
+                #printf "\t\t private_ip_address = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 if [ "$subipid" != "null" ]; then
                     printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
                 fi
+                #printf "\t\t application_gateway_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                #printf "\t\t load_balancer_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                #printf "\t\t load_balancer_inbound_nat_rules_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                #printf "\t\t application_security_group_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                #printf "\t\t primary = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+
                 printf "\t}\n" >> $prefix-$name.tf
         #
 
         done
         fi
 
-        
+        #
+        # New Tags block
+            tags=`echo $azr | jq ".[(${i})].tags"`
+            tt=`echo $tags | jq .`
+            tcount=`echo $tags | jq '. | length'`
+            if [ "$tcount" -gt "0" ]; then
+                printf "\t tags { \n" >> $prefix-$name.tf
+                tt=`echo $tags | jq .`
+                keys=`echo $tags | jq 'keys'`
+                tcount=`expr $tcount - 1`
+                for j in `seq 0 $tcount`; do
+                    k1=`echo $keys | jq ".[(${j})]"`
+                    tval=`echo $tt | jq .$k1`
+                    tkey=`echo $k1 | tr -d '"'`
+                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                done
+                printf "\t}\n" >> $prefix-$name.tf
+            fi
 
 
         printf "}\n" >> $prefix-$name.tf

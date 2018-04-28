@@ -30,6 +30,7 @@ if [ "$count" -gt "0" ]; then
         fiencrypt=`echo $azr | jq ".[(${i})].encryption.services.file.enabled" | tr -d '"'`
         sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
         nrs=`echo $azr | jq ".[(${i})].networkRuleSet" | tr -d '"'`
+        saencs=`echo $azr | jq ".[(${i})].encryption.keySource" | tr -d '"'`
         
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
@@ -43,6 +44,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t enable_blob_encryption = \"%s\"\n" $saencrypt >> $prefix-$name.tf
         printf "\t enable_file_encryption = \"%s\"\n" $fiencrypt >> $prefix-$name.tf
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
+        printf "\t account_encryption_source = \"%s\"\n" $saencs >> $prefix-$name.tf
         #
         
         #

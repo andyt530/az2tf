@@ -24,32 +24,34 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_policy_assignment
 
 * azurerm_resource_group (full)
-* azurerm_route_table
-* azurerm_availability_set
+* azurerm_route_table (full)
+* azurerm_availability_set (full)
 * azurerm_subnet (full)
-* azurerm_virtual_network
+* azurerm_virtual_network (full)
 * azurerm_virtual_network_peering (full)
-* azurerm_network_security_group
-* azurerm_managed_disk
-* azurerm_storage_account 
-* azurerm_public_ip
-* azurerm_network_interface
-* azurerm_virtual_machine
-* azurerm_key_vault (see known issue)
-* azurerm_management_lock
-* azurerm_lb (see known issue)
-* azurerm_lb_backend_address_pool
-* azurerm_lb_rule
-* azurerm_lb_probe
+* azurerm_network_security_group (full)
+* azurerm_managed_disk  (Common)
+* azurerm_storage_account (Common - tf full support lacking)
+* azurerm_public_ip  (Common- tf import issues)
+* azurerm_network_interface  (Common)
+* azurerm_virtual_machine  (Common)
+* azurerm_key_vault (Common)
+* azurerm_management_lock  (full)
+* azurerm_lb  (see known issue)
+* azurerm_lb_backend_address_pool (full)
+* azurerm_lb_rule (full)
+* azurerm_lb_probe (full)
 * azurerm_container_registry (full)
 * azurerm_recovery_services_vault (full)
 
 In progress ..
 
-* azure_nat_rule
-* azure_nat_pool
+* azure_nat_rule (full needs more testing)
+* azure_nat_pool (full needs more testing)
 
-(full) = full support for all terraform attributes
+(Full) = full support for all terraform attributes
+(Common) = support for the most Common terraform attributes
+(Partial) = support for some of the terraform attributes
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC

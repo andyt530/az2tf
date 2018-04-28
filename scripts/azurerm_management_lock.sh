@@ -20,9 +20,7 @@ if [ "$count" -gt "0" ]; then
         notes=`echo $azr | jq ".[(${i})].notes"`
         id=`echo $azr | jq ".[(${i})].id"`
 
-        echo $azr | jq ".[(${i})]"
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        echo "name =" $name rg=$rg
         #
         # scope is in the id
         #
@@ -30,12 +28,12 @@ if [ "$count" -gt "0" ]; then
         scope=`echo ${t%/providers/}`
 
         prefix=`printf "%s__%s" $prefixa $rg`
-        echo "prefix="  $prefix
+
+        #strip troublesome characters out of name
         rname=`echo ${oname//[/_}` 
         name=`echo ${rname//]/_}` 
         name=`echo ${name// /_}`
-        echo "name =" $name rg=$rg
- #      printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$name.tf
+ 
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "name = %s\n"  "$oname2"  >> $prefix-$name.tf
         printf "lock_level = %s\n" "$level" >> $prefix-$name.tf

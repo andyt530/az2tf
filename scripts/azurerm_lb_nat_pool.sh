@@ -24,6 +24,12 @@ if [ "$count" -gt "0" ]; then
                 name=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
                 id=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].id" | tr -d '"'`
                 rg=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].resourceGroup" | tr -d '"'`
+                proto=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].protocol" | tr -d '"'`
+
+                feipc=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendIpConfiguration.id" | cut -d'/' -f11 | tr -d '"'`
+                feps=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortStart" | tr -d '"'`
+                fepe=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortEnd" | tr -d '"'`
+                bep=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].backendPort" | tr -d '"'`
                 prefix=`printf "%s__%s" $prefixa $rg`    
                 
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
@@ -33,6 +39,11 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
                 printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $prefix-$name.tf
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
+                printf "\t\t protocol = \"%s\" \n"  $proto >> $prefix-$name.tf
+                printf "\t\t frontend_port_start = \"%s\" \n"  $feps >> $prefix-$name.tf
+                printf "\t\t frontend_port_end = \"%s\" \n"  $fepe >> $prefix-$name.tf
+                printf "\t\t backend_port = \"%s\" \n"  $bep >> $prefix-$name.tf
+                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $prefix-$name.tf
 
                 printf "}\n" >> $prefix-$name.tf
         #

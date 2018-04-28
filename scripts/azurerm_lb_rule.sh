@@ -51,7 +51,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t backend_port = \"%s\" \n"  $bep >> $prefix-$name.tf
                 
                 printf "\t\t backend_address_pool_id = \"\${azurerm_lb_backend_address_pool.%s__%s--%s.id}\"\n" $rg $lbname $beadpid >> $prefix-$name.tf
-                printf "\t\t probe_id = \"\${azurerm_lb_probe.%s__%s.id}\"\n" $rg $pid >> $prefix-$name.tf
+                printf "\t\t probe_id = \"\${azurerm_lb_probe.%s__%s--%s.id}\"\n" $rg $lbname $pid >> $prefix-$name.tf
                 
                 printf "\t\t enable_floating_ip = \"%s\" \n"  $efip >> $prefix-$name.tf
                 printf "\t\t idle_timeout_in_minutes = \"%s\" \n"  $itm >> $prefix-$name.tf
