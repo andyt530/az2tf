@@ -24,13 +24,15 @@ if [ "$count" -gt "0" ]; then
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
         lavs=`printf "%s__%s" $avsrg $avsid`
+
         lavs=`echo $lavs | awk '{print tolower($0)}'`
-        for tavs in `terraform state list | grep azurerm_availability_set | grep $avsrg`; do     
+        for tavs in `terraform state list | grep azurerm_availability_set`; do     
             uavs=`echo $tavs | cut -f2 -d'.' | awk '{print tolower($0)}'` 
             if [ "$uavs" == "$lavs" ]; then            
                 myavs=`echo $tavs | cut -f2 -d'.'` 
             fi 
         done
+        #echo "myavs=$myavs"
 
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
         vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`

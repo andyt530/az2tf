@@ -17,7 +17,6 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for j in `seq 0 $count`; do
         vname=`echo $vnets | jq ".[(${j})].name" | tr -d '"'`
-        echo $vname
         #
         azr=`az network vnet subnet list -g $rgsource --vnet-name $vname`
         scount=`echo $azr | jq '. | length'`
