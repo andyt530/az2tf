@@ -58,6 +58,7 @@ if [ "$count" -gt "0" ]; then
         vmimversion=`echo $azr | jq ".[(${i})].storageProfile.imageReference.version" | tr -d '"'`
         #
         vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
+        vmcn=`echo $azr | jq ".[(${i})].osProfile.computerName" | tr -d '"'`
         vmdispw=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
         vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
@@ -95,7 +96,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $prefix-$name.tf
         #
         printf "os_profile {\n"  >> $prefix-$name.tf
-        printf "\tcomputer_name = \"%s\" \n"  $name >> $prefix-$name.tf
+        printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $prefix-$name.tf
         printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
         #
