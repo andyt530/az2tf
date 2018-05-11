@@ -12,3 +12,4 @@ todo*
 clean*.sh
 .terraform*
 backup
+sub.*
