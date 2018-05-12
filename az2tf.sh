@@ -89,18 +89,22 @@ fi
 
 # cleanup from any previous runs
 rm -f terraform*.backup
-rm -f tf*.sh
 cp ../stub/*.tf .
-echo "terraform init"
-terraform init
+istf=`ls .terraform`
+if [ "$istf" != "plugins" ]; then
+    echo "terraform init"
+    terraform init
+fi
 
 # subscription level stuff - roles & policies
-for j in `seq 51 54`; do
-    
-    docomm="../scripts/${res[$j]}.sh $mysub"
-    echo $docomm
-    eval $docomm
-done
+if [ "$2" = "" ]; then   #only do if scanning whole subscription
+    for j in `seq 51 54`; do
+        rm -f tf*.sh
+        docomm="../scripts/${res[$j]}.sh $mysub"
+        echo $docomm
+        eval $docomm
+    done
+fi
 
 # loop through providers
 for j in `seq 1 22`; do
@@ -126,7 +130,8 @@ for j in `seq 1 22`; do
             done
         fi
     fi
-    rm -f terraform*.backup 
+    
+    rm -f terraform*.backup
 done
 
 #
