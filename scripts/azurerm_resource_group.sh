@@ -51,5 +51,5 @@ cat $prefix.tf
 terraform state rm  $tfp.$name
 echo "terraform state rm  $tfp.$name" >> tf-staterm.sh
 terraform import $tfp.$name $id
-echo "erraform import $tfp.$name $id" >> tf-stateimp.sh
+echo "terraform import $tfp.$name $id" >> tf-stateimp.sh
 #
