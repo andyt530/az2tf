@@ -112,12 +112,14 @@ terraform init
 
 
 # subscription level stuff - roles & policies
+if [ "$2" = "" ]; then
 for j in `seq 51 54`; do
     
     docomm="../scripts/${res[$j]}.sh $mysub"
     echo $docomm
-    #eval $docomm
+    eval $docomm
 done
+fi
 
 # loop through providers
 for j in `seq 1 23`; do
