@@ -20,6 +20,7 @@ if [ "$count" != "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         admin=`echo $azr | jq ".[(${i})].adminUserEnabled" | tr -d '"'`
         dnsp=`echo $azr | jq ".[(${i})].dnsPrefix" | tr -d '"'`
+        kv=`echo $azr | jq ".[(${i})].kubernetesVersion" | tr -d '"'`
         clid=`echo $azr | jq ".[(${i})].servicePrincipalProfile.clientId" | tr -d '"'`
         au=`echo $azr | jq ".[(${i})].linuxProfile.adminUsername" | tr -d '"'`
         sshk=`echo $azr | jq ".[(${i})].linuxProfile.ssh.publicKeys[0].keyData"`
@@ -27,7 +28,7 @@ if [ "$count" != "0" ]; then
         vms=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].vmSize" | tr -d '"'`
         pcount=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].count" | tr -d '"'`
         ost=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].osType" | tr -d '"'`
-
+        
 
         prefix=`printf "%s__%s" $prefixa $rg`
         
@@ -36,6 +37,7 @@ if [ "$count" != "0" ]; then
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t dns_prefix = \"%s\"\n" $dnsp >> $prefix-$name.tf
+        printf "\t kubernetes_version = \"%s\"\n" $kv >> $prefix-$name.tf
         
         printf "\t linux_profile {\n" >> $prefix-$name.tf
         printf "\t\t admin_username =  \"%s\"\n" $au >> $prefix-$name.tf
@@ -53,7 +55,7 @@ if [ "$count" != "0" ]; then
         
         printf "\t service_principal {\n" >> $prefix-$name.tf
         printf "\t\t client_id =  \"%s\"\n" $clid >> $prefix-$name.tf
-        printf "\t\t client_secret =  \"%s\"\n" $clid >> $prefix-$name.tf
+        printf "\t\t client_secret =  \"%s\"\n" "" >> $prefix-$name.tf
         printf "\t }\n" >> $prefix-$name.tf
 
 
