@@ -67,13 +67,15 @@ pfx[18]="az network lb list"
 res[18]="azurerm_lb_rule"
 pfx[19]="az acr list"
 res[19]="azurerm_container_registry"
-pfx[20]="az backup vault list"
-res[20]="azurerm_recovery_services_vault"
+pfx[20]="az aks list"
+res[20]="azurerm_kubernetes_cluster"
+pfx[21]="az backup vault list"
+res[21]="azurerm_recovery_services_vault"
 
-pfx[21]="az vm list"
-res[21]="azurerm_virtual_machine"
-pfx[22]="az lock list"
-res[22]="azurerm_management_lock"
+pfx[22]="az vm list"
+res[22]="azurerm_virtual_machine"
+pfx[23]="az lock list"
+res[23]="azurerm_management_lock"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -118,7 +120,7 @@ for j in `seq 51 54`; do
 done
 
 # loop through providers
-for j in `seq 21 21`; do
+for j in `seq 1 23`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
