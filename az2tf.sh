@@ -7,57 +7,75 @@ else
         mysub=$response
     fi
 fi
+
+echo "Checking Subscription $mysub exists ..."
+isok="no"
+subs=`az account list --query '[].id' | jq '.[]' | tr -d '"'`
+for i in `echo $subs`
+do
+    if [ "$i" = "$mysub" ] ; then
+        echo "Found subscription $mysub proceeding ..."
+        isok="yes"
+    fi
+done
+if [ "$isok" != "yes" ]; then
+    echo "Could not find subscription with ID $mysub"
+    exit
+fi
+
 mkdir -p tf.$mysub
 cd tf.$mysub
 
-pfx[1]="rg"
+pfx[1]="null"
 res[1]="azurerm_resource_group"
-pfx[2]="rtb"
-res[2]="azurerm_route_table"
-pfx[3]="nsg"
-res[3]="azurerm_network_security_group"
-pfx[4]="vnet"
-res[4]="azurerm_virtual_network"
-pfx[5]="sub"
-res[5]="azurerm_subnet"
-pfx[6]="vnp"
-res[6]="azurerm_virtual_network_peering"
-pfx[7]="kv"
-res[7]="azurerm_key_vault"
-pfx[8]="avs"
-res[8]="azurerm_availability_set"
-pfx[9]="md"
+pfx[2]="null"
+res[2]="azurerm_availability_set"
+pfx[3]="az network route-table list"
+res[3]="azurerm_route_table"
+pfx[4]="az network nsg list"
+res[4]="azurerm_network_security_group"
+pfx[5]="az network vnet list"
+res[5]="azurerm_virtual_network"
+pfx[6]="az network vnet list"
+res[6]="azurerm_subnet"
+pfx[7]="az network vnet list"
+res[7]="azurerm_virtual_network_peering"
+pfx[8]="az keyvault list"
+res[8]="azurerm_key_vault"
+pfx[9]="az disk list"
 res[9]="azurerm_managed_disk"
-pfx[10]="stor"
+pfx[10]="az storage account list"
 res[10]="azurerm_storage_account"
-pfx[11]="pip"
+pfx[11]="az network public-ip list"
 res[11]="azurerm_public_ip"
-pfx[12]="nic"
+pfx[12]="az network nic list"
 res[12]="azurerm_network_interface"
-pfx[13]="lb"
+pfx[13]="az network lb list"
 res[13]="azurerm_lb"   # move to end ?
 
-pfx[14]="lbnr"
+pfx[14]="az network lb list"
 res[14]="azurerm_lb_nat_rule"
-pfx[15]="lbnp"
+pfx[15]="az network lb list"
 res[15]="azurerm_lb_nat_pool"
 
 
-pfx[16]="lbbe"
+pfx[16]="az network lb list"
 res[16]="azurerm_lb_backend_address_pool"
-pfx[17]="lbpr"
+pfx[17]="az network lb list"
 res[17]="azurerm_lb_probe"
-pfx[18]="lbr"
+pfx[18]="az network lb list"
 res[18]="azurerm_lb_rule"
-pfx[19]="acr"
+pfx[19]="az acr list"
 res[19]="azurerm_container_registry"
-pfx[20]="rsv"
-res[20]="azurerm_recovery_services_vault"
+pfx[20]="az aks list"
+res[20]="azurerm_kubernetes_cluster"
+pfx[21]="az backup vault list"
+res[21]="azurerm_recovery_services_vault"
 
-pfx[21]="vm"
-res[21]="azurerm_virtual_machine"
-pfx[22]="lck"
-res[22]="azurerm_management_lock"
+pfx[22]="az vm list"
+res[22]="azurerm_virtual_machine"
+pfx[23]="az lock list"
+res[23]="azurerm_management_lock"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -66,15 +84,13 @@ res[52]="azurerm_role_assignment"
 pfx[53]="pdf"
 res[53]="azurerm_policy_definition"
 pfx[54]="pas"
-res[54]="azurerm_policy_assignment"
+res[54]="azurerm_policyassignment"
 
 #
 # uncomment following line if you want to use an SPN login
 #../setup-env.sh
 
-
 export ARM_SUBSCRIPTION_ID="$mysub"
-
 az account set -s $mysub
 
 if [ "$2" != "" ]; then
@@ -89,25 +105,24 @@ fi
 
 # cleanup from any previous runs
 rm -f terraform*.backup
+rm -f tf*.sh
 cp ../stub/*.tf .
-istf=`ls .terraform`
-if [ "$istf" != "plugins" ]; then
-    echo "terraform init"
-    terraform init
-fi
+echo "terraform init"
+terraform init
+
 
 # subscription level stuff - roles & policies
-if [ "$2" = "" ]; then   #only do if scanning whole subscription
-    for j in `seq 51 54`; do
-        rm -f tf*.sh
-        docomm="../scripts/${res[$j]}.sh $mysub"
-        echo $docomm
-        eval $docomm
-    done
+if [ "$2" = "" ]; then
+for j in `seq 51 54`; do
+    
+    docomm="../scripts/${res[$j]}.sh $mysub"
+    echo $docomm
+    eval $docomm
+done
 fi
 
 # loop through providers
-for j in `seq 1 22`; do
+for j in `seq 1 23`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
@@ -115,24 +130,44 @@ for j in `seq 1 22`; do
         echo $docomm
         eval $docomm
     else
-        trgs=`az group list`
-        count=`echo $trgs | jq '. | length'`
-        if [ "$count" -gt "0" ]; then
-            count=`expr $count - 1`
-            for i in `seq 0 $count`; do
-                myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-                echo -n $i of $count " "
-                #pwd
-                docomm="../scripts/${res[$j]}.sh $myrg"
-                echo $docomm
-                eval $docomm
-                
-            done
+        c1=`echo ${pfx[${j}]}`
+        echo $c1
+        if [ "$c1" = "null" ] ;then
+            trgs=`az group list`
+            count=`echo $trgs | jq '. | length'`
+            if [ "$count" -gt "0" ]; then
+                count=`expr $count - 1`
+                for i in `seq 0 $count`; do
+                    myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
+                    echo -n $i of $count " "
+                    docomm="../scripts/${res[$j]}.sh $myrg"
+                    echo $docomm
+                    eval $docomm
+                    
+                done
+            fi
+        else
+            comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
+            comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
+            tc=`eval $comm2`
+            tc=`echo $tc | tr -d ' '`
+            trgs=`eval $comm`
+            count=`echo ${#trgs}`
+            if [ "$count" -gt "0" ]; then
+                c5="1"
+                for j2 in `echo $trgs`; do
+                    echo -n "$c5 of $tc "
+                    docomm="../scripts/${res[$j]}.sh $j2"
+                    echo $docomm
+                    eval $docomm
+                    c5=`expr $c5 + 1`
+                done
+            fi
         fi
     fi
-    
     rm -f terraform*.backup
 done
+
 
 #
 # Cleanup Cloud Shell
