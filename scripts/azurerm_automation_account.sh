@@ -9,8 +9,8 @@ bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
 
 
-ris=`printf "curl -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts?api-version=2015-10-31" $bt $sub $rgsource`
-echo $ris
+ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts?api-version=2015-10-31" $bt $sub $rgsource`
+#echo $ris
 ret=`eval $ris`
 azr2=`echo $ret | jq .value`
 rg=$rgsource
@@ -21,8 +21,8 @@ if [ "$count2" -gt "0" ]; then
         
         
         name2=`echo $azr2 | jq ".[(${j})].name" | tr -d '"'`
-        ris2=`printf "curl -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s?api-version=2015-10-31" $bt $sub $rgsource $name2`
-        echo $ris2
+        ris2=`printf "curl -s -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s?api-version=2015-10-31" $bt $sub $rgsource $name2`
+        #echo $ris2
         ret2=`eval $ris2`
         azr=`echo $ret2 | jq .`
         echo $ret2 | jq .

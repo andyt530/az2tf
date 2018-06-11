@@ -22,7 +22,8 @@ if [ "$count" -gt "0" ]; then
         vpntype=`echo $azr | jq ".[(${i})].vpnType" | tr -d '"'`
         bgps=`echo $azr | jq ".[(${i})].bgpSettings" | tr -d '"'`
         sku=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
-
+        vadsp=`echo $azr | jq ".[(${i})].vpnClientConfiguration.vpnClientAddressPool.addressPrefixes"`
+        
         aa=`echo $azr | jq ".[(${i})].activeActive"`
         enbgp=`echo $azr | jq ".[(${i})].enableBgp"`
         prefix=`printf "%s__%s" $prefixa $rg`
@@ -36,8 +37,18 @@ if [ "$count" -gt "0" ]; then
         printf "\t sku = \"%s\"\n" $sku >> $prefix-$name.tf
         printf "\t active_active = \"%s\"\n" $aa >> $prefix-$name.tf
         printf "\t enable_bgp = \"%s\"\n" $enbgp >> $prefix-$name.tf
-
-    
+        
+        if [ "$vadsp" != "null" ]; then
+            printf "\t vpn_client_configuration {\n"  >> $prefix-$name.tf
+            printf "\t\t address_space = %s\n"  "$vadsp" >> $prefix-$name.tf
+            printf "\t\t root_certificate { \n"   >> $prefix-$name.tf
+            printf "\t\t name = \"\"\n"   >> $prefix-$name.tf
+            printf "\t\t public_cert_data = \"\"\n"   >> $prefix-$name.tf
+            printf "\t\t }\n"  >> $prefix-$name.tf
+            printf "\t }\n"  >> $prefix-$name.tf
+        fi
+        
+        
         if [ "$bgps" != "null" ]; then
             printf "\t bgp_settings {\n"  >> $prefix-$name.tf
             asn=`echo $azr | jq ".[(${i})].bgpSettings.asn" | tr -d '"'`
@@ -48,15 +59,15 @@ if [ "$count" -gt "0" ]; then
             printf "\t\t peer_weight = \"%s\"\n" $peerw >> $prefix-$name.tf
             printf "\t }\n"  >> $prefix-$name.tf
         fi
-
-        ipc=`echo $azr | jq ".[(${i})].ipConfigurations"`    
+        
+        ipc=`echo $azr | jq ".[(${i})].ipConfigurations"`
         count=`echo $ipc | jq '. | length'`
         count=`expr $count - 1`
         for j in `seq 0 $count`; do
             ipcname=`echo $ipc | jq ".[(${j})].name"`
             ipcpipa=`echo $ipc | jq ".[(${j})].privateIpAllocationMethod"`
             ipcpipid=`echo $ipc | jq ".[(${j})].publicIpAddress.id"`
-            ipcsubid=`echo $ipc | jq ".[(${j})].subnet.id"`            
+            ipcsubid=`echo $ipc | jq ".[(${j})].subnet.id"`
             pipnam=`echo $ipcpipid | cut -d'/' -f9 | tr -d '"'`
             piprg=`echo $ipcpipid | cut -d'/' -f5 | tr -d '"'`
             subnam=`echo $ipcsubid | cut -d'/' -f11 | tr -d '"'`
@@ -70,29 +81,29 @@ if [ "$count" -gt "0" ]; then
             if [ "$subnam" != "null" ]; then
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subnam >> $prefix-$name.tf
             fi
-            printf "\t}\n" >> $prefix-$name.tf          
+            printf "\t}\n" >> $prefix-$name.tf
         done
-
+        
         #
         # New Tags block
-            tags=`echo $azr | jq ".[(${i})].tags"`
+        tags=`echo $azr | jq ".[(${i})].tags"`
+        tt=`echo $tags | jq .`
+        tcount=`echo $tags | jq '. | length'`
+        if [ "$tcount" -gt "0" ]; then
+            printf "\t tags { \n" >> $prefix-$name.tf
             tt=`echo $tags | jq .`
-            tcount=`echo $tags | jq '. | length'`
-            if [ "$tcount" -gt "0" ]; then
-                printf "\t tags { \n" >> $prefix-$name.tf
-                tt=`echo $tags | jq .`
-                keys=`echo $tags | jq 'keys'`
-                tcount=`expr $tcount - 1`
-                for j in `seq 0 $tcount`; do
-                    k1=`echo $keys | jq ".[(${j})]"`
-                    tval=`echo $tt | jq .$k1`
-                    tkey=`echo $k1 | tr -d '"'`
-                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
-                done
-                printf "\t}\n" >> $prefix-$name.tf
-            fi
-
-
+            keys=`echo $tags | jq 'keys'`
+            tcount=`expr $tcount - 1`
+            for j in `seq 0 $tcount`; do
+                k1=`echo $keys | jq ".[(${j})]"`
+                tval=`echo $tt | jq .$k1`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+            done
+            printf "\t}\n" >> $prefix-$name.tf
+        fi
+        
+        
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf
@@ -102,6 +113,6 @@ if [ "$count" -gt "0" ]; then
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
-
+        
     done
 fi
