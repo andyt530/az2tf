@@ -142,7 +142,7 @@ for j in `seq 1 27`; do
         eval $docomm
     else
         c1=`echo ${pfx[${j}]}`
-        echo $c1
+        #echo $c1
         if [ "$c1" = "null" ] ;then
             trgs=`az group list`
             count=`echo $trgs | jq '. | length'`
