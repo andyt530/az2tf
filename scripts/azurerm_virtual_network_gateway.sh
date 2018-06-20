@@ -23,6 +23,11 @@ if [ "$count" -gt "0" ]; then
         bgps=`echo $azr | jq ".[(${i})].bgpSettings" | tr -d '"'`
         sku=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         vadsp=`echo $azr | jq ".[(${i})].vpnClientConfiguration.vpnClientAddressPool.addressPrefixes"`
+        radsa=`echo $azr | jq ".[(${i})].vpnClientConfiguration.radiusServerAddress"`
+        radss=`echo $azr | jq ".[(${i})].vpnClientConfiguration.radiusServerSecret"`
+        vcp0=`echo $azr | jq ".[(${i})].vpnClientConfiguration.vpnClientProtocols[0]"`
+        vcp=`echo $azr | jq ".[(${i})].vpnClientConfiguration.vpnClientProtocols"`
+        
         
         aa=`echo $azr | jq ".[(${i})].activeActive"`
         enbgp=`echo $azr | jq ".[(${i})].enableBgp"`
@@ -41,10 +46,20 @@ if [ "$count" -gt "0" ]; then
         if [ "$vadsp" != "null" ]; then
             printf "\t vpn_client_configuration {\n"  >> $prefix-$name.tf
             printf "\t\t address_space = %s\n"  "$vadsp" >> $prefix-$name.tf
-            printf "\t\t root_certificate { \n"   >> $prefix-$name.tf
-            printf "\t\t name = \"\"\n"   >> $prefix-$name.tf
-            printf "\t\t public_cert_data = \"\"\n"   >> $prefix-$name.tf
-            printf "\t\t }\n"  >> $prefix-$name.tf
+            if [ "$radsa" == "null" ]; then
+                printf "\t\t root_certificate { \n"   >> $prefix-$name.tf
+                printf "\t\t\t name = \"\"\n"   >> $prefix-$name.tf
+                printf "\t\t\t public_cert_data = \"\"\n"   >> $prefix-$name.tf
+                printf "\t\t }\n"  >> $prefix-$name.tf
+            fi
+            if [ "$radsa" != "null" ]; then
+            printf "\t\t radius_server_address = %s\n"  "$radsa" >> $prefix-$name.tf
+            printf "\t\t radius_server_secret = %s\n"  "$radss" >> $prefix-$name.tf
+            fi
+            if [ "$vcp0" != "null" ]; then
+            printf "\t\t vpn_client_protocols = %s\n"  "$vcp" >> $prefix-$name.tf
+            fi
+            
             printf "\t }\n"  >> $prefix-$name.tf
         fi
         
