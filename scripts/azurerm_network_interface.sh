@@ -53,11 +53,15 @@ if [ "$count" -gt "0" ]; then
                 subipid=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
                 subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 privip=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAddress" | tr -d '"'`
+                prim=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].primary" | tr -d '"'`
 
                 printf "\t ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
                 printf "\t\t private_ip_address = \"%s\" \n"  $privip >> $prefix-$name.tf
+                if [ "$prim" != "true" ]; then
+                pprivip=$privip
+                fi
                 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 if [ "$subipid" != "null" ]; then
                     printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
@@ -73,7 +77,7 @@ if [ "$count" -gt "0" ]; then
 
         done
         fi
-
+        #printf "\t private_ip_address = \"%s\" \n"  $pprivip >> $prefix-$name.tf
         #
         # New Tags block
             tags=`echo $azr | jq ".[(${i})].tags"`

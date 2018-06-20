@@ -35,8 +35,9 @@ if [ "$count" -gt "0" ]; then
             printf "\t sku = \"%s\" \n"  $sku >> $prefix-$name.tf
         fi
         #printf "\t idle_timeout_in_minutes = \"%s\" \n"  $timo >> $prefix-$name.tf
-
-
+        if [ "$dnsname" != "null" ]; then
+        printf "\t domain_name_label = \"%s\"\n" $dnsname >> $prefix-$name.tf
+        fi
         #
 
             #
