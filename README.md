@@ -34,14 +34,21 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_storage_account (Common - tf full support lacking)
 * azurerm_public_ip  (Common- tf import issues)
 * azurerm_network_interface  (Common)
+* azurerm_local_network_gateway
+* azurerm_virtual_network_gateway
+* azurerm_virtual_network_gateway_connection
+
 * azurerm_virtual_machine  (Common)
 * azurerm_key_vault (Common)
 * azurerm_management_lock  (full)
+* azurerm_automation_account
 * azurerm_lb  (see known issue)
 * azurerm_lb_backend_address_pool (full)
 * azurerm_lb_rule (full)
 * azurerm_lb_probe (full)
+
 * azurerm_container_registry (full)
+* azurerm_kubernetes_cluster
 * azurerm_recovery_services_vault (full)
 
 In progress ..

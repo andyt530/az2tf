@@ -1,5 +1,5 @@
-tfp="azurerm_public_ip"
-prefixa="pip"
+tfp="azurerm_local_network_gateway"
+prefixa="lng"
 if [ "$1" != "" ]; then
     rgsource=$1
 else
@@ -9,7 +9,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az network public-ip list -g $rgsource`
+azr=`az network local-gateway list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -18,30 +18,32 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
-        sku=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
-        timo=`echo $azr | jq ".[(${i})].idleTimeoutInMinutes" | tr -d '"'`
-        dnsname=`echo $azr | jq ".[(${i})].dnsSettings.domainNameLabel" | tr -d '"'`
-        dnsfqdn=`echo $azr | jq ".[(${i})].dnsSettings.fqdn" | tr -d '"'`
-
+        gwaddr=`echo $azr | jq ".[(${i})].gatewayIpAddress" | tr -d '"'`
+        addrpre=`echo $azr | jq ".[(${i})].localNetworkAddressSpace.addressPrefixes"`
+        bgps=`echo $azr | jq ".[(${i})].bgpSettings" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
-        subipalloc=`echo $azr | jq ".[(${i})].publicIpAllocationMethod" | tr -d '"'`
+        
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t public_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-        if [ "$sku" != "null" ]; then
-            printf "\t sku = \"%s\" \n"  $sku >> $prefix-$name.tf
-        fi
-        #printf "\t idle_timeout_in_minutes = \"%s\" \n"  $timo >> $prefix-$name.tf
-        if [ "$dnsname" != "null" ]; then
-        printf "\t domain_name_label = \"%s\"\n" $dnsname >> $prefix-$name.tf
-        fi
-        #
+        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        printf "\t gateway_address = \"%s\"\n" $gwaddr >> $prefix-$name.tf
+        printf "\t address_space = %s\n" "$addrpre" >> $prefix-$name.tf
+    
+        if [ "$bgps" != "null" ]; then
+            asn=`echo $azr | jq ".[(${i})].bgpSettings.asn" | tr -d '"'`
+            peera=`echo $azr | jq ".[(${i})].bgpSettings.bgpPeeringAddress" | tr -d '"'`
+            peerw=`echo $azr | jq ".[(${i})].bgpSettings.peerWeight" | tr -d '"'`
 
-            #
-            # New Tags block
+            printf "\t bgp_settings {\n"  >> $prefix-$name.tf
+            printf "\t\t asn = \"%s\"\n" $asn >> $prefix-$name.tf
+            printf "\t\t bgp_peering_address = \"%s\"\n" $peera >> $prefix-$name.tf
+            printf "\t\t peer_weight = \"%s\"\n" $peerw >> $prefix-$name.tf
+            printf "\t }\n"  >> $prefix-$name.tf
+        fi
+
+        #
+        # New Tags block
             tags=`echo $azr | jq ".[(${i})].tags"`
             tt=`echo $tags | jq .`
             tcount=`echo $tags | jq '. | length'`
@@ -59,6 +61,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t}\n" >> $prefix-$name.tf
             fi
 
+
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf
@@ -68,5 +71,6 @@ if [ "$count" -gt "0" ]; then
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
+
     done
 fi

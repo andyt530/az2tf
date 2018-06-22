@@ -50,32 +50,42 @@ pfx[11]="az network public-ip list"
 res[11]="azurerm_public_ip"
 pfx[12]="az network nic list"
 res[12]="azurerm_network_interface"
+
 pfx[13]="az network lb list"
 res[13]="azurerm_lb"   # move to end ?
-
 pfx[14]="az network lb list"
 res[14]="azurerm_lb_nat_rule"
 pfx[15]="az network lb list"
 res[15]="azurerm_lb_nat_pool"
-
-
 pfx[16]="az network lb list"
 res[16]="azurerm_lb_backend_address_pool"
 pfx[17]="az network lb list"
 res[17]="azurerm_lb_probe"
 pfx[18]="az network lb list"
 res[18]="azurerm_lb_rule"
-pfx[19]="az acr list"
-res[19]="azurerm_container_registry"
-pfx[20]="az aks list"
-res[20]="azurerm_kubernetes_cluster"
-pfx[21]="az backup vault list"
-res[21]="azurerm_recovery_services_vault"
+pfx[19]="null"
+res[19]="azurerm_local_network_gateway"
+pfx[20]="null"
+res[20]="azurerm_virtual_network_gateway"
+pfx[21]="null"
+res[21]="azurerm_virtual_network_gateway_connection"
 
-pfx[22]="az vm list"
-res[22]="azurerm_virtual_machine"
-pfx[23]="az lock list"
-res[23]="azurerm_management_lock"
+
+pfx[22]="az acr list"
+res[22]="azurerm_container_registry"
+pfx[23]="az aks list"
+res[23]="azurerm_kubernetes_cluster"
+pfx[24]="az backup vault list"
+res[24]="azurerm_recovery_services_vault"
+
+pfx[25]="az vm list"
+res[25]="azurerm_virtual_machine"
+pfx[26]="az lock list"
+res[26]="azurerm_management_lock"
+pfx[27]="null"
+res[27]="azurerm_automation_account"
+pfx[27]="null"
+res[28]="azurerm_"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -85,6 +95,7 @@ pfx[53]="pdf"
 res[53]="azurerm_policy_definition"
 pfx[54]="pas"
 res[54]="azurerm_policyassignment"
+
 
 #
 # uncomment following line if you want to use an SPN login
@@ -113,16 +124,16 @@ terraform init
 
 # subscription level stuff - roles & policies
 if [ "$2" = "" ]; then
-for j in `seq 51 54`; do
-    
-    docomm="../scripts/${res[$j]}.sh $mysub"
-    echo $docomm
-    eval $docomm
-done
+    for j in `seq 51 54`; do
+        
+        docomm="../scripts/${res[$j]}.sh $mysub"
+        echo $docomm
+        eval $docomm
+    done
 fi
 
 # loop through providers
-for j in `seq 1 23`; do
+for j in `seq 1 27`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
@@ -131,7 +142,7 @@ for j in `seq 1 23`; do
         eval $docomm
     else
         c1=`echo ${pfx[${j}]}`
-        echo $c1
+        #echo $c1
         if [ "$c1" = "null" ] ;then
             trgs=`az group list`
             count=`echo $trgs | jq '. | length'`
@@ -161,6 +172,7 @@ for j in `seq 1 23`; do
                     echo $docomm
                     eval $docomm
                     c5=`expr $c5 + 1`
+                    echo $c5
                 done
             fi
         fi
@@ -170,7 +182,7 @@ done
 
 
 #
-# Cleanup Cloud Shell
+echo "Cleanup Cloud Shell"
 rm -f *cloud-shell-storage*.tf
 states=`terraform state list | grep cloud-shell-storage`
 echo $states
