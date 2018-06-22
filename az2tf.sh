@@ -84,7 +84,7 @@ pfx[26]="az lock list"
 res[26]="azurerm_management_lock"
 pfx[27]="null"
 res[27]="azurerm_automation_account"
-pfx[27]="null"
+pfx[28]="null"
 res[28]="azurerm_"
 
 pfx[51]="rdf"
