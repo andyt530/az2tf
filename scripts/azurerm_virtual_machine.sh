@@ -95,10 +95,12 @@ if [ "$count" -gt "0" ]; then
         printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $prefix-$name.tf
         printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $prefix-$name.tf
         #
+        if [ "$vmcn" != "null" ];then
         printf "os_profile {\n"  >> $prefix-$name.tf
         printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $prefix-$name.tf
         printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $prefix-$name.tf
         printf "}\n" >> $prefix-$name.tf
+        fi
         #
         # OS Disk
         #
@@ -119,12 +121,14 @@ if [ "$count" -gt "0" ]; then
         #
         #
         if [ "$vmimid" = "null" ]; then
+            if [ "$vmimpublisher" != "null" ];then
             printf "storage_image_reference {\n"  >> $prefix-$name.tf
             printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $prefix-$name.tf
             printf "\t offer = \"%s\"\n"  $vmimoffer >> $prefix-$name.tf
             printf "\t sku = \"%s\"\n"  $vmimsku >> $prefix-$name.tf
             printf "\t version = \"%s\"\n"  $vmimversion >> $prefix-$name.tf
             printf "}\n" >> $prefix-$name.tf
+            fi
         fi
         if [ "$vmplname" != "null" ]; then
             vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
@@ -148,10 +152,12 @@ if [ "$count" -gt "0" ]; then
         if [ $vmtype = "Windows" ]; then
             vmwau=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
             vmwvma=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
-            printf "os_profile_windows_config {\n"  >> $prefix-$name.tf
-            printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $prefix-$name.tf
-            printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $prefix-$name.tf
-            printf "}\n" >> $prefix-$name.tf
+            if [ "$vmwau" != "null" ]; then
+                printf "os_profile_windows_config {\n"  >> $prefix-$name.tf
+                printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $prefix-$name.tf
+                printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $prefix-$name.tf
+                printf "}\n" >> $prefix-$name.tf
+            fi
         fi
         #
         if [ $vmtype = "Linux" ]; then
@@ -178,12 +184,14 @@ if [ "$count" -gt "0" ]; then
                 ddcreopt=`echo $datadisks | jq ".[(${j})].createOption" | tr -d '"'`
                 ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
                 ddvhd=`echo $datadisks | jq ".[(${j})].vhd.uri" | tr -d '"'`
+                ddmd=`echo $datadisks | jq ".[(${j})].managedDisk" | tr -d '"'`
                 printf "storage_data_disk {\n"  >> $prefix-$name.tf
                 printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
                 printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
                 printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
                 
                 if [ "$ddcreopt" = "Attach" ]; then
+                    if ["$ddmd" != "null" ];then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
                     ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
                     ## ddmdrg  from cut is upper case - not good
@@ -194,6 +202,7 @@ if [ "$count" -gt "0" ]; then
                     #
                     
                     printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rg $ddmdid >> $prefix-$name.tf
+                    fi
                 fi
                 if [ "$ddvhd" != "null" ]; then
                     printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $prefix-$name.tf
