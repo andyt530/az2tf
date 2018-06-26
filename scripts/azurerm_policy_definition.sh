@@ -34,7 +34,7 @@ if [ "$count" -gt "0" ]; then
             
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
             printf "name = \"%s\"\n" "$rdid"  >> $prefix-$rdid.tf
-            if [ "$dispn" != "null" ]; then
+            if [ "$dname" != "null" ]; then
             printf "display_name = %s\n" "$dname"  >> $prefix-$rdid.tf
             fi
             printf "policy_type = \"%s\"\n" "$pt" >> $prefix-$rdid.tf
