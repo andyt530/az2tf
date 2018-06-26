@@ -94,7 +94,7 @@ res[52]="azurerm_role_assignment"
 pfx[53]="pdf"
 res[53]="azurerm_policy_definition"
 pfx[54]="pas"
-res[54]="azurerm_policyassignment"
+res[54]="azurerm_policy_assignment"
 
 
 #
