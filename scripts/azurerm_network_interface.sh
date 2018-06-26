@@ -19,7 +19,7 @@ if [ "$count" -gt "0" ]; then
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         ipfor=`echo $azr | jq ".[(${i})].enableIpForwarding" | tr -d '"'`
-
+        netacc=`echo $azr | jq ".[(${i})].enableAcceleratedNetworking" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         
@@ -36,10 +36,10 @@ if [ "$count" -gt "0" ]; then
         
         #printf "\t internal_dns_name_label  = \"%s\"\n" $ipfor >> $prefix-$name.tf
         printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $prefix-$name.tf
-        #printf "\t enable_accelerated_networking  = \"%s\"\n" $ipfor >> $prefix-$name.tf
+        printf "\t enable_accelerated_networking  = \"%s\"\n" $netacc >> $prefix-$name.tf
         #printf "\t dns_servers  = \"%s\"\n" $ipfor >> $prefix-$name.tf
-
-
+        privip0=`echo $azr | jq ".[(${i})].ipConfigurations[(0)].privateIpAddress" | tr -d '"'`
+        
         
 
         
@@ -58,9 +58,8 @@ if [ "$count" -gt "0" ]; then
                 printf "\t ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
-                printf "\t\t private_ip_address = \"%s\" \n"  $privip >> $prefix-$name.tf
-                if [ "$prim" != "true" ]; then
-                pprivip=$privip
+                if [ "$subipalloc" != "Dynamic" ]; then
+                    printf "\t\t private_ip_address = \"%s\" \n"  $privip >> $prefix-$name.tf
                 fi
                 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 if [ "$subipid" != "null" ]; then
@@ -70,7 +69,7 @@ if [ "$count" -gt "0" ]; then
                 #printf "\t\t load_balancer_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 #printf "\t\t load_balancer_inbound_nat_rules_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 #printf "\t\t application_security_group_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-                #printf "\t\t primary = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                printf "\t\t primary = \"%s\" \n"  $prim >> $prefix-$name.tf
 
                 printf "\t}\n" >> $prefix-$name.tf
         #
