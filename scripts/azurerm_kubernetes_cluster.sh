@@ -23,13 +23,14 @@ if [ "$count" != "0" ]; then
         kv=`echo $azr | jq ".[(${i})].kubernetesVersion" | tr -d '"'`
         clid=`echo $azr | jq ".[(${i})].servicePrincipalProfile.clientId" | tr -d '"'`
         au=`echo $azr | jq ".[(${i})].linuxProfile.adminUsername" | tr -d '"'`
+        lp=`echo $azr | jq ".[(${i})].linuxProfile" | tr -d '"'`
         sshk=`echo $azr | jq ".[(${i})].linuxProfile.ssh.publicKeys[0].keyData"`
         pname=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].name" | tr -d '"'`
         vms=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].vmSize" | tr -d '"'`
         pcount=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].count" | tr -d '"'`
         ost=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].osType" | tr -d '"'`
         
-
+        
         prefix=`printf "%s__%s" $prefixa $rg`
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
@@ -39,12 +40,22 @@ if [ "$count" != "0" ]; then
         printf "\t dns_prefix = \"%s\"\n" $dnsp >> $prefix-$name.tf
         printf "\t kubernetes_version = \"%s\"\n" $kv >> $prefix-$name.tf
         
-        printf "\t linux_profile {\n" >> $prefix-$name.tf
-        printf "\t\t admin_username =  \"%s\"\n" $au >> $prefix-$name.tf
-        printf "\t\t ssh_key {\n" >> $prefix-$name.tf
-        printf "\t\t\t key_data =  %s \n" "$sshk" >> $prefix-$name.tf
-        printf "\t\t }\n" >> $prefix-$name.tf
-        printf "\t }\n" >> $prefix-$name.tf
+        if [ "$lp" != "null" ]; then
+            printf "\t linux_profile {\n" >> $prefix-$name.tf
+            printf "\t\t admin_username =  \"%s\"\n" $au >> $prefix-$name.tf
+            printf "\t\t ssh_key {\n" >> $prefix-$name.tf
+            printf "\t\t\t key_data =  %s \n" "$sshk" >> $prefix-$name.tf
+            printf "\t\t }\n" >> $prefix-$name.tf
+            printf "\t }\n" >> $prefix-$name.tf
+        else
+            printf "\t linux_profile {\n" >> $prefix-$name.tf
+            printf "\t\t admin_username =  \"%s\"\n" "" >> $prefix-$name.tf
+            printf "\t\t ssh_key {\n" >> $prefix-$name.tf
+            printf "\t\t\t key_data =  \"%s\" \n" "" >> $prefix-$name.tf
+            printf "\t\t }\n" >> $prefix-$name.tf
+            printf "\t }\n" >> $prefix-$name.tf
+        fi
+        
         
         printf "\t agent_pool_profile {\n" >> $prefix-$name.tf
         printf "\t\t name =  \"%s\"\n" $pname >> $prefix-$name.tf
@@ -57,8 +68,8 @@ if [ "$count" != "0" ]; then
         printf "\t\t client_id =  \"%s\"\n" $clid >> $prefix-$name.tf
         printf "\t\t client_secret =  \"%s\"\n" "" >> $prefix-$name.tf
         printf "\t }\n" >> $prefix-$name.tf
-
-
+        
+        
         
         #
         # New Tags block
