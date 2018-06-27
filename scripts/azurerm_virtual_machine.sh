@@ -127,8 +127,10 @@ if [ "$count" -gt "0" ]; then
             printf "\t offer = \"%s\"\n"  $vmimoffer >> $prefix-$name.tf
             printf "\t sku = \"%s\"\n"  $vmimsku >> $prefix-$name.tf
             printf "\t version = \"%s\"\n"  $vmimversion >> $prefix-$name.tf
+            
             printf "}\n" >> $prefix-$name.tf
             fi
+          
         fi
         if [ "$vmplname" != "null" ]; then
             vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
