@@ -50,11 +50,12 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_container_registry (full)
 * azurerm_kubernetes_cluster
 * azurerm_recovery_services_vault (full)
+* azurerm_log_analytics_workspace (full)
 
 In progress ..
 
-* azure_nat_rule (full needs more testing)
-* azure_nat_pool (full needs more testing)
+* azure_nat_rule (full - needs more testing)
+* azure_nat_pool (full - needs more testing)
 
 (Full) = full support for all terraform attributes
 (Common) = support for the most Common terraform attributes
@@ -92,7 +93,7 @@ For smaller tests where all resources are contained in a single Resource Group r
 + AKS
 + Other terraform providers where terraform & Azure cli2 mutually support
 
-## Know problems
+## Known problems
 
 ### Speed
 

@@ -85,7 +85,7 @@ res[26]="azurerm_management_lock"
 pfx[27]="null"
 res[27]="azurerm_automation_account"
 pfx[28]="null"
-res[28]="azurerm_"
+res[28]="azurerm_log_analytics_workspace"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -133,7 +133,7 @@ if [ "$2" = "" ]; then
 fi
 
 # loop through providers
-for j in `seq 1 27`; do
+for j in `seq 1 28`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
