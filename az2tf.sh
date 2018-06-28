@@ -86,6 +86,8 @@ pfx[27]="null"
 res[27]="azurerm_automation_account"
 pfx[28]="null"
 res[28]="azurerm_log_analytics_workspace"
+pfx[29]="null"
+res[29]="azurerm_log_analytics_solution"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"

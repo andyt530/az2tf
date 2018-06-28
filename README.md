@@ -51,6 +51,7 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_kubernetes_cluster
 * azurerm_recovery_services_vault (full)
 * azurerm_log_analytics_workspace (full)
+* azurerm_log_analytics_solution (full)
 
 In progress ..
 
