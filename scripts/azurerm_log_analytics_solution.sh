@@ -45,14 +45,12 @@ if [ "$count2" -gt "0" ]; then
             workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
             
-            
-            
-            
             prefix=`printf "%s__%s" $prefixa $rg`
+            echo $az2tfmess >> $prefix-$name.tf
             
             if [ "$skip" != "true" ]; then
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
+                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
                 
                 printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
