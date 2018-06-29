@@ -4,6 +4,7 @@ echo $TF_VAR_rgtarget
 if [ "$1" != "" ]; then
     rgsource=$1
 fi
+
 at=`az account get-access-token`
 bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
@@ -23,21 +24,19 @@ if [ "$count2" -gt "0" ]; then
         count=`echo $azr | jq '. | length'`
         if [ "$count" -gt "0" ]; then
             name=`echo $azr | jq ".name" | tr -d '"'`
-            echo $name
+            pname=`echo $name`
             name=`echo $name | sed s/\(/-/`
-            echo $name
+            
             name=`echo $name | sed s/\)/-/`
             echo $name
-            #name=`echo $name | sed s/\[/-/`
-            echo $name
-            #name=`echo $name | sed s/\]/-/`
-            echo $name
+
             
             id=`echo $azr | jq ".id" | tr -d '"'`
             loc=`echo $azr | jq ".location"`
             rg=$rgsource
             pub=`echo $azr | jq ".plan.publisher"`
-            prod=`echo $azr | jq ".plan.product" | cut -d'/' -f2 | tr -d '"'`
+            prod=`echo $azr | jq ".plan.product" | tr -d '"'`
+            soln=`echo $azr | jq ".plan.product" | cut -f2 -d'/' | tr -d '"'`
             workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
             echo $workname
@@ -52,7 +51,7 @@ if [ "$count2" -gt "0" ]; then
                 
                 printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-                printf "\t solution_name = \"%s\"\n" $prod >> $prefix-$name.tf
+                printf "\t solution_name = \"%s\"\n" $soln >> $prefix-$name.tf
                 printf "\t workspace_name = \"%s\"\n" $workname >> $prefix-$name.tf
                 printf "\t workspace_resource_id = \"%s\"\n" $workid >> $prefix-$name.tf
                 
