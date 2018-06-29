@@ -32,6 +32,13 @@ if [ "$count2" -gt "0" ]; then
 
             
             id=`echo $azr | jq ".id" | tr -d '"'`
+            skip="false"
+            if [[ $id = *"["* ]]; then
+            echo "Skipping this soluion $pname - can't process currently"
+            skip="true"
+            fi
+
+
             loc=`echo $azr | jq ".location"`
             rg=$rgsource
             pub=`echo $azr | jq ".plan.publisher"`
@@ -39,13 +46,13 @@ if [ "$count2" -gt "0" ]; then
             soln=`echo $azr | jq ".plan.product" | cut -f2 -d'/' | tr -d '"'`
             workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
-            echo $workname
+            
             
             
             
             prefix=`printf "%s__%s" $prefixa $rg`
-            echo $prod
-            if [ "$prod" != "Azure Backup Monitoring Solution" ]; then
+            
+            if [ "$skip" != "true" ]; then
                 
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
                 
