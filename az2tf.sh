@@ -135,7 +135,7 @@ if [ "$2" = "" ]; then
 fi
 
 # loop through providers
-for j in `seq 1 29`; do
+for j in `seq 1 28`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
