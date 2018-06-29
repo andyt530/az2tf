@@ -17,43 +17,45 @@ rg=$rgsource
 count2=`echo $azr2 | jq '. | length'`
 if [ "$count2" -gt "0" ]; then
     count2=`expr $count2 - 1`
-    for j in `seq 0 $count2`; do  
-           
+    for j in `seq 0 $count2`; do
+        
         azr=`echo $azr2 | jq ".[(${j})]"`
         count=`echo $azr | jq '. | length'`
         if [ "$count" -gt "0" ]; then
-                name=`echo $azr | jq ".name" | tr -d '"'`
-                echo $name
-                name=`echo $name | sed s/\(/-/`
-                echo $name
-                name=`echo $name | sed s/\)/-/`
-                echo $name
-                #name=`echo $name | sed s/\[/-/`
-                echo $name
-                #name=`echo $name | sed s/\]/-/`
-                echo $name
-
-                id=`echo $azr | jq ".id" | tr -d '"'`
-                loc=`echo $azr | jq ".location"`
-                rg=$rgsource
-                pub=`echo $azr | jq ".plan.publisher"`
-                prod=`echo $azr | jq ".plan.product" | cut -d'/' -f2 | tr -d '"'`
-                workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
-                workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
-                echo $workname
-
-
-
-                prefix=`printf "%s__%s" $prefixa $rg`
+            name=`echo $azr | jq ".name" | tr -d '"'`
+            echo $name
+            name=`echo $name | sed s/\(/-/`
+            echo $name
+            name=`echo $name | sed s/\)/-/`
+            echo $name
+            #name=`echo $name | sed s/\[/-/`
+            echo $name
+            #name=`echo $name | sed s/\]/-/`
+            echo $name
+            
+            id=`echo $azr | jq ".id" | tr -d '"'`
+            loc=`echo $azr | jq ".location"`
+            rg=$rgsource
+            pub=`echo $azr | jq ".plan.publisher"`
+            prod=`echo $azr | jq ".plan.product" | cut -d'/' -f2 | tr -d '"'`
+            workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
+            workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
+            echo $workname
+            
+            
+            
+            prefix=`printf "%s__%s" $prefixa $rg`
+            echo $prod
+            if [ "$prod" != "Azure Backup Monitoring Solution" ]; then
                 
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-                printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
+                
                 printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
                 printf "\t solution_name = \"%s\"\n" $prod >> $prefix-$name.tf
                 printf "\t workspace_name = \"%s\"\n" $workname >> $prefix-$name.tf
                 printf "\t workspace_resource_id = \"%s\"\n" $workid >> $prefix-$name.tf
-
+                
                 printf "\t plan {\n"  >> $prefix-$name.tf
                 printf "\t\t publisher = %s\n" "$pub" >> $prefix-$name.tf
                 printf "\t\t product = \"%s\"\n" "$prod" >> $prefix-$name.tf
@@ -81,17 +83,19 @@ if [ "$count2" -gt "0" ]; then
                 
                 printf "}\n" >> $prefix-$name.tf
                 cat $prefix-$name.tf
-                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+                
+                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg '$name'`
                 echo $statecomm
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
                 evalcomm=`printf "terraform import %s.%s__%s \"%s\"" $tfp $rg $name $id`
                 echo $evalcomm
                 echo $evalcomm >> tf-stateimp.sh
-                eval $evalcomm               
- 
+                eval $evalcomm
+            fi
+            
             #done
-        fi      
+        fi
         
     done
 fi
