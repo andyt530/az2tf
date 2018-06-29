@@ -26,10 +26,8 @@ if [ "$count2" -gt "0" ]; then
             name=`echo $azr | jq ".name" | tr -d '"'`
             pname=`echo $name`
             name=`echo $name | sed s/\(/-/`
-            
             name=`echo $name | sed s/\)/-/`
-            echo $name
-
+            
             
             id=`echo $azr | jq ".id" | tr -d '"'`
             skip="false"
