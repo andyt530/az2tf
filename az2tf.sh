@@ -70,25 +70,27 @@ pfx[20]="null"
 res[20]="azurerm_virtual_network_gateway"
 pfx[21]="null"
 res[21]="azurerm_virtual_network_gateway_connection"
+pfx[22]="null"
+res[22]="azurerm_express_route_circuit"
 
 
-pfx[22]="az acr list"
-res[22]="azurerm_container_registry"
-pfx[23]="az aks list"
-res[23]="azurerm_kubernetes_cluster"
-pfx[24]="az backup vault list"
-res[24]="azurerm_recovery_services_vault"
+pfx[23]="az acr list"
+res[23]="azurerm_container_registry"
+pfx[24]="az aks list"
+res[24]="azurerm_kubernetes_cluster"
+pfx[25]="az backup vault list"
+res[25]="azurerm_recovery_services_vault"
 
-pfx[25]="az vm list"
-res[25]="azurerm_virtual_machine"
-pfx[26]="az lock list"
-res[26]="azurerm_management_lock"
-pfx[27]="null"
-res[27]="azurerm_automation_account"
+pfx[26]="az vm list"
+res[26]="azurerm_virtual_machine"
+pfx[27]="az lock list"
+res[27]="azurerm_management_lock"
 pfx[28]="null"
-res[28]="azurerm_log_analytics_workspace"
+res[28]="azurerm_automation_account"
 pfx[29]="null"
-res[29]="azurerm_log_analytics_solution"
+res[29]="azurerm_log_analytics_workspace"
+pfx[30]="null"
+res[30]="azurerm_log_analytics_solution"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -136,7 +138,7 @@ if [ "$2" = "" ]; then
 fi
 
 # loop through providers
-for j in `seq 1 29`; do
+for j in `seq 1 30`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg

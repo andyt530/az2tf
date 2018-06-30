@@ -46,7 +46,7 @@ if [ "$count2" -gt "0" ]; then
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
             
             prefix=`printf "%s__%s" $prefixa $rg`
-            echo $az2tfmess >> $prefix-$name.tf
+            echo $az2tfmess > $prefix-$name.tf
             
             if [ "$skip" != "true" ]; then
                 

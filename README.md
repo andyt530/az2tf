@@ -37,12 +37,13 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_local_network_gateway
 * azurerm_virtual_network_gateway
 * azurerm_virtual_network_gateway_connection
+* azurerm_express_route_circuit (full)
 
 * azurerm_virtual_machine  (Common)
 * azurerm_key_vault (Common)
 * azurerm_management_lock  (full)
 * azurerm_automation_account
-* azurerm_lb  (see known issue)
+* azurerm_lb  (full)
 * azurerm_lb_backend_address_pool (full)
 * azurerm_lb_rule (full)
 * azurerm_lb_probe (full)
@@ -51,7 +52,7 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_kubernetes_cluster
 * azurerm_recovery_services_vault (full)
 * azurerm_log_analytics_workspace (full)
-* azurerm_log_analytics_solution (full)
+* azurerm_log_analytics_solution (partial)
 
 In progress ..
 
@@ -110,9 +111,6 @@ These attributes always get reported in terraform plan set to false by default  
 + delete_data_disks_on_termination:           "" => "false"
 + delete_os_disk_on_termination:              "" => "false"
 
-### Load Balancer:
-
-Terraform doesn't seem to pull through the LB's Frontend IP configuration during an import - issue logged
 
 ### Storage Account
 
@@ -122,4 +120,4 @@ Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 
 ### OMS
 
-Terraform supports OMS - but Azure cli2 doesn't as yet.
+Not all solution can be imported (naming issues with Azure)
