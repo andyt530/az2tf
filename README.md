@@ -38,6 +38,8 @@ The following terraform resource types are supported by this tool at this time:
 * azurerm_virtual_network_gateway
 * azurerm_virtual_network_gateway_connection
 * azurerm_express_route_circuit (full)
+* azurerm_express_route_circuit_authorization (full)
+* azurerm_express_route_circuit_peering (partial)
 
 * azurerm_virtual_machine  (Common)
 * azurerm_key_vault (Common)
@@ -121,3 +123,7 @@ Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 ### OMS
 
 Not all solution can be imported (naming issues with Azure)
+
+### ExpressRoute
+
+No support for MS peering (don't have one to test!)
