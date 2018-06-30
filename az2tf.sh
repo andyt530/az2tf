@@ -72,25 +72,29 @@ pfx[21]="null"
 res[21]="azurerm_virtual_network_gateway_connection"
 pfx[22]="null"
 res[22]="azurerm_express_route_circuit"
+pfx[23]="null"
+res[23]="azurerm_express_route_circuit_authorization"
+pfx[24]="null"
+res[24]="azurerm_express_route_circuit_peering"
 
 
-pfx[23]="az acr list"
-res[23]="azurerm_container_registry"
-pfx[24]="az aks list"
-res[24]="azurerm_kubernetes_cluster"
-pfx[25]="az backup vault list"
-res[25]="azurerm_recovery_services_vault"
+pfx[25]="az acr list"
+res[25]="azurerm_container_registry"
+pfx[26]="az aks list"
+res[26]="azurerm_kubernetes_cluster"
+pfx[27]="az backup vault list"
+res[27]="azurerm_recovery_services_vault"
 
-pfx[26]="az vm list"
-res[26]="azurerm_virtual_machine"
-pfx[27]="az lock list"
-res[27]="azurerm_management_lock"
-pfx[28]="null"
-res[28]="azurerm_automation_account"
-pfx[29]="null"
-res[29]="azurerm_log_analytics_workspace"
+pfx[28]="az vm list"
+res[28]="azurerm_virtual_machine"
+pfx[29]="az lock list"
+res[29]="azurerm_management_lock"
 pfx[30]="null"
-res[30]="azurerm_log_analytics_solution"
+res[30]="azurerm_automation_account"
+pfx[31]="null"
+res[31]="azurerm_log_analytics_workspace"
+pfx[32]="null"
+res[32]="azurerm_log_analytics_solution"
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -138,7 +142,7 @@ if [ "$2" = "" ]; then
 fi
 
 # loop through providers
-for j in `seq 1 30`; do
+for j in `seq 1 32`; do
     if [ "$2" != "" ]; then
         myrg=$2
         echo $myrg
