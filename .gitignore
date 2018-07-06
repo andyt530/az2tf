@@ -15,6 +15,7 @@ backup
 sub.*
 dwp*
 resources.txt
+resources2.txt
 noprovider.txt
 sub 2.7e97df51-9a8e-457a-ab7a-7502a771bb36-SSP/azure.tf
 sub 2.7e97df51-9a8e-457a-ab7a-7502a771bb36-SSP/rg__AzureBackupRG_uksouth_1.tf

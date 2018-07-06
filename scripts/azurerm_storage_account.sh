@@ -57,6 +57,7 @@ if [ "$count" -gt "0" ]; then
 
 
         printf "\t network_rules { \n" >> $prefix-$name.tf
+        byp=`echo $byp | tr -d ','`
         printf "\t\t bypass = [\"%s\"]\n" $byp >> $prefix-$name.tf
 
         if [ "$icount" -gt "0" ]; then
