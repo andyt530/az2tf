@@ -21,10 +21,19 @@ if [ "$count" -gt "0" ]; then
         type=`echo $azr | jq ".[(${i})].connectionType" | tr -d '"'`
         vngrg=`echo $azr | jq ".[(${i})].virtualNetworkGateway1.id" | cut -d'/' -f5 | tr -d '"'`
         vngnam=`echo $azr | jq ".[(${i})].virtualNetworkGateway1.id" | cut -d'/' -f9 | tr -d '"'`
-        echo 
+        echo
         peerrg=`echo $azr | jq ".[(${i})].peer.id" | cut -d'/' -f5 | tr -d '"'`
         peernam=`echo $azr | jq ".[(${i})].peer.id" | cut -d'/' -f9 | tr -d '"'`
-
+        
+        if [ "$type" = "IPsec" ]; then
+            echo "is sec"
+            peerrg=`echo $azr | jq ".[(${i})].localNetworkGateway2.id" | cut -d'/' -f5 | tr -d '"'`
+            peernam=`echo $azr | jq ".[(${i})].localNetworkGateway2.id" | cut -d'/' -f9 | tr -d '"'`
+            echo $peerrg
+            echo $peernam
+        fi
+        
+        
         authkey=`echo $azr | jq ".[(${i})].authorizationKey" | tr -d '"'`
         enbgp=`echo $azr | jq ".[(${i})].enableBgp" | tr -d '"'`
         rw=`echo $azr | jq ".[(${i})].routingWeight" | tr -d '"'`
@@ -41,43 +50,43 @@ if [ "$count" -gt "0" ]; then
         printf "\t type = \"%s\"\n" $type >> $prefix-$name.tf
         printf "\t\t virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $vngrg $vngnam >> $prefix-$name.tf
         printf "\t authorization_key = \"%s\"\n" $authkey >> $prefix-$name.tf
-
+        
         printf "\t enable_bgp = \"%s\"\n" $enbgp >> $prefix-$name.tf
         if [ "$rw" != "null" ]; then
-        printf "\t routing_weight = \"%s\"\n" $rw >> $prefix-$name.tf
+            printf "\t routing_weight = \"%s\"\n" $rw >> $prefix-$name.tf
         fi
         if [ "$sk" != "null" ]; then
-        printf "\t shared_key = \"%s\"\n" $sk >> $prefix-$name.tf
+            printf "\t shared_key = \"%s\"\n" $sk >> $prefix-$name.tf
         fi
         printf "\t use_policy_based_traffic_selectors = \"%s\"\n" $pbs >> $prefix-$name.tf
         echo $type
         if [ "$type" == "ExpressRoute" ]; then
-        peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
-        printf "\t\t express_route_circuit_id = \"%s\"\n" $peerid >> $prefix-$name.tf
-        #printf "\t\t express_route_circuit_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
-        peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
-
+            peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
+            printf "\t\t express_route_circuit_id = \"%s\"\n" $peerid >> $prefix-$name.tf
+            #printf "\t\t express_route_circuit_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
+            peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
+            
         fi
         if [ "$type" == "Vnet2Vnet" ]; then
-        printf "\t\t peer_virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peername >> $prefix-$name.tf
+            printf "\t\t peer_virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
         fi
         if [ "$type" == "IPsec" ]; then
-        printf "\t\t local_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peername >> $prefix-$name.tf
+            printf "\t\t local_network_gateway_id = \"\${azurerm_local_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
         fi
-   
-
+        
+        
         ipsec=`echo $azr | jq ".[(${i})].ipsecPolicies"`
         jcount=`echo $ipsec | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
-        jcount=`expr $jcount - 1`
-        for j in `seq 0 $jcount`; do
-            printf "\t ipsec_policy {\n" >> $prefix-$name.tf
-   
-            dhg=`echo $ipsec | jq ".[(${j})].dhGroup"`         
-            printf "\t dh_group {\n" $dhg >> $prefix-$name.tf
-            
-            printf "\t}\n" >> $prefix-$name.tf
-        done
+            jcount=`expr $jcount - 1`
+            for j in `seq 0 $jcount`; do
+                printf "\t ipsec_policy {\n" >> $prefix-$name.tf
+                
+                dhg=`echo $ipsec | jq ".[(${j})].dhGroup"`
+                printf "\t dh_group {\n" $dhg >> $prefix-$name.tf
+                
+                printf "\t}\n" >> $prefix-$name.tf
+            done
         fi
         
         #
