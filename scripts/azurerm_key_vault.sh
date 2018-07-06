@@ -31,13 +31,19 @@ if [ "$count" -gt "0" ]; then
         ap=`echo $kvshow | jq ".properties.accessPolicies"`
         
         prefix=`printf "%s__%s" $prefixa $rg`
-        
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
+        echo $az2tfmess > $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "location = %s\n" "$loc" >> $prefix-$name.tf
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         #
         printf "\t sku { \n" >> $prefix-$name.tf
+        if [ "$name" = "standard" ];then
+        name="Standard"
+        fi
+        if [ "$name" = "premium" ];then
+        name="Premium"
+        fi
         printf "\t\t name=\"%s\"\n" $sku >> $prefix-$name.tf
         printf "\t } \n" >> $prefix-$name.tf
         

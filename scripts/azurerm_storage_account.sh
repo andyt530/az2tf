@@ -29,14 +29,14 @@ if [ "$count" -gt "0" ]; then
         saencrypt=`echo $azr | jq ".[(${i})].encryption.services.blob.enabled" | tr -d '"'`
         fiencrypt=`echo $azr | jq ".[(${i})].encryption.services.file.enabled" | tr -d '"'`
         sahttps=`echo $azr | jq ".[(${i})].enableHttpsTrafficOnly" | tr -d '"'`
-        nrs=`echo $azr | jq ".[(${i})].networkRuleSet" | tr -d '"'`
+        nrs=`echo $azr | jq ".[(${i})].networkRuleSet"`
         saencs=`echo $azr | jq ".[(${i})].encryption.keySource" | tr -d '"'`
         
-        
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
+        echo $az2tfmess > $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $prefix-$name.tf
+        
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t account_tier = \"%s\"\n" $satier >> $prefix-$name.tf
         printf "\t account_kind = \"%s\"\n" $sakind >> $prefix-$name.tf
@@ -45,6 +45,41 @@ if [ "$count" -gt "0" ]; then
         printf "\t enable_file_encryption = \"%s\"\n" $fiencrypt >> $prefix-$name.tf
         printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
         printf "\t account_encryption_source = \"%s\"\n" $saencs >> $prefix-$name.tf
+        
+        if [ "$nrs.bypass" != "null" ]; then
+        byp=`echo $azr | jq ".[(${i})].networkRuleSet.bypass" | tr -d '"'`
+        ipr=`echo $azr | jq ".[(${i})].networkRuleSet.ipRules"`
+        vnr=`echo $azr | jq ".[(${i})].networkRuleSet.virtualNetworkRules"`
+
+        icount=`echo $ipr | jq '. | length'`
+        vcount=`echo $vnr | jq '. | length'`
+        
+
+
+        printf "\t network_rules { \n" >> $prefix-$name.tf
+        printf "\t\t bypass = [\"%s\"]\n" $byp >> $prefix-$name.tf
+
+        if [ "$icount" -gt "0" ]; then
+            icount=`expr $icount - 1`
+            for ic in `seq 0 $icount`; do 
+                ipa=`echo $ipr | jq ".[(${ic})].ipAddressOrRange" | tr -d '"'`
+                printf "\t\t ip_rules = [\"%s\"]\n" $ipa >> $prefix-$name.tf
+            done
+        fi
+        
+        if [ "$vcount" -gt "0" ]; then
+            vcount=`expr $vcount - 1`
+            for vc in `seq 0 $vcount`; do
+                vnsid=`echo $vnr | jq ".[(${vc})].virtualNetworkResourceId" | tr -d '"'`
+                printf "\t\t virtual_network_subnet_ids = [\"%s\"]\n" $vnsid >> $prefix-$name.tf
+            done
+        fi
+
+        printf "\t } \n" >> $prefix-$name.tf
+        fi
+
+
+
         #
         
         #
