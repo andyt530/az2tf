@@ -112,6 +112,9 @@ if [ "$count2" -gt "0" ]; then
                 prov="azurerm_express_route_circuit_peering"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Compute/images") prov="azurerm_image"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
             
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
