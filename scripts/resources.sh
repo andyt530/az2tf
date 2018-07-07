@@ -121,7 +121,12 @@ if [ "$count2" -gt "0" ]; then
     done
     
 fi
+if [ "$1" != "" ]; then
+    rgsource=$1
+    cat resources.txt | sort -u | grep $rgsource > resources2.txt
+else
 echo " "
 cat resources.txt | sort -u > resources2.txt
+fi
 echo "No provider for"
 cat noprovider.txt | sort -u

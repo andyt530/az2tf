@@ -38,12 +38,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         #
         printf "\t sku { \n" >> $prefix-$name.tf
-        if [ "$name" = "standard" ];then
-        name="Standard"
-        fi
-        if [ "$name" = "premium" ];then
-        name="Premium"
-        fi
+
         printf "\t\t name=\"%s\"\n" $sku >> $prefix-$name.tf
         printf "\t } \n" >> $prefix-$name.tf
         
