@@ -18,7 +18,7 @@ key="id"
 
 echo "Writing Resources .."
 if [ "$count2" -gt "0" ]; then
-    rm resources.txt noprovider.txt
+    rm -f resources.txt noprovider.txt
     count2=`expr $count2 - 1`
     for j in `seq 0 $count2`; do
         tput cup 1 23

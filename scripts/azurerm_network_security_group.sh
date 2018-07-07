@@ -52,15 +52,43 @@ if [ "$count" -gt "0" ]; then
             srdir=`echo $azr | jq ".[(${i})].securityRules[(${j})].direction" | tr -d '"'` 
             printf "\t\t direction = \"%s\"  \n" $srdir >> $prefix-$name.tf
             srsp=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRange"` 
+            if [ "$srsp" != "null" ];then
             printf "\t\t source_port_range = %s  \n" $srsp >> $prefix-$name.tf
+            fi
+            srsps=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRanges"` 
+            
+            if [ "$srsps" != "[]" ];then
+            printf "\t\t source_port_range = %s  \n" "$srsps" >> $prefix-$name.tf
+            fi
+            
+            
             srsap=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceAddressPrefix"` 
-            printf "\t\t source_address_prefix = %s  \n" $srsap >> $prefix-$name.tf
+            if [ "$srsap" != "null" ];then
+                printf "\t\t source_address_prefix = %s  \n" $srsap >> $prefix-$name.tf
+            fi
+            srsaps=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceAddressPrefixes"` 
+            if [ "$srsaps" != "[]" ];then
+                printf "\t\t source_address_prefix = %s  \n" "$srsaps" >> $prefix-$name.tf
+            fi
 
             srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
-            printf "\t\t destination_port_range = %s  \n" $srdp >> $prefix-$name.tf
-            srdap=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationAddressPrefix"` 
-            printf "\t\t destination_address_prefix = %s  \n" $srdap >> $prefix-$name.tf
+            echo "dp=$srdp"
+            if [ "$srdp" != "null" ];then
+                printf "\t\t destination_port_range = %s  \n" $srdp >> $prefix-$name.tf
+            fi
+            srdps=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRanges"` 
+            if [ "$srdps" != "[]" ];then
+                printf "\t\t destination_port_range = %s \n" "$srdps" >> $prefix-$name.tf
+            fi
 
+            srdap=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationAddressPrefix"` 
+            if [ "$srdap" != "null" ];then
+            printf "\t\t destination_address_prefix = %s  \n" $srdap >> $prefix-$name.tf
+            fi
+            srdaps=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationAddressPrefixes"` 
+            if [ "$srdaps" != "[]" ];then
+            printf "\t\t destination_address_prefix = %s  \n" "$srdaps" >> $prefix-$name.tf
+            fi
 
             printf "\t}\n" >> $prefix-$name.tf
             done
