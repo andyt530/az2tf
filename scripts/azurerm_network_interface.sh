@@ -22,7 +22,7 @@ if [ "$count" -gt "0" ]; then
         netacc=`echo $azr | jq ".[(${i})].enableAcceleratedNetworking" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
-        
+        snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f5 | tr -d '"'`
         ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`
 
         
@@ -31,7 +31,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         if [ "$snsg" != "null" ]; then
-            printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $rg $snsg >> $prefix-$name.tf
+            printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $prefix-$name.tf
         fi
         
         #printf "\t internal_dns_name_label  = \"%s\"\n" $ipfor >> $prefix-$name.tf
