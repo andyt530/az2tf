@@ -36,7 +36,8 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $scount`; do    
                       
             printf "\t security_rule { \n" >> $prefix-$name.tf
-            srname=`echo $azr | jq ".[(${i})].securityRules[(${j})].name" | tr -d '"'`                       
+            srname=`echo $azr | jq ".[(${i})].securityRules[(${j})].name" | tr -d '"'`  
+            echo "Security Rule $srname"                     
             printf "\t\t name = \"%s\"  \n" $srname >> $prefix-$name.tf
             srdesc=`echo $azr | jq ".[(${i})].securityRules[(${j})].description"`                       
             if [ "$srdesc" != "null" ]; then
@@ -72,7 +73,7 @@ if [ "$count" -gt "0" ]; then
             fi
 
             srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
-            echo "dp=$srdp"
+            
             if [ "$srdp" != "null" ];then
                 printf "\t\t destination_port_range = %s  \n" $srdp >> $prefix-$name.tf
             fi
