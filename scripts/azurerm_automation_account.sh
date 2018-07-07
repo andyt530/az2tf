@@ -32,7 +32,11 @@ if [ "$count2" -gt "0" ]; then
                 loc=`echo $azr | jq ".location"`
                 rg=$rgsource
                 sku=`echo $azr | jq ".properties.sku.name"`
-
+                if [ "$sku" = "Free" ]; then
+                    sku="Basic"
+                fi
+                sku="Basic"  # only one supported
+                echo $sku
                 prefix=`printf "%s__%s" $prefixa $rg`
                 
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
@@ -40,7 +44,8 @@ if [ "$count2" -gt "0" ]; then
                 printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
                 printf "\t sku { \n" >> $prefix-$name.tf
-                printf "\t\t name = %s \n" "$sku" >> $prefix-$name.tf
+
+                printf "\t\t name = \"%s\" \n" $sku >> $prefix-$name.tf
                 printf "\t}\n" >> $prefix-$name.tf
                 
                 #

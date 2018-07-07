@@ -122,8 +122,13 @@ Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
 
 ### OMS
 
-Not all solution can be imported (naming issues with Azure)
+Not all OMS solutions can be imported (naming issues with Azure)
 
 ### ExpressRoute
 
 No support for MS peering (don't have one to test!)
+
+
+### Key Vault
+
+terraform doesn't support Backup and Restore as certificate permissions
