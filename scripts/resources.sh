@@ -104,6 +104,14 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Network/localNetworkGateways") prov="azurerm_local_network_gateway"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Network/expressRouteCircuits")
+                prov="azurerm_express_route_circuit"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_express_route_circuit_authorization"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_express_route_circuit_peering"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
             
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
