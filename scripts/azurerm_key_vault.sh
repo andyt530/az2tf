@@ -107,13 +107,21 @@ if [ "$count" -gt "0" ]; then
                     printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
-                        echo $tk
-                        if [ "$tk" != "Recover" ]; then
+                        ttk=`echo $tk | tr -d '"'`
+                        case $ttk in
+                        "Backup") 
+                        echo "In backup $tk"
+                        ;;
+                        "Restore") 
+                        ;;
+                        *)
                             if [ $k -lt $cl ]; then
-                                tk=`printf "%s," $tk`
+                                tk=`printf "%s," $tk`   # add comma to all but last
                             fi
                             printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
-                        fi
+                        ;;
+                        esac
+                            
                     done
                     printf "\t\t ]\n" >> $prefix-$name.tf
                 fi
