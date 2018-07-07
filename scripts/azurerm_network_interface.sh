@@ -54,6 +54,10 @@ if [ "$count" -gt "0" ]; then
                 subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 privip=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAddress" | tr -d '"'`
                 prim=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].primary" | tr -d '"'`
+                pubipnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
+                pubiprg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f5 | tr -d '"'`
+
+
 
                 printf "\t ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
@@ -63,7 +67,7 @@ if [ "$count" -gt "0" ]; then
                 fi
                 printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 if [ "$subipid" != "null" ]; then
-                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $rg $subipid >> $prefix-$name.tf
+                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubiprg $pubipnam >> $prefix-$name.tf
                 fi
                 #printf "\t\t application_gateway_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 #printf "\t\t load_balancer_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
