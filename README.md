@@ -43,6 +43,7 @@ The following terraform resource types are supported by this tool at this time:
 
 * azurerm_virtual_machine  (Common)
 * azurerm_key_vault (Common)
+* azurerm_key_vault_secret (full)
 * azurerm_management_lock  (full)
 * azurerm_automation_account
 * azurerm_lb  (full)

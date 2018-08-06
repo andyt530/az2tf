@@ -24,77 +24,92 @@ if [ "$isok" != "yes" ]; then
     exit
 fi
 
+
+
 mkdir -p tf.$mysub
 cd tf.$mysub
+rm -rf .terraform
+
+if [ "$2" != "" ]; then
+    myrg=$2
+    ../scripts/resources.sh $myrg
+else
+    ../scripts/resources.sh
+fi
 
 pfx[1]="null"
 res[1]="azurerm_resource_group"
-pfx[2]="null"
+pfx[2]="resource"
 res[2]="azurerm_availability_set"
-pfx[3]="az network route-table list"
+pfx[3]="resource"
 res[3]="azurerm_route_table"
-pfx[4]="az network nsg list"
+pfx[4]="resource"
 res[4]="azurerm_network_security_group"
-pfx[5]="az network vnet list"
+pfx[5]="resource"
 res[5]="azurerm_virtual_network"
-pfx[6]="az network vnet list"
+pfx[6]="resource"
 res[6]="azurerm_subnet"
-pfx[7]="az network vnet list"
+pfx[7]="resource"
 res[7]="azurerm_virtual_network_peering"
-pfx[8]="az keyvault list"
+pfx[8]="resource"
 res[8]="azurerm_key_vault"
-pfx[9]="az disk list"
+pfx[9]="resource"
 res[9]="azurerm_managed_disk"
-pfx[10]="az storage account list"
+pfx[10]="resource"
 res[10]="azurerm_storage_account"
-pfx[11]="az network public-ip list"
+pfx[11]="resource"
 res[11]="azurerm_public_ip"
-pfx[12]="az network nic list"
+pfx[12]="resource"
 res[12]="azurerm_network_interface"
 
-pfx[13]="az network lb list"
+pfx[13]="resource"
 res[13]="azurerm_lb"   # move to end ?
-pfx[14]="az network lb list"
+pfx[14]="resource"
 res[14]="azurerm_lb_nat_rule"
-pfx[15]="az network lb list"
+pfx[15]="resource"
 res[15]="azurerm_lb_nat_pool"
-pfx[16]="az network lb list"
+pfx[16]="resource"
 res[16]="azurerm_lb_backend_address_pool"
-pfx[17]="az network lb list"
+pfx[17]="resource"
 res[17]="azurerm_lb_probe"
-pfx[18]="az network lb list"
+pfx[18]="resource"
 res[18]="azurerm_lb_rule"
-pfx[19]="null"
+pfx[19]="resource"
 res[19]="azurerm_local_network_gateway"
-pfx[20]="null"
+pfx[20]="resource"
 res[20]="azurerm_virtual_network_gateway"
-pfx[21]="null"
+pfx[21]="resource"
 res[21]="azurerm_virtual_network_gateway_connection"
-pfx[22]="null"
+pfx[22]="resource"
 res[22]="azurerm_express_route_circuit"
-pfx[23]="null"
+pfx[23]="resource"
 res[23]="azurerm_express_route_circuit_authorization"
-pfx[24]="null"
+pfx[24]="resource"
 res[24]="azurerm_express_route_circuit_peering"
 
 
-pfx[25]="az acr list"
+pfx[25]="resource"
 res[25]="azurerm_container_registry"
-pfx[26]="az aks list"
+pfx[26]="resource"
 res[26]="azurerm_kubernetes_cluster"
-pfx[27]="az backup vault list"
+pfx[27]="resource"
 res[27]="azurerm_recovery_services_vault"
 
-pfx[28]="az vm list"
+pfx[28]="resource"
 res[28]="azurerm_virtual_machine"
 pfx[29]="az lock list"
 res[29]="azurerm_management_lock"
-pfx[30]="null"
+pfx[30]="resource"
 res[30]="azurerm_automation_account"
-pfx[31]="null"
+pfx[31]="resource"
 res[31]="azurerm_log_analytics_workspace"
-pfx[32]="null"
+pfx[32]="resource"
 res[32]="azurerm_log_analytics_solution"
+pfx[33]="resource"
+res[33]="azurerm_image"
+pfx[34]="resource"
+res[34]="azurerm_key_vault_secret"
+
 
 pfx[51]="rdf"
 res[51]="azurerm_role_definition"
@@ -104,7 +119,6 @@ pfx[53]="pdf"
 res[53]="azurerm_policy_definition"
 pfx[54]="pas"
 res[54]="azurerm_policy_assignment"
-
 
 #
 # uncomment following line if you want to use an SPN login
@@ -142,49 +156,68 @@ if [ "$2" = "" ]; then
 fi
 
 # loop through providers
-for j in `seq 1 32`; do
+for j in `seq 1 34`; do
     if [ "$2" != "" ]; then
+        # RG specified
         myrg=$2
         echo $myrg
         docomm="../scripts/${res[$j]}.sh $myrg"
-        echo $docomm
+        echo "$j $docomm"
         eval $docomm
     else
         c1=`echo ${pfx[${j}]}`
+        gr=`printf "%s-" ${res[$j]}`
+        echo $gr
         #echo $c1
-        if [ "$c1" = "null" ] ;then
-            trgs=`az group list`
-            count=`echo $trgs | jq '. | length'`
-            if [ "$count" -gt "0" ]; then
-                count=`expr $count - 1`
-                for i in `seq 0 $count`; do
-                    myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-                    echo -n $i of $count " "
+        case "$c1" in
+            "resource")
+                lc="1"
+                tc2=`cat resources2.txt | grep $gr | wc -l`
+                for l in `cat resources2.txt | grep $gr` ; do
+                    echo -n $lc of $tc2 " "
+                    myrg=`echo $l | cut -d':' -f1`
+                    prov=`echo $l | cut -d':' -f2`
+                    #echo "debug $j prov=$prov  res=${res[$j]}"
                     docomm="../scripts/${res[$j]}.sh $myrg"
-                    echo $docomm
+                    echo "$j $docomm"
                     eval $docomm
-                    
+                    lc=`expr $lc + 1`
                 done
-            fi
-        else
-            comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
-            comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
-            tc=`eval $comm2`
-            tc=`echo $tc | tr -d ' '`
-            trgs=`eval $comm`
-            count=`echo ${#trgs}`
-            if [ "$count" -gt "0" ]; then
-                c5="1"
-                for j2 in `echo $trgs`; do
-                    echo -n "$c5 of $tc "
-                    docomm="../scripts/${res[$j]}.sh $j2"
-                    echo $docomm
-                    eval $docomm
-                    c5=`expr $c5 + 1`
-                    echo $c5
-                done
-            fi
-        fi
+            ;;
+            "null")
+                trgs=`az group list`
+                count=`echo $trgs | jq '. | length'`
+                if [ "$count" -gt "0" ]; then
+                    count=`expr $count - 1`
+                    for i in `seq 0 $count`; do
+                        myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
+                        echo -n $i of $count " "
+                        docomm="../scripts/${res[$j]}.sh $myrg"
+                        echo "$j $docomm"
+                        eval $docomm
+                        
+                    done
+                fi
+            ;;
+            *)
+                comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
+                comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
+                tc=`eval $comm2`
+                tc=`echo $tc | tr -d ' '`
+                trgs=`eval $comm`
+                count=`echo ${#trgs}`
+                if [ "$count" -gt "0" ]; then
+                    c5="1"
+                    for j2 in `echo $trgs`; do
+                        echo -n "$c5 of $tc "
+                        docomm="../scripts/${res[$j]}.sh $j2"
+                        echo "$j $docomm"
+                        eval $docomm
+                        c5=`expr $c5 + 1`
+                    done
+                fi
+            ;;
+        esac
     fi
     rm -f terraform*.backup
 done

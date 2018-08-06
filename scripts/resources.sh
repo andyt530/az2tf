@@ -91,6 +91,9 @@ if [ "$count2" -gt "0" ]; then
             ;;
             "Microsoft.KeyVault/vaults") prov="azurerm_key_vault"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_key_vault_secret"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+
             ;;
             "Microsoft.RecoveryServices/vaults") prov="azurerm_recovery_services_vault"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
