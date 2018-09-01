@@ -30,6 +30,7 @@ Automation Resources
 
 Compute Resources
 * azurerm_availability_set (full)
+* azurerm_image
 * azurerm_managed_disk  (Common)
 * azurerm_virtual_machine  (Common)
 
