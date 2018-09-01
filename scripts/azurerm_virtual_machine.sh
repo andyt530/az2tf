@@ -1,4 +1,3 @@
-
 tfp="azurerm_virtual_machine"
 prefixa="vm"
 if [ "$1" != "" ]; then
@@ -19,7 +18,9 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
+    
         prefix=`printf "%s__%s" $prefixa $rg`
+
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
@@ -34,6 +35,7 @@ if [ "$count" -gt "0" ]; then
         done
         #echo "myavs=$myavs"
 
+        vmlic=`echo $azr | jq ".[(${i})].licenseType" | tr -d '"'`
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
         vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
         vmdiags=`echo $azr | jq ".[(${i})].diagnosticsProfile" | tr -d '"'`
@@ -45,6 +47,7 @@ if [ "$count" -gt "0" ]; then
         vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
         vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
         vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
+        vmoswa=`echo $azr | jq ".[(${i})].storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
         #
         
         osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
@@ -58,6 +61,7 @@ if [ "$count" -gt "0" ]; then
         vmimversion=`echo $azr | jq ".[(${i})].storageProfile.imageReference.version" | tr -d '"'`
         #
         vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
+        vmadminpw=`echo $azr | jq ".[(${i})].osProfile.Password" | tr -d '"'`
         vmcn=`echo $azr | jq ".[(${i})].osProfile.computerName" | tr -d '"'`
         vmdispw=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
         vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
@@ -72,6 +76,9 @@ if [ "$count" -gt "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         if [ "$avsid" != "null" ]; then 
             printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $prefix-$name.tf
+        fi
+        if [ "$vmlic" != "null" ]; then 
+            printf "\t license_type = \"%s\"\n" $vmlic >> $prefix-$name.tf
         fi
         printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
         #
@@ -99,6 +106,11 @@ if [ "$count" -gt "0" ]; then
         printf "os_profile {\n"  >> $prefix-$name.tf
         printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $prefix-$name.tf
         printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $prefix-$name.tf
+        if [ "$vmadminpw" != "null" ]; then 
+            printf "\t admin_password = \"%s\"\n" $vmadminpw >> $prefix-$name.tf
+        fi
+
+        #  admin_password ?
         printf "}\n" >> $prefix-$name.tf
         fi
         #
@@ -116,6 +128,9 @@ if [ "$count" -gt "0" ]; then
         fi
         printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $prefix-$name.tf
         printf "\tos_type = \"%s\" \n" $vmtype >> $prefix-$name.tf
+        if [ "$vmoswa" != "null" ]; then
+            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $prefix-$name.tf
+        fi
         printf "}\n" >> $prefix-$name.tf
         #
         #
@@ -154,10 +169,14 @@ if [ "$count" -gt "0" ]; then
         if [ $vmtype = "Windows" ]; then
             vmwau=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
             vmwvma=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
+            vmwtim=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.timeZone" | tr -d '"'`
             if [ "$vmwau" != "null" ]; then
                 printf "os_profile_windows_config {\n"  >> $prefix-$name.tf
                 printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $prefix-$name.tf
                 printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $prefix-$name.tf
+                if [ "$vmwtim" != "null" ]; then
+                    printf "\t timezone = \"%s\" \n" $vmwtim >> $prefix-$name.tf
+                fi
                 printf "}\n" >> $prefix-$name.tf
             fi
         fi
@@ -191,6 +210,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
                 printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
                 printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
+                # caching , disk_size_gn, write_accelerator_enabled 
                 
                 if [ "$ddcreopt" = "Attach" ]; then
                     if ["$ddmd" != "null" ];then

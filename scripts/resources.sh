@@ -118,7 +118,14 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Compute/images") prov="azurerm_image"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-            
+            "Microsoft.Network/networkWatchers") prov="azurerm_network_watcher"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+            "Microsoft.Network/applicationSecurityGroups") prov="azurerm_application_security_group"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+
+
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac

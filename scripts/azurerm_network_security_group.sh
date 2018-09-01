@@ -21,6 +21,9 @@ if [ "$count" -gt "0" ]; then
         srules=`echo $azr | jq ".[(${i})].securityRules"`
 
         prefix=`printf "%s__%s" $prefixa $rg`
+
+
+        
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"  \n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf

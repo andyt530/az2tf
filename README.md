@@ -1,7 +1,5 @@
 # az2tf
 
-If you've found this via a search - IT IS STILL UNDER DEVELOPMENT
-
 This utility 'Azure to Terraform' (az2tf) 
 reads an Azure Subscription and generates all the required terraform configuration files (.tf) from each of the composite Azure Resource Groups
 It also imports the terraform state using a
@@ -18,49 +16,73 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 The following terraform resource types are supported by this tool at this time:
 
+Base Resources
+* azurerm_resource_group (full)
+
+Authorization Resources
 * azurerm_role_definition (subscription level)
 * azurerm_role_assignment (subscription level)
-* azurerm_policy_definition (custom poicies only)
-* azurerm_policy_assignment
 
-* azurerm_resource_group (full)
-* azurerm_route_table (full)
+Active Directory Resources
+
+Automation Resources
+* azurerm_automation_account
+
+Compute Resources
 * azurerm_availability_set (full)
-* azurerm_subnet (full)
-* azurerm_virtual_network (full)
-* azurerm_virtual_network_peering (full)
-* azurerm_network_security_group (full)
 * azurerm_managed_disk  (Common)
-* azurerm_storage_account (Common - tf full support lacking)
-* azurerm_public_ip  (Common- tf import issues)
-* azurerm_network_interface  (Common)
-* azurerm_local_network_gateway
-* azurerm_virtual_network_gateway
-* azurerm_virtual_network_gateway_connection
-* azurerm_express_route_circuit (full)
-* azurerm_express_route_circuit_authorization (full)
-* azurerm_express_route_circuit_peering (partial)
-
 * azurerm_virtual_machine  (Common)
+
+Container Resources
+* azurerm_container_registry (full)
+* azurerm_kubernetes_cluster
+
+Key Vault Resources
 * azurerm_key_vault (Common)
 * azurerm_key_vault_secret (full)
-* azurerm_management_lock  (full)
-* azurerm_automation_account
+
+Load Balancer Resources
 * azurerm_lb  (full)
 * azurerm_lb_backend_address_pool (full)
 * azurerm_lb_rule (full)
-* azurerm_lb_probe (full)
-
-* azurerm_container_registry (full)
-* azurerm_kubernetes_cluster
-* azurerm_recovery_services_vault (full)
-* azurerm_log_analytics_workspace (full)
-* azurerm_log_analytics_solution (partial)
-
-In progress ..
-
 * azure_nat_rule (full - needs more testing)
+* azurerm_lb_probe (full)
 * azure_nat_pool (full - needs more testing)
+
+Management Resources
+* azurerm_management_lock  (full)
+
+Network Resources
+* azurerm_express_route_circuit (full)
+* azurerm_express_route_circuit_authorization (full)
+* azurerm_express_route_circuit_peering (partial)
+* azurerm_local_network_gateway
+* azurerm_network_interface  (Common)
+* azurerm_network_security_group (full)
+* azurerm_network_watcher
+* azurerm_public_ip  (Common)
+* azurerm_route_table (full)
+* azurerm_subnet (full)
+* azurerm_virtual_network (full)
+* azurerm_virtual_network_gateway
+* azurerm_virtual_network_gateway_connection
+* azurerm_virtual_network_peering (full)
+  
+Policy Resources
+* azurerm_policy_definition (custom poicies only)
+* azurerm_policy_assignment
+
+OMS Resources
+* azurerm_log_analytics_solution (partial)
+* azurerm_log_analytics_workspace (full)
+
+Recovery Services
+* azurerm_recovery_services_vault (full)
+
+Storage Resources
+* azurerm_storage_account (Common - tf full support lacking)
+
+
 
 (Full) = full support for all terraform attributes
 (Common) = support for the most Common terraform attributes
@@ -76,8 +98,8 @@ In progress ..
 
 Running the tool required these steps:
 1. Unzip or clone this git repo into an empty directory
-1. login to the Azure cli2  (az login)
-1. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  Your-subscription-ID 
+2. login to the Azure cli2  (az login)
+3. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  Your-subscription-ID 
 
 Be patient - lots of output is given as az2tf:
 
@@ -93,9 +115,10 @@ For smaller tests where all resources are contained in a single Resource Group r
 
 ## Planned Additions
 
-+ Load Balancers (deeper support)
-+ Storage containers with storage firewall rules
-+ AKS
++ Application Gateways
++ PaaS databases and apps
++ Storage firewall rules
++ ongoing better AKS support as AKS evolves
 + Other terraform providers where terraform & Azure cli2 mutually support
 
 ## Known problems
