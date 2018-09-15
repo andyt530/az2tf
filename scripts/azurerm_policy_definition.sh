@@ -9,7 +9,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az policy definition list`
+azr=`az policy definition list --query "[?policyType=='Custom']"`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
