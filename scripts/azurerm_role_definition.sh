@@ -15,6 +15,10 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         echo $i " of " $count
+        type=`echo $azr | jq ".[(${i})].roleType"`
+        if [ $type == "\"BuiltInRole\"" ]; then
+            continue
+        fi
         name=`echo $azr | jq ".[(${i})].roleName"`
  
         rdid=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
