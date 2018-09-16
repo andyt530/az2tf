@@ -31,17 +31,19 @@ if [ "$count" != "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
         
         if [ "$odisk" != "null" ]; then
-        printf "\t os_disk { \n" >> $prefix-$name.tf
-        printf "\t os_type = \"%s\"\n" $ostype >> $prefix-$name.tf
-        printf "\t os_state = \"%s\"\n" $osstate >> $prefix-$name.tf
-        printf "\t caching = \"%s\"\n" $oscache >> $prefix-$name.tf
-        printf "\t blob_uri = \"%s\"\n" $blob_uri >> $prefix-$name.tf
-        printf "\t}\n" >> $prefix-$name.tf
+            printf "\t os_disk { \n" >> $prefix-$name.tf
+            printf "\t os_type = \"%s\"\n" $ostype >> $prefix-$name.tf
+            printf "\t os_state = \"%s\"\n" $osstate >> $prefix-$name.tf
+            printf "\t caching = \"%s\"\n" $oscache >> $prefix-$name.tf
+            if [ "$blob_uri" != "null" ]; then
+                printf "\t blob_uri = \"%s\"\n" $blob_uri >> $prefix-$name.tf
+            fi
+            printf "\t}\n" >> $prefix-$name.tf
         fi
-
-
-
-
+        
+        
+        
+        
         #
         # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
