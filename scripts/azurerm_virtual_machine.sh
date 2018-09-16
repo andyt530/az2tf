@@ -169,13 +169,13 @@ if [ "$count" -gt "0" ]; then
         if [ $vmtype = "Windows" ]; then
             vmwau=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
             vmwvma=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
-            vmwtim=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.timeZone" | tr -d '"'`
+            vmwtim=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.timeZone"`
             if [ "$vmwau" != "null" ]; then
                 printf "os_profile_windows_config {\n"  >> $prefix-$name.tf
                 printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $prefix-$name.tf
                 printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $prefix-$name.tf
                 if [ "$vmwtim" != "null" ]; then
-                    printf "\t timezone = \"%s\" \n" $vmwtim >> $prefix-$name.tf
+                    printf "\t timezone = %s \n" "$vmwtim" >> $prefix-$name.tf
                 fi
                 printf "}\n" >> $prefix-$name.tf
             fi
