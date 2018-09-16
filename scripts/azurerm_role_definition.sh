@@ -9,8 +9,8 @@ else
         rgsource=$response
     fi
 fi
-#azr=`az role definition list`
-azr=`az role definition list --query "[?roleType!='BuiltInRole']"` 
+azr=`az role definition list`
+#azr=`az role definition list --query "[?roleType!='BuiltInRole']"` 
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
