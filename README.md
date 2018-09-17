@@ -54,6 +54,7 @@ Management Resources
 * azurerm_management_lock  (full)
 
 Network Resources
+* azurerm_application_security_group (full)
 * azurerm_express_route_circuit (full)
 * azurerm_express_route_circuit_authorization (full)
 * azurerm_express_route_circuit_peering (partial)
