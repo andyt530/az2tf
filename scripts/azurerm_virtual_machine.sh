@@ -183,6 +183,10 @@ if [ "$count" -gt "0" ]; then
         #
         if [ $vmtype = "Linux" ]; then
             printf "os_profile_linux_config {\n"  >> $prefix-$name.tf
+            if [ $vmdispw = "null" ]; then
+            # osprofile can by null for vhd imported images - must make an artificial one.
+            vmdispw="false"
+            fi
             printf "\tdisable_password_authentication = \"%s\" \n" $vmdispw >> $prefix-$name.tf
             if [ "$vmdispw" != "false" ]; then
                printf "\tssh_keys {\n"  >> $prefix-$name.tf
@@ -190,6 +194,7 @@ if [ "$count" -gt "0" ]; then
                 echo "		key_data = \"$vmsshkey\""  >> $prefix-$name.tf
                 printf "\t}\n" >> $prefix-$name.tf
             fi
+            
             printf "}\n" >> $prefix-$name.tf
         fi
         #

@@ -75,6 +75,18 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t source_address_prefixes = %s  \n" "$srsaps" >> $prefix-$name.tf
             fi
 
+            # source asg's
+            srsasgs=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceApplicationSecurityGroups"` 
+            kcount=`echo $srsasgs | jq '. | length'`
+            if [ "$kcount" -gt "0" ]; then
+                kcount=`expr $kcount - 1`
+                for k in `seq 0 $kcount`; do
+                    asgnam=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceApplicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | tr -d '"'`
+                    asgrg=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceApplicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | tr -d '"'`    
+                    printf "\t\t source_application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $prefix-$name.tf
+                done
+            fi
+
             srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
             
             if [ "$srdp" != "null" ];then
@@ -93,6 +105,21 @@ if [ "$count" -gt "0" ]; then
             if [ "$srdaps" != "[]" ];then
             printf "\t\t destination_address_prefixes = %s  \n" "$srdaps" >> $prefix-$name.tf
             fi
+
+            # destination asg's
+            srdasgs=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationApplicationSecurityGroups"` 
+            kcount=`echo $srdasgs | jq '. | length'`
+            if [ "$kcount" -gt "0" ]; then
+                kcount=`expr $kcount - 1`
+                for k in `seq 0 $kcount`; do
+                    asgnam=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationApplicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | tr -d '"'`
+                    asgrg=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationApplicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | tr -d '"'`    
+                    printf "\t\t destination_application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $prefix-$name.tf
+                done
+            fi
+
+
+
 
             printf "\t}\n" >> $prefix-$name.tf
             done

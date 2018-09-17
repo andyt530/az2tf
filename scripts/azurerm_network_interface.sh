@@ -24,7 +24,7 @@ if [ "$count" -gt "0" ]; then
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f5 | tr -d '"'`
         ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`
-
+        
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
@@ -41,7 +41,7 @@ if [ "$count" -gt "0" ]; then
         privip0=`echo $azr | jq ".[(${i})].ipConfigurations[(0)].privateIpAddress" | tr -d '"'`
         
         
-
+        
         
         icount=`echo $ipcon | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
@@ -56,9 +56,9 @@ if [ "$count" -gt "0" ]; then
                 prim=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].primary" | tr -d '"'`
                 pubipnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
                 pubiprg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f5 | tr -d '"'`
-
-
-
+                
+                
+                
                 printf "\t ip_configuration {\n" >> $prefix-$name.tf
                 printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
                 printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
@@ -74,33 +74,47 @@ if [ "$count" -gt "0" ]; then
                 #printf "\t\t load_balancer_inbound_nat_rules_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 #printf "\t\t application_security_group_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
                 printf "\t\t primary = \"%s\" \n"  $prim >> $prefix-$name.tf
-
+                
+                asgs=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups"`
+                #if [ $asgs != null ]; then
+                    kcount=`echo $asgs | jq '. | length'`
+                    if [ "$kcount" -gt "0" ]; then
+                        kcount=`expr $kcount - 1`
+                        for k in `seq 0 $kcount`; do
+                            asgnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | tr -d '"'`
+                            asgrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | tr -d '"'`
+                            
+                            printf "\t\t application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $prefix-$name.tf
+                        done
+                    fi
+                #fi
+                
                 printf "\t}\n" >> $prefix-$name.tf
-        #
-
-        done
+                #
+                
+            done
         fi
         #printf "\t private_ip_address = \"%s\" \n"  $pprivip >> $prefix-$name.tf
         #
         # New Tags block
-            tags=`echo $azr | jq ".[(${i})].tags"`
+        tags=`echo $azr | jq ".[(${i})].tags"`
+        tt=`echo $tags | jq .`
+        tcount=`echo $tags | jq '. | length'`
+        if [ "$tcount" -gt "0" ]; then
+            printf "\t tags { \n" >> $prefix-$name.tf
             tt=`echo $tags | jq .`
-            tcount=`echo $tags | jq '. | length'`
-            if [ "$tcount" -gt "0" ]; then
-                printf "\t tags { \n" >> $prefix-$name.tf
-                tt=`echo $tags | jq .`
-                keys=`echo $tags | jq 'keys'`
-                tcount=`expr $tcount - 1`
-                for j in `seq 0 $tcount`; do
-                    k1=`echo $keys | jq ".[(${j})]"`
-                    tval=`echo $tt | jq .$k1`
-                    tkey=`echo $k1 | tr -d '"'`
-                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
-                done
-                printf "\t}\n" >> $prefix-$name.tf
-            fi
-
-
+            keys=`echo $tags | jq 'keys'`
+            tcount=`expr $tcount - 1`
+            for j in `seq 0 $tcount`; do
+                k1=`echo $keys | jq ".[(${j})]"`
+                tval=`echo $tt | jq .$k1`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+            done
+            printf "\t}\n" >> $prefix-$name.tf
+        fi
+        
+        
         printf "}\n" >> $prefix-$name.tf
         #
         cat $prefix-$name.tf
@@ -110,6 +124,6 @@ if [ "$count" -gt "0" ]; then
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
-
+        
     done
 fi
