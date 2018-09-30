@@ -69,6 +69,7 @@ if [ "$count" -gt "0" ]; then
         #
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
+        echo $az2tfmess > $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n"  $loc >> $prefix-$name.tf

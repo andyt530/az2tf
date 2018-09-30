@@ -20,7 +20,7 @@ if [ "$count" -gt "0" ]; then
         prefix=`printf "%s__%s" $prefixa $rg`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
-        
+        echo $az2tfmess > $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = %s\n" "$loc" >> $prefix-$name.tf

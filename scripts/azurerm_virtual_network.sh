@@ -27,7 +27,7 @@ if [ "$count" -gt "0" ]; then
         
         dns=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers"`
         addsp=`echo $azr | jq ".[(${i})].addressSpace.addressPrefixes"`
-        
+        echo $az2tfmess > $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = %s\n" "$loc" >> $prefix-$name.tf

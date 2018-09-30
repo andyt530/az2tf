@@ -21,7 +21,7 @@ if [ "$count" != "0" ]; then
         admin=`echo $azr | jq ".[(${i})].adminUserEnabled" | tr -d '"'`
         sku=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
-        
+        echo $az2tfmess > $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf

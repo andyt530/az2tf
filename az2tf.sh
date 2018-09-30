@@ -1,4 +1,4 @@
-export az2tfmess="# File auto generate by az2tf v0.2 see https://github.com/andyt530/az2tf"
+export az2tfmess="# File auto generate by az2tf see https://github.com/andyt530/az2tf"
 if [ "$1" != "" ]; then
     mysub=$1
 else

@@ -20,6 +20,7 @@ if [ "$count" != "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         admin=`echo $azr | jq ".[(${i})].adminUserEnabled" | tr -d '"'`
         dnsp=`echo $azr | jq ".[(${i})].dnsPrefix" | tr -d '"'`
+        rbac=`echo $azr | jq ".[(${i})].enableRbac" | tr -d '"'`
         kv=`echo $azr | jq ".[(${i})].kubernetesVersion" | tr -d '"'`
         clid=`echo $azr | jq ".[(${i})].servicePrincipalProfile.clientId" | tr -d '"'`
         au=`echo $azr | jq ".[(${i})].linuxProfile.adminUsername" | tr -d '"'`
@@ -29,10 +30,12 @@ if [ "$count" != "0" ]; then
         vms=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].vmSize" | tr -d '"'`
         pcount=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].count" | tr -d '"'`
         ost=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].osType" | tr -d '"'`
-        
+        vnsrg=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].vnetSubnetId" | cut -d'/' -f5 | tr -d '"'`
+        vnsid=`echo $azr | jq ".[(${i})].agentPoolProfiles[0].vnetSubnetId" | cut -d'/' -f11 | tr -d '"'`
+        np=`echo $azr | jq ".[(${i})].networkProfile" | tr -d '"'`
         
         prefix=`printf "%s__%s" $prefixa $rg`
-        
+        echo $az2tfmess > $prefix-$name.tf
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
@@ -47,21 +50,49 @@ if [ "$count" != "0" ]; then
             printf "\t\t\t key_data =  %s \n" "$sshk" >> $prefix-$name.tf
             printf "\t\t }\n" >> $prefix-$name.tf
             printf "\t }\n" >> $prefix-$name.tf
-        else
-            printf "\t linux_profile {\n" >> $prefix-$name.tf
-            printf "\t\t admin_username =  \"%s\"\n" "" >> $prefix-$name.tf
-            printf "\t\t ssh_key {\n" >> $prefix-$name.tf
-            printf "\t\t\t key_data =  \"%s\" \n" "" >> $prefix-$name.tf
-            printf "\t\t }\n" >> $prefix-$name.tf
-            printf "\t }\n" >> $prefix-$name.tf
+        #else
+            #printf "\t linux_profile {\n" >> $prefix-$name.tf
+            #printf "\t\t admin_username =  \"%s\"\n" "" >> $prefix-$name.tf
+            #printf "\t\t ssh_key {\n" >> $prefix-$name.tf
+            #printf "\t\t\t key_data =  \"%s\" \n" "" >> $prefix-$name.tf
+            #printf "\t\t }\n" >> $prefix-$name.tf
+            #printf "\t }\n" >> $prefix-$name.tf
         fi
         
+        if [ "$np" != "null" ]; then
+            netp=`echo $azr | jq ".[(${i})].networkProfile.networkPlugin" | tr -d '"'`
+            srvcidr=`echo $azr | jq ".[(${i})].networkProfile.serviceCidr" | tr -d '"'`
+            dnssrvip=`echo $azr | jq ".[(${i})].networkProfile.dnsServiceIp" | tr -d '"'`
+            dbrcidr=`echo $azr | jq ".[(${i})].networkProfile.dockerBridgeCidr" | tr -d '"'`
+            podcidr=`echo $azr | jq ".[(${i})].networkProfile.podCidr" | tr -d '"'`
+
+            printf "\t network_profile {\n" >> $prefix-$name.tf
+            printf "\t\t network_plugin =  \"%s\"\n" $netp >> $prefix-$name.tf
+            if [ "$srvcidr" != "null" ]; then
+            printf "\t\t service_cidr =  \"%s\"\n" $srvcidr >> $prefix-$name.tf
+            fi
+            if [ "$dnssrvip" != "null" ]; then
+            printf "\t\t dns_service_ip =  \"%s\"\n" $dnssrvip >> $prefix-$name.tf
+            fi
+            if [ "$dbrcidr" != "null" ]; then
+            printf "\t\t docker_bridge_cidr =  \"%s\"\n" $dbrcidr >> $prefix-$name.tf
+            fi
+            if [ "$podcidr" != "null" ]; then
+            printf "\t\t pod_cidr =  \"%s\"\n" $podcidr >> $prefix-$name.tf
+            fi
+
+            printf "\t }\n" >> $prefix-$name.tf
+        fi
+
         
         printf "\t agent_pool_profile {\n" >> $prefix-$name.tf
         printf "\t\t name =  \"%s\"\n" $pname >> $prefix-$name.tf
         printf "\t\t vm_size =  \"%s\"\n" $vms >> $prefix-$name.tf
         printf "\t\t count =  \"%s\"\n" $pcount >> $prefix-$name.tf
         printf "\t\t os_type =  \"%s\"\n" $ost >> $prefix-$name.tf
+        if [ "$vnsrg" != "null" ]; then
+        printf "\t\t vnet_subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $vnsrg $vnsid >> $prefix-$name.tf      
+        fi
         printf "\t }\n" >> $prefix-$name.tf
         
         printf "\t service_principal {\n" >> $prefix-$name.tf
@@ -69,8 +100,7 @@ if [ "$count" != "0" ]; then
         printf "\t\t client_secret =  \"%s\"\n" "" >> $prefix-$name.tf
         printf "\t }\n" >> $prefix-$name.tf
         
-        
-        
+          
         #
         # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
