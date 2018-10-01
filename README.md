@@ -54,6 +54,7 @@ Management Resources
 * azurerm_management_lock  (full)
 
 Network Resources
+* azurerm_application_security_group (full)
 * azurerm_express_route_circuit (full)
 * azurerm_express_route_circuit_authorization (full)
 * azurerm_express_route_circuit_peering (partial)
@@ -153,7 +154,18 @@ Not all OMS solutions can be imported (naming issues with Azure)
 
 No support for MS peering (don't have one to test!)
 
-
 ### Key Vault
 
 terraform doesn't support Backup and Restore as certificate permissions
+
+### Virtual Network Gateway
+
+if no bgp settings specified for VNet Gateway, `terraform plan` will report 
+a benign change
+ [see issue in github](https://github.com/terraform-providers/terraform-provider-azurerm/issues/1993)
+
+	~ update in-place
+	Terraform will perform the following actions:
+
+	~ azurerm_virtual_network_gateway.rg-$RGNAME__vgw-$VGWNAME
+		bgp_settings.#: "" => <computed>
