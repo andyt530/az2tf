@@ -29,7 +29,7 @@ if [ "$count" -gt "0" ]; then
                 port=`echo $azr | jq ".[(${i})].probes[(${j})].port" | tr -d '"'`
                 proto=`echo $azr | jq ".[(${i})].probes[(${j})].protocol" | tr -d '"'`
                 int=`echo $azr | jq ".[(${i})].probes[(${j})].intervalInSeconds" | tr -d '"'`
-                rpath=`echo $azr | jq ".[(${i})].probes[(${j})].requestPath"`
+                rpath=`echo $azr | jq ".[(${i})].probes[(${j})].requestPath" | tr -d '"'`
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
                 lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
                 prefix=`printf "%s__%s--%s" $prefixa $rg $lbname`
