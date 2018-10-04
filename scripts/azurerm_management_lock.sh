@@ -37,7 +37,9 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
         printf "name = %s\n"  "$oname2"  >> $prefix-$name.tf
         printf "lock_level = %s\n" "$level" >> $prefix-$name.tf
-        printf "notes = %s \n" "$notes" >> $prefix-$name.tf
+        if [ $notes != "null" ]; then
+            printf "notes = %s \n" "$notes" >> $prefix-$name.tf
+        fi
         printf "scope = %s\" \n"  "$scope" >> $prefix-$name.tf
         #
        
