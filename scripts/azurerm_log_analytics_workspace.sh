@@ -40,7 +40,10 @@ if [ "$count2" -gt "0" ]; then
                 printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf            
                 printf "\t sku = %s \n" "$sku" >> $prefix-$name.tf
-                printf "\t retention_in_days = %s \n" "$rdays" >> $prefix-$name.tf
+                # 7 is not a valid value, but is the default reported from AZ api. If 7, skip to avoid triggering plan difference
+                if [ "$rdays" -ne "7" ]; then
+                    printf "\t retention_in_days = %s \n" "$rdays" >> $prefix-$name.tf
+                fi
                 
                 #
                 # New Tags block
