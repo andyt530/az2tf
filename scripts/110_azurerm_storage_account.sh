@@ -48,36 +48,37 @@ if [ "$count" -gt "0" ]; then
         printf "\t account_encryption_source = \"%s\"\n" $saencs >> $prefix-$name.tf
         
         if [ "$nrs.bypass" != "null" ]; then
-        byp=`echo $azr | jq ".[(${i})].networkRuleSet.bypass" | tr -d '"'`
-        ipr=`echo $azr | jq ".[(${i})].networkRuleSet.ipRules"`
-        vnr=`echo $azr | jq ".[(${i})].networkRuleSet.virtualNetworkRules"`
+            byp=`echo $azr | jq ".[(${i})].networkRuleSet.bypass" | tr -d '"'`
+            ipr=`echo $azr | jq ".[(${i})].networkRuleSet.ipRules"`
+            vnr=`echo $azr | jq ".[(${i})].networkRuleSet.virtualNetworkRules"`
 
-        icount=`echo $ipr | jq '. | length'`
-        vcount=`echo $vnr | jq '. | length'`
-        
+            icount=`echo $ipr | jq '. | length'`
+            vcount=`echo $vnr | jq '. | length'`
+            
+            # if the only network rule is AzureServices, dont need a network_rules block
+            if [ "$byp" -ne "AzureServices" ] || [ "$icount" -gt "0" ] || [ "$vcount" -gt "0"]; then
+                printf "\t network_rules { \n" >> $prefix-$name.tf
+                byp=`echo $byp | tr -d ','`
+                printf "\t\t bypass = [\"%s\"]\n" $byp >> $prefix-$name.tf
 
+                if [ "$icount" -gt "0" ]; then
+                    icount=`expr $icount - 1`
+                    for ic in `seq 0 $icount`; do 
+                        ipa=`echo $ipr | jq ".[(${ic})].ipAddressOrRange" | tr -d '"'`
+                        printf "\t\t ip_rules = [\"%s\"]\n" $ipa >> $prefix-$name.tf
+                    done
+                fi
+                
+                if [ "$vcount" -gt "0" ]; then
+                    vcount=`expr $vcount - 1`
+                    for vc in `seq 0 $vcount`; do
+                        vnsid=`echo $vnr | jq ".[(${vc})].virtualNetworkResourceId" | tr -d '"'`
+                        printf "\t\t virtual_network_subnet_ids = [\"%s\"]\n" $vnsid >> $prefix-$name.tf
+                    done
+                fi
 
-        printf "\t network_rules { \n" >> $prefix-$name.tf
-        byp=`echo $byp | tr -d ','`
-        printf "\t\t bypass = [\"%s\"]\n" $byp >> $prefix-$name.tf
-
-        if [ "$icount" -gt "0" ]; then
-            icount=`expr $icount - 1`
-            for ic in `seq 0 $icount`; do 
-                ipa=`echo $ipr | jq ".[(${ic})].ipAddressOrRange" | tr -d '"'`
-                printf "\t\t ip_rules = [\"%s\"]\n" $ipa >> $prefix-$name.tf
-            done
-        fi
-        
-        if [ "$vcount" -gt "0" ]; then
-            vcount=`expr $vcount - 1`
-            for vc in `seq 0 $vcount`; do
-                vnsid=`echo $vnr | jq ".[(${vc})].virtualNetworkResourceId" | tr -d '"'`
-                printf "\t\t virtual_network_subnet_ids = [\"%s\"]\n" $vnsid >> $prefix-$name.tf
-            done
-        fi
-
-        printf "\t } \n" >> $prefix-$name.tf
+                printf "\t } \n" >> $prefix-$name.tf
+            fi
         fi
 
 

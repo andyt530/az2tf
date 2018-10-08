@@ -50,10 +50,12 @@ if [ "$count" -gt "0" ]; then
         printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
         printf "\t type = \"%s\"\n" $type >> $prefix-$name.tf
         printf "\t\t virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $vngrg $vngnam >> $prefix-$name.tf
-        printf "\t authorization_key = \"%s\"\n" $authkey >> $prefix-$name.tf
+        if [ "$authkey" -ne "null" ]; then
+            printf "\t authorization_key = \"%s\"\n" $authkey >> $prefix-$name.tf
+        fi
         
         printf "\t enable_bgp = \"%s\"\n" $enbgp >> $prefix-$name.tf
-        if [ "$rw" != "null" ]; then
+        if [ "$rw" != "null" ] && [ "$rw" != "0" ]; then
             printf "\t routing_weight = \"%s\"\n" $rw >> $prefix-$name.tf
         fi
         if [ "$sk" != "null" ]; then

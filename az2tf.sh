@@ -27,14 +27,20 @@ fi
 export ARM_SUBSCRIPTION_ID="$mysub"
 az account set -s $mysub
 
-mkdir -p tf.$mysub
-cd tf.$mysub
-rm -rf .terraform
+#mkdir -p tf.$mysub
+#cd tf.$mysub
+#rm -rf .terraform
 
 if [ "$2" != "" ]; then
     myrg=$2
+    mkdir -p tf.${mysub}_${myrg}
+    cd tf.${mysub}_${myrg}
+    rm -rf .terraform
     ../scripts/resources.sh $myrg
 else
+    mkdir -p tf.$mysub
+    cd tf.$mysub
+    rm -rf .terraform
     ../scripts/resources.sh
 fi
 

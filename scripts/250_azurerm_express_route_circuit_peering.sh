@@ -62,10 +62,11 @@ if [ "$count2" -gt "0" ]; then
                 printf "\t peer_asn = \"%s\"\n" $pasn >> $prefix-$name.tf
                 
 
-                if [ "$peering_type" = "MicrosoftPeering" ];then
-                printf "\t microsoft_peering_config {\n" >> $prefix-$name.tf
-                printf "\t\t advertised_public_prefixes = %s\n" "$app" >> $prefix-$name.tf
-                printf "\t } \n" >> $prefix-$name.tf
+                if [ "$pt" = "MicrosoftPeering" ] || [ "$pt" = "AzurePrivatePeering" ];then
+                    app=`echo $peers | jq ".[(${k})].properties.microsoftPeeringConfig.advertisedPublicPrefixes"`
+                    printf "\t microsoft_peering_config {\n" >> $prefix-$name.tf
+                    printf "\t\t advertised_public_prefixes = %s\n" "$app" >> $prefix-$name.tf
+                    printf "\t } \n" >> $prefix-$name.tf
                 fi
 
                 #
