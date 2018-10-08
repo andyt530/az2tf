@@ -24,3 +24,4 @@ sub 2.7e97df51-9a8e-457a-ab7a-7502a771bb36-SSP/rg__AzureBackupRG_uksouth_1.tf
 sub 2.7e97df51-9a8e-457a-ab7a-7502a771bb36-SSP/rg__NetworkWatcherRG.tf
 sub 2.7e97df51-9a8e-457a-ab7a-7502a771bb36-SSP/rg__testVM.tf
 scripts/old
+az2tf-v2.sh
