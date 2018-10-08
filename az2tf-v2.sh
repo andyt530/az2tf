@@ -94,7 +94,7 @@ if [ "$count" -gt "0" ]; then
         myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
         echo -n $i of $count " "
         docomm="../scripts/${res[$j]}.sh $myrg"
-        echo "$docomm"
+        echo "$j $docomm"
         eval $docomm       
     done
 fi
@@ -116,7 +116,7 @@ for j in `seq 2 2`; do
         for j2 in `echo $trgs`; do
             echo -n "$c5 of $tc "
             docomm="../scripts/${res[$j]}.sh $j2"
-            echo "$docomm"
+            echo "$j $docomm"
             eval $docomm
             c5=`expr $c5 + 1`
         done
@@ -126,8 +126,9 @@ done
 
 # loop through providers
 
+
 for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
-#for com in `ls ../scripts/*_azurerm*.sh | grep 290 | cut -d'/' -f3 | sort -g`; do
+    #for com in `ls ../scripts/*_azurerm*.sh | grep 290 | cut -d'/' -f3 | sort -g`; do
     if [ "$2" != "" ]; then
         myrg=$2
         #echo $myrg
@@ -145,7 +146,7 @@ for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
             prov=`echo $l | cut -d':' -f2`
             #echo "debug $j prov=$prov  res=${res[$j]}"
             docomm="../scripts/$com $myrg"
-            echo "$docomm"
+            echo "$j $docomm"
             eval $docomm
             lc=`expr $lc + 1`
         done

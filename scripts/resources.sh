@@ -124,7 +124,9 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Network/applicationSecurityGroups") prov="azurerm_application_security_group"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-
+            "Microsoft.ContainerInstance/containerGroups") prov="azurerm_container_group"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
