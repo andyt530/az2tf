@@ -127,6 +127,9 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.ContainerInstance/containerGroups") prov="azurerm_container_group"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Network/applicationGateways") prov="azurerm_application_gateway"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
