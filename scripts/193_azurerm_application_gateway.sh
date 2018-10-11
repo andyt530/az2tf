@@ -37,7 +37,6 @@ if [ "$count" -gt "0" ]; then
         authcerts=`echo $azr | jq ".[(${i})].authenticationCertificates"`
         sslcerts=`echo $azr | jq ".[(${i})].sslCertificates"`
         wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
-        echo $wafc | jq .
         
         prefix=`printf "%s__%s" $prefixa $rg`
         
@@ -266,7 +265,6 @@ if [ "$count" -gt "0" ]; then
 # waf configuration block     wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
 # - not an array like the other blocks 
 #
-
 
         if [ "wafc" != "null" ]; then
             
