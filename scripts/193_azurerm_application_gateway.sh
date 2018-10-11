@@ -37,6 +37,7 @@ if [ "$count" -gt "0" ]; then
         authcerts=`echo $azr | jq ".[(${i})].authenticationCertificates"`
         sslcerts=`echo $azr | jq ".[(${i})].sslCertificates"`
         wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
+        echo $wafc | jq .
         
         prefix=`printf "%s__%s" $prefixa $rg`
         
@@ -261,7 +262,31 @@ if [ "$count" -gt "0" ]; then
             done
         fi
 
-        
+
+# waf configuration block     wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
+# - not an array like the other blocks 
+#
+
+
+        if [ "wafc" != "null" ]; then
+            
+                fmode=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.firewallMode" | tr -d '"'`
+                rst=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.ruleSetType" | tr -d '"'`
+                rsv=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.ruleSetVersion" | tr -d '"'`
+                fen=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.enabled" | tr -d '"'`
+
+                printf "waf_configuration {\n" >> $prefix-$name.tf
+
+                printf "\t firewall_mode = \"%s\" \n"  $fmode >> $prefix-$name.tf
+                printf "\t rule_set_type = \"%s\" \n"  $rst >> $prefix-$name.tf
+                printf "\t rule_set_verison = \"%s\" \n"  $rsv >> $prefix-$name.tf
+                printf "\t enabled = \"%s\" \n"  $fen >> $prefix-$name.tf
+                printf "\t }\n" >> $prefix-$name.tf
+
+            d
+        fi
+
+
         #
         # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
