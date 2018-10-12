@@ -1,16 +1,18 @@
-prefixa=`echo $0 | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}' `
+#prefixa=`echo $0 | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}' `
+prefixa="key_vault_secret"
 tfp=`printf "azurerm_%s" $prefixa`
 
-if [ "$1" != "" ]; then
-    rgsource=$1
-else
-    echo -n "Enter name of Resource Group [$rgsource] > "
-    read response
-    if [ -n "$response" ]; then
-        rgsource=$response
-    fi
-fi
-azr=`az keyvault list -g $rgsource`
+#if [ "$1" != "" ]; then
+ #   rgsource=$1
+#else
+#    echo -n "Enter name of Resource Group [$rgsource] > "
+#    read response
+#    if [ -n "$response" ]; then
+#        rgsource=$response
+#    fi
+#fi
+#azr=`az keyvault list -g $rgsource`
+azr=`az keyvault list`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -44,7 +46,7 @@ if [ "$count" -gt "0" ]; then
                 value=`echo $asec | jq ".value" | tr -d '"'`
                 id=`echo $asec | jq ".id" | tr -d '"'`
                 
-                prefix=`printf "%s__%s" $prefixa $rg`
+                prefix=`printf "azurerm_%s__%s" $prefixa $rg`
                 outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
                
 
