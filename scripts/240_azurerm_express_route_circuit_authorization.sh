@@ -44,12 +44,13 @@ if [ "$count2" -gt "0" ]; then
                 
                 rg=$rgsource
                 prefix=`printf "%s__%s" $prefixa $rg`
-                echo $az2tfmess > $prefix-$name.tf
+                outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+                echo $az2tfmess > $outfile
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
-                printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-                printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-                printf "\t express_route_circuit_name = \"%s\"\n" $name2 >> $prefix-$name.tf
+                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+                printf "\t name = \"%s\"\n" $name >> $outfile
+                printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+                printf "\t express_route_circuit_name = \"%s\"\n" $name2 >> $outfile
                 
                 
                 #
@@ -58,7 +59,7 @@ if [ "$count2" -gt "0" ]; then
                 tt=`echo $tags | jq .`
                 tcount=`echo $tags | jq '. | length'`
                 if [ "$tcount" -gt "0" ]; then
-                    printf "\t tags { \n" >> $prefix-$name.tf
+                    printf "\t tags { \n" >> $outfile
                     tt=`echo $tags | jq .`
                     keys=`echo $tags | jq 'keys'`
                     tcount=`expr $tcount - 1`
@@ -66,14 +67,14 @@ if [ "$count2" -gt "0" ]; then
                         k1=`echo $keys | jq ".[(${j})]"`
                         tval=`echo $tt | jq .$k1`
                         tkey=`echo $k1 | tr -d '"'`
-                        printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                        printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
                     done
-                    printf "\t}\n" >> $prefix-$name.tf
+                    printf "\t}\n" >> $outfile
                 fi
                 
                 
-                printf "}\n" >> $prefix-$name.tf
-                cat $prefix-$name.tf
+                printf "}\n" >> $outfile
+                cat $outfile
                 statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm

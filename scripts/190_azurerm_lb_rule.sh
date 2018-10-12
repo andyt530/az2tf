@@ -17,7 +17,8 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         beap=`echo $azr | jq ".[(${i})].loadBalancingRules"`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        prefix=`printf "%s__%s" $prefixa $rg`       
+        lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
+        lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
         
         icount=`echo $beap | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
@@ -35,37 +36,41 @@ if [ "$count" -gt "0" ]; then
                 ld=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].loadDistribution" | tr -d '"'`
                 itm=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].idleTimeoutInMinutes" | tr -d '"'`
 
+                prg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f5 | tr -d '"'`
                 pid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f11 | tr -d '"'`
+                beadprg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f5 | tr -d '"'`
                 beadpid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f11 | tr -d '"'`
 
+                prefix=`printf "%s__%s" $prefixa $rg` 
+                outfile=`printf "%s.%s__%s__%s.tf" $tfp $rrg $lbname $name`  
+                echo $az2tfmess > $outfile 
+             
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $tfp $rg $lbname $name >> $outfile
+                printf "\t\t name = \"%s\" \n"  $name >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rrg >> $outfile
+                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
+                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $outfile
+                printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile   
+                printf "\t\t frontend_port = \"%s\" \n"  $fep >> $outfile
+                printf "\t\t backend_port = \"%s\" \n"  $bep >> $outfile
                 
-                lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
-                lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
+                printf "\t\t backend_address_pool_id = \"\${azurerm_lb_backend_address_pool.%s__%s__%s.id}\"\n" $beadprg $lbname $beadpid >> $outfile
+                printf "\t\t probe_id = \"\${azurerm_lb_probe.%s__%s__%s.id}\"\n" $prg $lbname $pid >> $outfile
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
-                printf "\t\t resource_group_name = \"%s\" \n"  $rrg >> $prefix-$name.tf
-                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
-                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $prefix-$name.tf
-                printf "\t\t protocol = \"%s\" \n"  $proto >> $prefix-$name.tf   
-                printf "\t\t frontend_port = \"%s\" \n"  $fep >> $prefix-$name.tf
-                printf "\t\t backend_port = \"%s\" \n"  $bep >> $prefix-$name.tf
-                
-                printf "\t\t backend_address_pool_id = \"\${azurerm_lb_backend_address_pool.%s__%s--%s.id}\"\n" $rg $lbname $beadpid >> $prefix-$name.tf
-                printf "\t\t probe_id = \"\${azurerm_lb_probe.%s__%s--%s.id}\"\n" $rg $lbname $pid >> $prefix-$name.tf
-                
-                printf "\t\t enable_floating_ip = \"%s\" \n"  $efip >> $prefix-$name.tf
-                printf "\t\t idle_timeout_in_minutes = \"%s\" \n"  $itm >> $prefix-$name.tf
-                printf "\t\t load_distribution = \"%s\" \n"  $ld >> $prefix-$name.tf
+                printf "\t\t enable_floating_ip = \"%s\" \n"  $efip >> $outfile
+                printf "\t\t idle_timeout_in_minutes = \"%s\" \n"  $itm >> $outfile
+                printf "\t\t load_distribution = \"%s\" \n"  $ld >> $outfile
 
 
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
         #
-                cat $prefix-$name.tf
-                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+
+                cat $outfile
+                statecomm=`printf "terraform state rm %s.%s__%s__%s" $tfp $rg $lbname $name`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s__%s %s" $tfp $rg $lbname $name $id`
+
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 

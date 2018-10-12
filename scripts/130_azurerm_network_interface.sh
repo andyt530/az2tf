@@ -21,23 +21,26 @@ if [ "$count" -gt "0" ]; then
         ipfor=`echo $azr | jq ".[(${i})].enableIpForwarding" | tr -d '"'`
         netacc=`echo $azr | jq ".[(${i})].enableAcceleratedNetworking" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
         snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
         snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f5 | tr -d '"'`
         ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`
         
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
         if [ "$snsg" != "null" ]; then
-            printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $prefix-$name.tf
+            printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outfile
         fi
         
-        #printf "\t internal_dns_name_label  = \"%s\"\n" $ipfor >> $prefix-$name.tf
-        printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $prefix-$name.tf
-        printf "\t enable_accelerated_networking  = \"%s\"\n" $netacc >> $prefix-$name.tf
-        #printf "\t dns_servers  = \"%s\"\n" $ipfor >> $prefix-$name.tf
+        #printf "\t internal_dns_name_label  = \"%s\"\n" $ipfor >> $outfile
+        printf "\t enable_ip_forwarding = \"%s\"\n" $ipfor >> $outfile
+        printf "\t enable_accelerated_networking  = \"%s\"\n" $netacc >> $outfile
+        #printf "\t dns_servers  = \"%s\"\n" $ipfor >> $outfile
         privip0=`echo $azr | jq ".[(${i})].ipConfigurations[(0)].privateIpAddress" | tr -d '"'`
         
         
@@ -59,21 +62,21 @@ if [ "$count" -gt "0" ]; then
                 
                 
                 
-                printf "\t ip_configuration {\n" >> $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $ipcname >> $prefix-$name.tf
-                printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
+                printf "\t ip_configuration {\n" >> $outfile
+                printf "\t\t name = \"%s\" \n"  $ipcname >> $outfile
+                printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $outfile
                 if [ "$subipalloc" != "Dynamic" ]; then
-                    printf "\t\t private_ip_address = \"%s\" \n"  $privip >> $prefix-$name.tf
+                    printf "\t\t private_ip_address = \"%s\" \n"  $privip >> $outfile
                 fi
-                printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+                printf "\t\t private_ip_address_allocation = \"%s\" \n"  $subipalloc >> $outfile
                 if [ "$subipid" != "null" ]; then
-                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubiprg $pubipnam >> $prefix-$name.tf
+                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubiprg $pubipnam >> $outfile
                 fi
-                #printf "\t\t application_gateway_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-                #printf "\t\t load_balancer_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-                #printf "\t\t load_balancer_inbound_nat_rules_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-                #printf "\t\t application_security_group_ids = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
-                printf "\t\t primary = \"%s\" \n"  $prim >> $prefix-$name.tf
+                #printf "\t\t application_gateway_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $outfile
+                #printf "\t\t load_balancer_backend_address_pools_ids = \"%s\" \n"  $subipalloc >> $outfile
+                #printf "\t\t load_balancer_inbound_nat_rules_ids = \"%s\" \n"  $subipalloc >> $outfile
+                #printf "\t\t application_security_group_ids = \"%s\" \n"  $subipalloc >> $outfile
+                printf "\t\t primary = \"%s\" \n"  $prim >> $outfile
                 
                 asgs=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups"`
                 #if [ $asgs != null ]; then
@@ -84,24 +87,24 @@ if [ "$count" -gt "0" ]; then
                             asgnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | tr -d '"'`
                             asgrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | tr -d '"'`
                             
-                            printf "\t\t application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $prefix-$name.tf
+                            printf "\t\t application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $outfile
                         done
                     fi
                 #fi
                 
-                printf "\t}\n" >> $prefix-$name.tf
+                printf "\t}\n" >> $outfile
                 #
                 
             done
         fi
-        #printf "\t private_ip_address = \"%s\" \n"  $pprivip >> $prefix-$name.tf
+        #printf "\t private_ip_address = \"%s\" \n"  $pprivip >> $outfile
         #
         # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -109,15 +112,15 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

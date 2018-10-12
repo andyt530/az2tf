@@ -28,24 +28,26 @@ if [ "$count" -gt "0" ]; then
         scope=`echo ${t%/providers/}`
 
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
 
         #strip troublesome characters out of name
         rname=`echo ${oname//[/_}` 
         name=`echo ${rname//]/_}` 
         name=`echo ${name// /_}`
  
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "name = %s\n"  "$oname2"  >> $prefix-$name.tf
-        printf "lock_level = %s\n" "$level" >> $prefix-$name.tf
-        if [ $notes != "null" ]; then
-            printf "notes = %s \n" "$notes" >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "name = %s\n"  "$oname2"  >> $outfile
+        printf "lock_level = %s\n" "$level" >> $outfile
+        if [ "$notes" != "null" ]; then
+            printf "notes = %s \n" "$notes" >> $outfile
         fi
-        printf "scope = %s\" \n"  "$scope" >> $prefix-$name.tf
+        printf "scope = %s\" \n"  "$scope" >> $outfile
         #
        
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

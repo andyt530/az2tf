@@ -33,47 +33,49 @@ if [ "$count" -gt "0" ]; then
         aa=`echo $azr | jq ".[(${i})].activeActive"`
         enbgp=`echo $azr | jq ".[(${i})].enableBgp"`
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        printf "\t type = \"%s\"\n" $type >> $prefix-$name.tf
-        printf "\t vpn_type = \"%s\"\n" $vpntype >> $prefix-$name.tf
-        printf "\t sku = \"%s\"\n" $sku >> $prefix-$name.tf
-        printf "\t active_active = \"%s\"\n" $aa >> $prefix-$name.tf
-        printf "\t enable_bgp = \"%s\"\n" $enbgp >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+        printf "\t type = \"%s\"\n" $type >> $outfile
+        printf "\t vpn_type = \"%s\"\n" $vpntype >> $outfile
+        printf "\t sku = \"%s\"\n" $sku >> $outfile
+        printf "\t active_active = \"%s\"\n" $aa >> $outfile
+        printf "\t enable_bgp = \"%s\"\n" $enbgp >> $outfile
         
         if [ "$vadsp" != "null" ]; then
-            printf "\t vpn_client_configuration {\n"  >> $prefix-$name.tf
-            printf "\t\t address_space = %s\n"  "$vadsp" >> $prefix-$name.tf
+            printf "\t vpn_client_configuration {\n"  >> $outfile
+            printf "\t\t address_space = %s\n"  "$vadsp" >> $outfile
             if [ "$radsa" == "null" ]; then
-                printf "\t\t root_certificate { \n"   >> $prefix-$name.tf
-                printf "\t\t\t name = \"\"\n"   >> $prefix-$name.tf
-                printf "\t\t\t public_cert_data = \"\"\n"   >> $prefix-$name.tf
-                printf "\t\t }\n"  >> $prefix-$name.tf
+                printf "\t\t root_certificate { \n"   >> $outfile
+                printf "\t\t\t name = \"\"\n"   >> $outfile
+                printf "\t\t\t public_cert_data = \"\"\n"   >> $outfile
+                printf "\t\t }\n"  >> $outfile
             fi
             if [ "$radsa" != "null" ]; then
-            printf "\t\t radius_server_address = %s\n"  "$radsa" >> $prefix-$name.tf
-            printf "\t\t radius_server_secret = %s\n"  "$radss" >> $prefix-$name.tf
+            printf "\t\t radius_server_address = %s\n"  "$radsa" >> $outfile
+            printf "\t\t radius_server_secret = %s\n"  "$radss" >> $outfile
             fi
             if [ "$vcp0" != "null" ]; then
-            printf "\t\t vpn_client_protocols = %s\n"  "$vcp" >> $prefix-$name.tf
+            printf "\t\t vpn_client_protocols = %s\n"  "$vcp" >> $outfile
             fi
             
-            printf "\t }\n"  >> $prefix-$name.tf
+            printf "\t }\n"  >> $outfile
         fi
         
         
         if [ "$bgps" != "null" ]; then
-            printf "\t bgp_settings {\n"  >> $prefix-$name.tf
+            printf "\t bgp_settings {\n"  >> $outfile
             asn=`echo $azr | jq ".[(${i})].bgpSettings.asn" | tr -d '"'`
             peera=`echo $azr | jq ".[(${i})].bgpSettings.bgpPeeringAddress" | tr -d '"'`
             peerw=`echo $azr | jq ".[(${i})].bgpSettings.peerWeight" | tr -d '"'`
-            printf "\t\t asn = \"%s\"\n" $asn >> $prefix-$name.tf
-            printf "\t\t peering_address = \"%s\"\n" $peera >> $prefix-$name.tf
-            printf "\t\t peer_weight = \"%s\"\n" $peerw >> $prefix-$name.tf
-            printf "\t }\n"  >> $prefix-$name.tf
+            printf "\t\t asn = \"%s\"\n" $asn >> $outfile
+            printf "\t\t peering_address = \"%s\"\n" $peera >> $outfile
+            printf "\t\t peer_weight = \"%s\"\n" $peerw >> $outfile
+            printf "\t }\n"  >> $outfile
         fi
         
         ipc=`echo $azr | jq ".[(${i})].ipConfigurations"`
@@ -88,16 +90,16 @@ if [ "$count" -gt "0" ]; then
             piprg=`echo $ipcpipid | cut -d'/' -f5 | tr -d '"'`
             subnam=`echo $ipcsubid | cut -d'/' -f11 | tr -d '"'`
             subrg=`echo $ipcsubid | cut -d'/' -f5 | tr -d '"'`
-            printf "\tip_configuration {\n"  >> $prefix-$name.tf
-            printf "\t\t name = %s\n" $ipcname >> $prefix-$name.tf
-            printf "\t\t private_ip_address_allocation = %s\n" $ipcpipa >> $prefix-$name.tf
+            printf "\tip_configuration {\n"  >> $outfile
+            printf "\t\t name = %s\n" $ipcname >> $outfile
+            printf "\t\t private_ip_address_allocation = %s\n" $ipcpipa >> $outfile
             if [ "$pipnam" != "null" ]; then
-                printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $piprg $pipnam >> $prefix-$name.tf
+                printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $piprg $pipnam >> $outfile
             fi
             if [ "$subnam" != "null" ]; then
-                printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subnam >> $prefix-$name.tf
+                printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subnam >> $outfile
             fi
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         done
         
         #
@@ -106,7 +108,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -114,15 +116,15 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

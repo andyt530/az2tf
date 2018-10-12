@@ -24,6 +24,9 @@ if [ "$count" -gt "0" ]; then
         
         
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
         satier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         sakind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
         sartype=`echo $azr | jq ".[(${i})].sku.name" | cut -f2 -d'_' | tr -d '"'`
@@ -33,19 +36,18 @@ if [ "$count" -gt "0" ]; then
         nrs=`echo $azr | jq ".[(${i})].networkRuleSet"`
         saencs=`echo $azr | jq ".[(${i})].encryption.keySource" | tr -d '"'`
         
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
         
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t account_tier = \"%s\"\n" $satier >> $prefix-$name.tf
-        printf "\t account_kind = \"%s\"\n" $sakind >> $prefix-$name.tf
-        printf "\t account_replication_type = \"%s\"\n" $sartype >> $prefix-$name.tf
-        printf "\t enable_blob_encryption = \"%s\"\n" $saencrypt >> $prefix-$name.tf
-        printf "\t enable_file_encryption = \"%s\"\n" $fiencrypt >> $prefix-$name.tf
-        printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $prefix-$name.tf
-        printf "\t account_encryption_source = \"%s\"\n" $saencs >> $prefix-$name.tf
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t account_tier = \"%s\"\n" $satier >> $outfile
+        printf "\t account_kind = \"%s\"\n" $sakind >> $outfile
+        printf "\t account_replication_type = \"%s\"\n" $sartype >> $outfile
+        printf "\t enable_blob_encryption = \"%s\"\n" $saencrypt >> $outfile
+        printf "\t enable_file_encryption = \"%s\"\n" $fiencrypt >> $outfile
+        printf "\t enable_https_traffic_only = \"%s\"\n" $sahttps >> $outfile
+        printf "\t account_encryption_source = \"%s\"\n" $saencs >> $outfile
         
         if [ "$nrs.bypass" != "null" ]; then
             byp=`echo $azr | jq ".[(${i})].networkRuleSet.bypass" | tr -d '"'`
@@ -57,15 +59,15 @@ if [ "$count" -gt "0" ]; then
             
             # if the only network rule is AzureServices, dont need a network_rules block
             if [ "$byp" != "AzureServices" ] || [ "$icount" -gt "0" ] || [ "$vcount" -gt "0" ]; then
-                printf "\t network_rules { \n" >> $prefix-$name.tf
+                printf "\t network_rules { \n" >> $outfile
                 byp=`echo $byp | tr -d ','`
-                printf "\t\t bypass = [\"%s\"]\n" $byp >> $prefix-$name.tf
+                printf "\t\t bypass = [\"%s\"]\n" $byp >> $outfile
 
                 if [ "$icount" -gt "0" ]; then
                     icount=`expr $icount - 1`
                     for ic in `seq 0 $icount`; do 
                         ipa=`echo $ipr | jq ".[(${ic})].ipAddressOrRange" | tr -d '"'`
-                        printf "\t\t ip_rules = [\"%s\"]\n" $ipa >> $prefix-$name.tf
+                        printf "\t\t ip_rules = [\"%s\"]\n" $ipa >> $outfile
                     done
                 fi
                 
@@ -73,11 +75,11 @@ if [ "$count" -gt "0" ]; then
                     vcount=`expr $vcount - 1`
                     for vc in `seq 0 $vcount`; do
                         vnsid=`echo $vnr | jq ".[(${vc})].virtualNetworkResourceId" | tr -d '"'`
-                        printf "\t\t virtual_network_subnet_ids = [\"%s\"]\n" $vnsid >> $prefix-$name.tf
+                        printf "\t\t virtual_network_subnet_ids = [\"%s\"]\n" $vnsid >> $outfile
                     done
                 fi
 
-                printf "\t } \n" >> $prefix-$name.tf
+                printf "\t } \n" >> $outfile
             fi
         fi
 
@@ -91,7 +93,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -99,16 +101,16 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

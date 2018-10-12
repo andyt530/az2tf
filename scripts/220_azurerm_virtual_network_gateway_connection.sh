@@ -22,7 +22,7 @@ if [ "$count" -gt "0" ]; then
         type=`echo $azr | jq ".[(${i})].connectionType" | tr -d '"'`
         vngrg=`echo $azr | jq ".[(${i})].virtualNetworkGateway1.id" | cut -d'/' -f5 | tr -d '"'`
         vngnam=`echo $azr | jq ".[(${i})].virtualNetworkGateway1.id" | cut -d'/' -f9 | tr -d '"'`
-        echo
+        
         peerrg=`echo $azr | jq ".[(${i})].peer.id" | cut -d'/' -f5 | tr -d '"'`
         peernam=`echo $azr | jq ".[(${i})].peer.id" | cut -d'/' -f9 | tr -d '"'`
         
@@ -43,38 +43,40 @@ if [ "$count" -gt "0" ]; then
         pbs=`echo $azr | jq ".[(${i})].usePolicyBasedTrafficSelectors" | tr -d '"'`
         
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        printf "\t type = \"%s\"\n" $type >> $prefix-$name.tf
-        printf "\t\t virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $vngrg $vngnam >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+        printf "\t type = \"%s\"\n" $type >> $outfile
+        printf "\t\t virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $vngrg $vngnam >> $outfile
         if [ "$authkey" -ne "null" ]; then
-            printf "\t authorization_key = \"%s\"\n" $authkey >> $prefix-$name.tf
+            printf "\t authorization_key = \"%s\"\n" $authkey >> $outfile
         fi
         
-        printf "\t enable_bgp = \"%s\"\n" $enbgp >> $prefix-$name.tf
+        printf "\t enable_bgp = \"%s\"\n" $enbgp >> $outfile
         if [ "$rw" != "null" ] && [ "$rw" != "0" ]; then
-            printf "\t routing_weight = \"%s\"\n" $rw >> $prefix-$name.tf
+            printf "\t routing_weight = \"%s\"\n" $rw >> $outfile
         fi
         if [ "$sk" != "null" ]; then
-            printf "\t shared_key = \"%s\"\n" $sk >> $prefix-$name.tf
+            printf "\t shared_key = \"%s\"\n" $sk >> $outfile
         fi
-        printf "\t use_policy_based_traffic_selectors = \"%s\"\n" $pbs >> $prefix-$name.tf
+        printf "\t use_policy_based_traffic_selectors = \"%s\"\n" $pbs >> $outfile
         echo $type
         if [ "$type" == "ExpressRoute" ]; then
             peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
-            printf "\t\t express_route_circuit_id = \"%s\"\n" $peerid >> $prefix-$name.tf
-            #printf "\t\t express_route_circuit_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
+            printf "\t\t express_route_circuit_id = \"%s\"\n" $peerid >> $outfile
+            #printf "\t\t express_route_circuit_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $outfile
             peerid=`echo $azr | jq ".[(${i})].peer.id" | tr -d '"'`
             
         fi
         if [ "$type" == "Vnet2Vnet" ]; then
-            printf "\t\t peer_virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
+            printf "\t\t peer_virtual_network_gateway_id = \"\${azurerm_virtual_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $outfile
         fi
         if [ "$type" == "IPsec" ]; then
-            printf "\t\t local_network_gateway_id = \"\${azurerm_local_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $prefix-$name.tf
+            printf "\t\t local_network_gateway_id = \"\${azurerm_local_network_gateway.%s__%s.id}\"\n" $peerrg $peernam >> $outfile
         fi
         
         
@@ -83,12 +85,12 @@ if [ "$count" -gt "0" ]; then
         if [ "$jcount" -gt "0" ]; then
             jcount=`expr $jcount - 1`
             for j in `seq 0 $jcount`; do
-                printf "\t ipsec_policy {\n" >> $prefix-$name.tf
+                printf "\t ipsec_policy {\n" >> $outfile
                 
                 dhg=`echo $ipsec | jq ".[(${j})].dhGroup"`
-                printf "\t dh_group {\n" $dhg >> $prefix-$name.tf
+                printf "\t dh_group {\n" $dhg >> $outfile
                 
-                printf "\t}\n" >> $prefix-$name.tf
+                printf "\t}\n" >> $outfile
             done
         fi
         
@@ -98,7 +100,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -106,15 +108,15 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

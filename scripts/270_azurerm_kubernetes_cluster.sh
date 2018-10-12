@@ -36,28 +36,30 @@ if [ "$count" != "0" ]; then
         np=`echo $azr | jq ".[(${i})].networkProfile" | tr -d '"'`
         
         prefix=`printf "%s__%s" $prefixa $rg`
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t dns_prefix = \"%s\"\n" $dnsp >> $prefix-$name.tf
-        printf "\t kubernetes_version = \"%s\"\n" $kv >> $prefix-$name.tf
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t dns_prefix = \"%s\"\n" $dnsp >> $outfile
+        printf "\t kubernetes_version = \"%s\"\n" $kv >> $outfile
         
         if [ "$lp" != "null" ]; then
-            printf "\t linux_profile {\n" >> $prefix-$name.tf
-            printf "\t\t admin_username =  \"%s\"\n" $au >> $prefix-$name.tf
-            printf "\t\t ssh_key {\n" >> $prefix-$name.tf
-            printf "\t\t\t key_data =  %s \n" "$sshk" >> $prefix-$name.tf
-            printf "\t\t }\n" >> $prefix-$name.tf
-            printf "\t }\n" >> $prefix-$name.tf
+            printf "\t linux_profile {\n" >> $outfile
+            printf "\t\t admin_username =  \"%s\"\n" $au >> $outfile
+            printf "\t\t ssh_key {\n" >> $outfile
+            printf "\t\t\t key_data =  %s \n" "$sshk" >> $outfile
+            printf "\t\t }\n" >> $outfile
+            printf "\t }\n" >> $outfile
         #else
-            #printf "\t linux_profile {\n" >> $prefix-$name.tf
-            #printf "\t\t admin_username =  \"%s\"\n" "" >> $prefix-$name.tf
-            #printf "\t\t ssh_key {\n" >> $prefix-$name.tf
-            #printf "\t\t\t key_data =  \"%s\" \n" "" >> $prefix-$name.tf
-            #printf "\t\t }\n" >> $prefix-$name.tf
-            #printf "\t }\n" >> $prefix-$name.tf
+            #printf "\t linux_profile {\n" >> $outfile
+            #printf "\t\t admin_username =  \"%s\"\n" "" >> $outfile
+            #printf "\t\t ssh_key {\n" >> $outfile
+            #printf "\t\t\t key_data =  \"%s\" \n" "" >> $outfile
+            #printf "\t\t }\n" >> $outfile
+            #printf "\t }\n" >> $outfile
         fi
         
         if [ "$np" != "null" ]; then
@@ -67,39 +69,39 @@ if [ "$count" != "0" ]; then
             dbrcidr=`echo $azr | jq ".[(${i})].networkProfile.dockerBridgeCidr" | tr -d '"'`
             podcidr=`echo $azr | jq ".[(${i})].networkProfile.podCidr" | tr -d '"'`
 
-            printf "\t network_profile {\n" >> $prefix-$name.tf
-            printf "\t\t network_plugin =  \"%s\"\n" $netp >> $prefix-$name.tf
+            printf "\t network_profile {\n" >> $outfile
+            printf "\t\t network_plugin =  \"%s\"\n" $netp >> $outfile
             if [ "$srvcidr" != "null" ]; then
-            printf "\t\t service_cidr =  \"%s\"\n" $srvcidr >> $prefix-$name.tf
+            printf "\t\t service_cidr =  \"%s\"\n" $srvcidr >> $outfile
             fi
             if [ "$dnssrvip" != "null" ]; then
-            printf "\t\t dns_service_ip =  \"%s\"\n" $dnssrvip >> $prefix-$name.tf
+            printf "\t\t dns_service_ip =  \"%s\"\n" $dnssrvip >> $outfile
             fi
             if [ "$dbrcidr" != "null" ]; then
-            printf "\t\t docker_bridge_cidr =  \"%s\"\n" $dbrcidr >> $prefix-$name.tf
+            printf "\t\t docker_bridge_cidr =  \"%s\"\n" $dbrcidr >> $outfile
             fi
             if [ "$podcidr" != "null" ]; then
-            printf "\t\t pod_cidr =  \"%s\"\n" $podcidr >> $prefix-$name.tf
+            printf "\t\t pod_cidr =  \"%s\"\n" $podcidr >> $outfile
             fi
 
-            printf "\t }\n" >> $prefix-$name.tf
+            printf "\t }\n" >> $outfile
         fi
 
         
-        printf "\t agent_pool_profile {\n" >> $prefix-$name.tf
-        printf "\t\t name =  \"%s\"\n" $pname >> $prefix-$name.tf
-        printf "\t\t vm_size =  \"%s\"\n" $vms >> $prefix-$name.tf
-        printf "\t\t count =  \"%s\"\n" $pcount >> $prefix-$name.tf
-        printf "\t\t os_type =  \"%s\"\n" $ost >> $prefix-$name.tf
+        printf "\t agent_pool_profile {\n" >> $outfile
+        printf "\t\t name =  \"%s\"\n" $pname >> $outfile
+        printf "\t\t vm_size =  \"%s\"\n" $vms >> $outfile
+        printf "\t\t count =  \"%s\"\n" $pcount >> $outfile
+        printf "\t\t os_type =  \"%s\"\n" $ost >> $outfile
         if [ "$vnsrg" != "null" ]; then
-        printf "\t\t vnet_subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $vnsrg $vnsid >> $prefix-$name.tf      
+        printf "\t\t vnet_subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $vnsrg $vnsid >> $outfile      
         fi
-        printf "\t }\n" >> $prefix-$name.tf
+        printf "\t }\n" >> $outfile
         
-        printf "\t service_principal {\n" >> $prefix-$name.tf
-        printf "\t\t client_id =  \"%s\"\n" $clid >> $prefix-$name.tf
-        printf "\t\t client_secret =  \"%s\"\n" "" >> $prefix-$name.tf
-        printf "\t }\n" >> $prefix-$name.tf
+        printf "\t service_principal {\n" >> $outfile
+        printf "\t\t client_id =  \"%s\"\n" $clid >> $outfile
+        printf "\t\t client_secret =  \"%s\"\n" "" >> $outfile
+        printf "\t }\n" >> $outfile
         
           
         #
@@ -108,7 +110,7 @@ if [ "$count" != "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -116,15 +118,15 @@ if [ "$count" != "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         #
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

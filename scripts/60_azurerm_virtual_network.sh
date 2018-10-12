@@ -24,20 +24,22 @@ if [ "$count" -gt "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location"`
         
         prefix=`printf "%s__%s" $prefixa $rg`
-        
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
         dns=`echo $azr | jq ".[(${i})].dhcpOptions.dnsServers"`
         addsp=`echo $azr | jq ".[(${i})].addressSpace.addressPrefixes"`
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\tname = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+ 
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\tname = \"%s\"\n" $name >> $outfile
+        printf "\t location = %s\n" "$loc" >> $outfile
+        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n"  >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         if [ "$dns" != "null" ]; then
-            printf "\t dns_servers = %s\n" "$dns" >> $prefix-$name.tf
+            printf "\t dns_servers = %s\n" "$dns" >> $outfile
         fi
 
-        printf "\taddress_space = %s\n" "$addsp" >> $prefix-$name.tf
+        printf "\taddress_space = %s\n" "$addsp" >> $outfile
         #
         #loop around subnets
         #
@@ -50,13 +52,13 @@ if [ "$count" -gt "0" ]; then
             snnsgid=`echo $subs | jq ".[(${j})].networkSecurityGroup.id"`
             nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
             nsgrg=`echo $snnsgid | cut -d'/' -f5 | tr -d '"'`
-            printf "\tsubnet {\n"  >> $prefix-$name.tf
-            printf "\t\t name = %s\n" $snname >> $prefix-$name.tf
-            printf "\t\t address_prefix = %s\n" $snaddr >> $prefix-$name.tf
+            printf "\tsubnet {\n"  >> $outfile
+            printf "\t\t name = %s\n" $snname >> $outfile
+            printf "\t\t address_prefix = %s\n" $snaddr >> $outfile
             if [ "$nsgnam" != "null" ]; then
-                printf "\t\t security_group = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $nsgrg $nsgnam >> $prefix-$name.tf
+                printf "\t\t security_group = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $nsgrg $nsgnam >> $outfile
             fi
-            printf "\t}\n" >> $prefix-$name.tf          
+            printf "\t}\n" >> $outfile          
         done
 
             #
@@ -65,7 +67,7 @@ if [ "$count" -gt "0" ]; then
             tt=`echo $tags | jq .`
             tcount=`echo $tags | jq '. | length'`
             if [ "$tcount" -gt "0" ]; then
-                printf "\t tags { \n" >> $prefix-$name.tf
+                printf "\t tags { \n" >> $outfile
                 tt=`echo $tags | jq .`
                 keys=`echo $tags | jq 'keys'`
                 tcount=`expr $tcount - 1`
@@ -73,15 +75,15 @@ if [ "$count" -gt "0" ]; then
                     k1=`echo $keys | jq ".[(${j})]"`
                     tval=`echo $tt | jq .$k1`
                     tkey=`echo $k1 | tr -d '"'`
-                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                    printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
                 done
-                printf "\t}\n" >> $prefix-$name.tf
+                printf "\t}\n" >> $outfile
             fi
 
-        echo "}" >> $prefix-$name.tf
+        echo "}" >> $outfile
         #
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm 

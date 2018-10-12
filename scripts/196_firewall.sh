@@ -23,12 +23,14 @@ if [ "$count" -gt "0" ]; then
         fronts=`echo $azr | jq ".[(${i})].frontendIpConfigurations"`
         
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = %s\n" "$loc" >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t sku = \"%s\"\n" $sku >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = %s\n" "$loc" >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t sku = \"%s\"\n" $sku >> $outfile
            
         icount=`echo $fronts | jq '. | length'`
        
@@ -46,30 +48,30 @@ if [ "$count" -gt "0" ]; then
                 subname=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
                 privalloc=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 
-                printf "\t frontend_ip_configuration {\n" >> $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $fname >> $prefix-$name.tf
+                printf "\t frontend_ip_configuration {\n" >> $outfile
+                printf "\t\t name = \"%s\" \n"  $fname >> $outfile
                 if [ "$subname" != "null" ]; then
-                    printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix-$name.tf
+                    printf "\t\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $outfile
                 fi
                 if [ "$priv" != "null" ]; then
-                    printf "\t\t private_ip_address = \"%s\" \n"  $priv >> $prefix-$name.tf
+                    printf "\t\t private_ip_address = \"%s\" \n"  $priv >> $outfile
                 fi            
                 if [ "$privalloc" != "null" ]; then
-                    printf "\t\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $prefix-$name.tf
+                    printf "\t\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $outfile
                 fi
                 if [ "$pubname" != "null" ]; then
-                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubrg $pubname >> $prefix-$name.tf
+                    printf "\t\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubrg $pubname >> $outfile
                 fi
 
-                printf "\t }\n" >> $prefix-$name.tf
+                printf "\t }\n" >> $outfile
                 
             done
         fi
         
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

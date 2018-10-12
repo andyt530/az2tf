@@ -41,20 +41,23 @@ if [ "$count" -gt "0" ]; then
             urg=`echo $peers | jq ".[(${j})].useRemoteGateways" | tr -d '"'`
 
             prefix=`printf "%s__%s" $prefixa $rg`
-            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
+            outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+            echo $az2tfmess > $outfile
+
+            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
             #nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
             #nsgrg=`echo $snnsgid | cut -d'/' -f5 | tr -d '"'`
-            printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-            printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-            printf "\t virtual_network_name = \"%s\"\n" $vnname >> $prefix-$name.tf
-            printf "\t remote_virtual_network_id = \"%s\"\n" $rvnid >> $prefix-$name.tf
-            printf "\t allow_forwarded_traffic = \"%s\"\n" $aft >> $prefix-$name.tf
-            printf "\t allow_gateway_transit = \"%s\"\n" $agt >> $prefix-$name.tf
-            printf "\t allow_virtual_network_access = \"%s\"\n" $avna >> $prefix-$name.tf
-            printf "\t use_remote_gateways = \"%s\"\n" $urg >> $prefix-$name.tf
+            printf "\t name = \"%s\"\n" $name >> $outfile
+            printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+            printf "\t virtual_network_name = \"%s\"\n" $vnname >> $outfile
+            printf "\t remote_virtual_network_id = \"%s\"\n" $rvnid >> $outfile
+            printf "\t allow_forwarded_traffic = \"%s\"\n" $aft >> $outfile
+            printf "\t allow_gateway_transit = \"%s\"\n" $agt >> $outfile
+            printf "\t allow_virtual_network_access = \"%s\"\n" $avna >> $outfile
+            printf "\t use_remote_gateways = \"%s\"\n" $urg >> $outfile
                         
-            printf "}\n" >> $prefix-$name.tf
-            cat $prefix-$name.tf
+            printf "}\n" >> $outfile
+            cat $outfile
 
             statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
             echo $statecomm >> tf-staterm.sh

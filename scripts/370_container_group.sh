@@ -28,18 +28,19 @@ if [ "$count" != "0" ]; then
         vols=`echo $azr | jq ".[(${i})].volumes"`
         irc=`echo $azr | jq ".[(${i})].imageRegistryCredentials"`
         
-        
         prefix=`printf "%s__%s" $prefixa $rg`
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t ip_address_type = \"%s\"\n" $iptype >> $prefix-$name.tf
-        printf "\t os_type = \"%s\"\n" $ostyp >> $prefix-$name.tf
-        printf "\t restart_policy = \"%s\"\n" $rp >> $prefix-$name.tf
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t ip_address_type = \"%s\"\n" $iptype >> $outfile
+        printf "\t os_type = \"%s\"\n" $ostyp >> $outfile
+        printf "\t restart_policy = \"%s\"\n" $rp >> $outfile
         if [ "$dnsl" != "null" ]; then
-            printf "\t dns_name_label = \"%s\"\n" $dnsl >> $prefix-$name.tf
+            printf "\t dns_name_label = \"%s\"\n" $dnsl >> $outfile
         fi
         
         
@@ -67,47 +68,47 @@ if [ "$count" != "0" ]; then
                 
                 envs=`echo $azr | jq ".[(${i})].containers[(${j})].environmentVariables"`
                 
-                printf "\t container {\n" >> $prefix-$name.tf
-                printf "\t\t name = %s\n" $cname >> $prefix-$name.tf
-                printf "\t\t image = %s\n" $cimg >> $prefix-$name.tf
-                printf "\t\t cpu = \"%s\"\n" $ccpu >> $prefix-$name.tf
-                printf "\t\t memory = \"%s\"\n" $cmem >> $prefix-$name.tf
+                printf "\t container {\n" >> $outfile
+                printf "\t\t name = %s\n" $cname >> $outfile
+                printf "\t\t image = %s\n" $cimg >> $outfile
+                printf "\t\t cpu = \"%s\"\n" $ccpu >> $outfile
+                printf "\t\t memory = \"%s\"\n" $cmem >> $outfile
                 # should be looped
                 
-                printf "\t\t port = \"%s\"\n" $cport >> $prefix-$name.tf
+                printf "\t\t port = \"%s\"\n" $cport >> $outfile
                 if [ "$cproto" != "null" ]; then
-                    printf "\t\t protocol = %s\n" $cproto >> $prefix-$name.tf
+                    printf "\t\t protocol = %s\n" $cproto >> $outfile
                 fi
 
                 if [ "$cvols" != "null" ]; then
-                    printf "\t\t volume {\n" >> $prefix-$name.tf
-                    printf "\t\t\t  name = %s\n" $vmname >> $prefix-$name.tf
-                    printf "\t\t\t  mount_path = %s\n" $vmpath >> $prefix-$name.tf
-                    printf "\t\t\t  read_only = \"%s\"\n" $vmro >> $prefix-$name.tf
-                    printf "\t\t\t  share_name = %s\n" $vshr >> $prefix-$name.tf
-                    printf "\t\t\t  storage_account_name = %s\n" $vsacc >> $prefix-$name.tf
+                    printf "\t\t volume {\n" >> $outfile
+                    printf "\t\t\t  name = %s\n" $vmname >> $outfile
+                    printf "\t\t\t  mount_path = %s\n" $vmpath >> $outfile
+                    printf "\t\t\t  read_only = \"%s\"\n" $vmro >> $outfile
+                    printf "\t\t\t  share_name = %s\n" $vshr >> $outfile
+                    printf "\t\t\t  storage_account_name = %s\n" $vsacc >> $outfile
                     if [ "$vskey" == "null" ]; then
-                        printf "\t\t\t  storage_account_key = \"%s\"\n" >> $prefix-$name.tf
+                        printf "\t\t\t  storage_account_key = \"%s\"\n" >> $outfile
                     else
-                        printf "\t\t\t  storage_account_key = \"%s\"\n" $vskey >> $prefix-$name.tf
+                        printf "\t\t\t  storage_account_key = \"%s\"\n" $vskey >> $outfile
                     fi
-                    printf "\t\t }\n" >> $prefix-$name.tf
+                    printf "\t\t }\n" >> $outfile
                 fi
                 
                 kcount=`echo $envs | jq '. | length'`
                 if [ "$kcount" -gt "0" ]; then
-                    printf "\t\t environment_variables {\n" >> $prefix-$name.tf
+                    printf "\t\t environment_variables {\n" >> $outfile
                     kcount=`expr $kcount - 1`
                     for k in `seq 0 $kcount`; do
                         envn=`echo $azr | jq ".[(${i})].containers[(${j})].environmentVariables[(${k})].name"`
                         envv=`echo $azr | jq ".[(${i})].containers[(${j})].environmentVariables[(${k})].value"`
                         envs=`echo $azr | jq ".[(${i})].containers[(${j})].environmentVariables[(${k})].secureValue"`
-                        printf "\t\t\t  %s = %s\n" $envn $envv >> $prefix-$name.tf
+                        printf "\t\t\t  %s = %s\n" $envn $envv >> $outfile
                     done
-                    printf "\t\t }\n" >> $prefix-$name.tf
+                    printf "\t\t }\n" >> $outfile
                 fi
                              
-                printf "\t }\n" >> $prefix-$name.tf
+                printf "\t }\n" >> $outfile
             done
         fi
         
@@ -117,16 +118,16 @@ if [ "$count" != "0" ]; then
             isrv=`echo $azr | jq ".[(${i})].imageRegistryCredentials[0].server"`
             iun=`echo $azr | jq ".[(${i})].imageRegistryCredentials[0].username"`
             ipw=`echo $azr | jq ".[(${i})].imageRegistryCredentials[0].password"`
-            printf "\t image_registry_credential {\n" >> $prefix-$name.tf
-            printf "\t\t server = %s\n" $isrv >> $prefix-$name.tf 
-            printf "\t\t username = %s\n" $iun >> $prefix-$name.tf  
+            printf "\t image_registry_credential {\n" >> $outfile
+            printf "\t\t server = %s\n" $isrv >> $outfile 
+            printf "\t\t username = %s\n" $iun >> $outfile  
             # pw is problematic
             #if [ "$ipw" == "null" ]; then
-            #printf "\t\t password = \"<Replace Me>\"\n"  >> $prefix-$name.tf
+            #printf "\t\t password = \"<Replace Me>\"\n"  >> $outfile
             #else
-            #printf "\t\t password = \"%s\"\n" $ipw >> $prefix-$name.tf
+            #printf "\t\t password = \"%s\"\n" $ipw >> $outfile
             #fi
-            printf "\t }\n" >> $prefix-$name.tf
+            printf "\t }\n" >> $outfile
         fi
         fi
 
@@ -136,7 +137,7 @@ if [ "$count" != "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -144,15 +145,15 @@ if [ "$count" != "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         #
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

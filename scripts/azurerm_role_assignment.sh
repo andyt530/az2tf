@@ -24,8 +24,10 @@ if [ "$count" -gt "0" ]; then
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         rg="roleAssignments"
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $prefix-$rdid.tf
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid >> $prefix-$rdid.tf
         printf "name = %s\n" "$name"  >> $prefix-$rdid.tf
         printf "role_definition_id = \"\${azurerm_role_definition.%s__%s.id}\"\n" "roleDefinitions" $roledefid >> $prefix-$rdid.tf
         

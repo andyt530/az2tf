@@ -39,18 +39,18 @@ if [ "$count" -gt "0" ]; then
         wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
         
         prefix=`printf "%s.%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
-        echo $az2tfmess > $outfile  
+        outfile=`printf "%s.%s__%s.tf" $prefixa $rg $name`
+        echo $outfile
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
-        printf "\t name = \"%s\"\n" $name >> $outfile
-        printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
-        printf "sku {\n" $sku >> $outfile
-        printf "\t name = \"%s\"\n" $skun >> $outfile
-        printf "\t capacity = \"%s\"\n" $skuc >> $outfile
-        printf "\t tier = \"%s\"\n" $skut >> $outfile
-        printf "}\n" $sku >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix__$name.tf
+        printf "\t name = \"%s\"\n" $name >> $prefix__$name.tf
+        printf "\t location = %s\n" "$loc" >> $prefix__$name.tf
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix__$name.tf
+        printf "sku {\n" $sku >> $prefix__$name.tf
+        printf "\t name = \"%s\"\n" $skun >> $prefix__$name.tf
+        printf "\t capacity = \"%s\"\n" $skuc >> $prefix__$name.tf
+        printf "\t tier = \"%s\"\n" $skut >> $prefix__$name.tf
+        printf "}\n" $sku >> $prefix__$name.tf
         
         # gateway ip config block
         
@@ -61,12 +61,12 @@ if [ "$count" -gt "0" ]; then
                 gname=`echo $azr | jq ".[(${i})].gatewayIpConfigurations[(${j})].name" | tr -d '"'`
                 subrg=`echo $azr | jq ".[(${i})].gatewayIpConfigurations[(${j})].subnet.id" | cut -d'/' -f5 | tr -d '"'`
                 subname=`echo $azr | jq ".[(${i})].gatewayIpConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
-                printf "gateway_ip_configuration {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $gname >> $outfile
+                printf "gateway_ip_configuration {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $gname >> $prefix__$name.tf
                 if [ "$subname" != "null" ]; then
-                    printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $outfile
+                    printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix__$name.tf
                 fi
-                printf "}\n" >> $outfile
+                printf "}\n" >> $prefix__$name.tf
             done
         fi
         
@@ -77,10 +77,10 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $icount`; do
                 fname=`echo $azr | jq ".[(${i})].frontendPorts[(${j})].name" | tr -d '"'`
                 fport=`echo $azr | jq ".[(${i})].frontendPorts[(${j})].port" | tr -d '"'`
-                printf "frontend_port {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $fname >> $outfile
-                printf "\t port = \"%s\" \n"  $fport >> $outfile
-                printf "}\n" >> $outfile
+                printf "frontend_port {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $fname >> $prefix__$name.tf
+                printf "\t port = \"%s\" \n"  $fport >> $prefix__$name.tf
+                printf "}\n" >> $prefix__$name.tf
             done
         fi
         
@@ -100,22 +100,22 @@ if [ "$count" -gt "0" ]; then
                 subname=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
                 privalloc=`echo $azr | jq ".[(${i})].frontendIpConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 
-                printf "frontend_ip_configuration {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $fname >> $outfile
+                printf "frontend_ip_configuration {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $fname >> $prefix__$name.tf
                 if [ "$subname" != "null" ]; then
-                    printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $outfile
+                    printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $subrg $subname >> $prefix__$name.tf
                 fi
                 if [ "$priv" != "null" ]; then
-                    printf "\t private_ip_address = \"%s\" \n"  $priv >> $outfile
+                    printf "\t private_ip_address = \"%s\" \n"  $priv >> $prefix__$name.tf
                 fi
                 if [ "$privalloc" != "null" ]; then
-                    printf "\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $outfile
+                    printf "\t private_ip_address_allocation  = \"%s\" \n"  $privalloc >> $prefix__$name.tf
                 fi
                 if [ "$pubname" != "null" ]; then
-                    printf "\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubrg $pubname >> $outfile
+                    printf "\t public_ip_address_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $pubrg $pubname >> $prefix__$name.tf
                 fi
                 
-                printf "}\n" >> $outfile
+                printf "}\n" >> $prefix__$name.tf
                 
             done
         fi
@@ -125,9 +125,9 @@ if [ "$count" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
                 bname=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].name" | tr -d '"'`
-                printf "backend_address_pool {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
-                printf "}\n" >> $outfile
+                printf "backend_address_pool {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $bname >> $prefix__$name.tf
+                printf "}\n" >> $prefix__$name.tf
             done
         fi
 
@@ -142,15 +142,15 @@ if [ "$count" -gt "0" ]; then
                 btimo=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].requestTimeout" | tr -d '"'`
                 pname=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].probe.id" | cut -d'/' -f11 | tr -d '"'`
 
-                printf "backend_http_settings {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
-                printf "\t port = \"%s\" \n"  $bport >> $outfile
-                printf "\t protocol = \"%s\" \n"  $bproto >> $outfile
-                printf "\t cookie_based_affinity = \"%s\" \n"  $bcook >> $outfile
-                printf "\t request_timeout = \"%s\" \n"  $btimo >> $outfile
-                printf "\t probe_name = \"%s\" \n"  $pname >> $outfile
+                printf "backend_http_settings {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $bname >> $prefix__$name.tf
+                printf "\t port = \"%s\" \n"  $bport >> $prefix__$name.tf
+                printf "\t protocol = \"%s\" \n"  $bproto >> $prefix__$name.tf
+                printf "\t cookie_based_affinity = \"%s\" \n"  $bcook >> $prefix__$name.tf
+                printf "\t request_timeout = \"%s\" \n"  $btimo >> $prefix__$name.tf
+                printf "\t probe_name = \"%s\" \n"  $pname >> $prefix__$name.tf
 
-                printf "}\n" >> $outfile
+                printf "}\n" >> $prefix__$name.tf
             done
         fi     
         
@@ -169,20 +169,20 @@ if [ "$count" -gt "0" ]; then
                 bssl=`echo $azr | jq ".[(${i})].httpListeners[(${j})].sslCertificate" | tr -d '"'`
                                 
 
-                printf "http_listener {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
-                printf "\t frontend_ip_configuration_name = \"%s\" \n"  $feipcn >> $outfile
-                printf "\t frontend_port_name = \"%s\" \n"  $fepn >> $outfile
-                printf "\t protocol = \"%s\" \n"  $bproto >> $outfile
+                printf "http_listener {\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $bname >> $prefix__$name.tf
+                printf "\t frontend_ip_configuration_name = \"%s\" \n"  $feipcn >> $prefix__$name.tf
+                printf "\t frontend_port_name = \"%s\" \n"  $fepn >> $prefix__$name.tf
+                printf "\t protocol = \"%s\" \n"  $bproto >> $prefix__$name.tf
                 if [ "$bhn" != "null" ]; then
-                printf "\t host_name = \"%s\" \n"  $bhn >> $outfile
+                printf "\t host_name = \"%s\" \n"  $bhn >> $prefix__$name.tf
                 fi
                 if [ "$bssl" != "null" ]; then
-                printf "\t ssl_certificate_name = \"%s\" \n"  $bssl >> $outfile
+                printf "\t ssl_certificate_name = \"%s\" \n"  $bssl >> $prefix__$name.tf
                 fi
-                #printf "\t require_sni = \"%s\" \n"  $rsni >> $outfile
+                #printf "\t require_sni = \"%s\" \n"  $rsni >> $prefix__$name.tf
 
-                printf "}\n" >> $outfile
+                printf "}\n" >> $prefix__$name.tf
             done
         fi   
 
@@ -203,36 +203,36 @@ if [ "$count" -gt "0" ]; then
                 bmbod=`echo $azr | jq ".[(${i})].probes[(${j})].match.body" | tr -d '"'`             
                 bmstat=`echo $azr | jq ".[(${i})].probes[(${j})].match.statusCodes"` 
 
-                printf "probe{\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
-                printf "\t protocol = \"%s\" \n"  $bproto >> $outfile
-                printf "\t path = \"%s\" \n"  $bpath >> $outfile
-                printf "\t host = \"%s\" \n"  $bhost >> $outfile
-                printf "\t interval = \"%s\" \n"  $bint >> $outfile
-                printf "\t timeout = \"%s\" \n"  $btimo >> $outfile
-                printf "\t unhealthy_threshold = \"%s\" \n"  $bunth >> $outfile
+                printf "probe{\n" >> $prefix__$name.tf
+                printf "\t name = \"%s\" \n"  $bname >> $prefix__$name.tf
+                printf "\t protocol = \"%s\" \n"  $bproto >> $prefix__$name.tf
+                printf "\t path = \"%s\" \n"  $bpath >> $prefix__$name.tf
+                printf "\t host = \"%s\" \n"  $bhost >> $prefix__$name.tf
+                printf "\t interval = \"%s\" \n"  $bint >> $prefix__$name.tf
+                printf "\t timeout = \"%s\" \n"  $btimo >> $prefix__$name.tf
+                printf "\t unhealthy_threshold = \"%s\" \n"  $bunth >> $prefix__$name.tf
 
 
                 if [ "$bmsrv" != "null" ]; then
-                printf "\t minimum_servers = \"%s\" \n"  $bmsrv >> $outfile
+                printf "\t minimum_servers = \"%s\" \n"  $bmsrv >> $prefix__$name.tf
                 fi
 
-                printf "\t match {\n" >> $outfile
+                printf "\t match {\n" >> $prefix__$name.tf
                 if [ "$bmbod" != "null" ]; then
                     if [ "$bmbod" = "" ]; then
-                        printf "\t\t body = \"*\" \n" >> $outfile
+                        printf "\t\t body = \"*\" \n" >> $prefix__$name.tf
                     else
-                        printf "\t\t body = \"%s\" \n"  $bmbod >> $outfile
+                        printf "\t\t body = \"%s\" \n"  $bmbod >> $prefix__$name.tf
                     fi
                 fi
-                printf "\t }\n" >> $outfile
+                printf "\t }\n" >> $prefix__$name.tf
                 
                 #if [ "$bmstat" != "null" ]; then
-                #printf "\t status_code = \"%s\" \n"  $bmstat >> $outfile
+                #printf "\t status_code = \"%s\" \n"  $bmstat >> $prefix__$name.tf
                 #fi
                 
 
-                printf "}\n" >> $outfile
+                printf "}\n" >> $prefix__$name.tf
             done
         fi   
 
@@ -248,18 +248,18 @@ if [ "$count" -gt "0" ]; then
                 bapn=`echo $azr | jq ".[(${i})].requestRoutingRules[(${j})].backendAddressPool.id" | cut -d'/' -f11 | tr -d '"'`
                 bhsn=`echo $azr | jq ".[(${i})].requestRoutingRules[(${j})].backendHttpSettings.id" | cut -d'/' -f11 | tr -d '"'`
 
-                printf "request_routing_rule {\n" >> $outfile
+                printf "request_routing_rule {\n" >> $prefix__$name.tf
 
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
-                printf "\t rule_type = \"%s\" \n"  $btyp >> $outfile
-                printf "\t http_listener_name = \"%s\" \n"  $blin >> $outfile
+                printf "\t name = \"%s\" \n"  $bname >> $prefix__$name.tf
+                printf "\t rule_type = \"%s\" \n"  $btyp >> $prefix__$name.tf
+                printf "\t http_listener_name = \"%s\" \n"  $blin >> $prefix__$name.tf
                 if [ "$bapn" != "null" ]; then
-                    printf "\t backend_address_pool_name = \"%s\" \n"  $bapn >> $outfile
+                    printf "\t backend_address_pool_name = \"%s\" \n"  $bapn >> $prefix__$name.tf
                 fi
                 if [ "$bhsn" != "null" ]; then
-                    printf "\t backend_http_settings_name = \"%s\" \n"  $bhsn >> $outfile
+                    printf "\t backend_http_settings_name = \"%s\" \n"  $bhsn >> $prefix__$name.tf
                 fi
-                printf "\t }\n" >> $outfile
+                printf "\t }\n" >> $prefix__$name.tf
             done
         fi
 
@@ -275,13 +275,13 @@ if [ "$count" -gt "0" ]; then
                 rsv=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.ruleSetVersion" | tr -d '"'`
                 fen=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.enabled" | tr -d '"'`
 
-                printf "waf_configuration {\n" >> $outfile
+                printf "waf_configuration {\n" >> $prefix__$name.tf
 
-                printf "\t firewall_mode = \"%s\" \n"  $fmode >> $outfile
-                printf "\t rule_set_type = \"%s\" \n"  $rst >> $outfile
-                printf "\t rule_set_version = \"%s\" \n"  $rsv >> $outfile
-                printf "\t enabled = \"%s\" \n"  $fen >> $outfile
-                printf "\t }\n" >> $outfile
+                printf "\t firewall_mode = \"%s\" \n"  $fmode >> $prefix__$name.tf
+                printf "\t rule_set_type = \"%s\" \n"  $rst >> $prefix__$name.tf
+                printf "\t rule_set_version = \"%s\" \n"  $rsv >> $prefix__$name.tf
+                printf "\t enabled = \"%s\" \n"  $fen >> $prefix__$name.tf
+                printf "\t }\n" >> $prefix__$name.tf
             
         fi
 
@@ -292,7 +292,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $outfile
+            printf "\t tags { \n" >> $prefix__$name.tf
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -300,17 +300,17 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix__$name.tf
             done
-            printf "\t}\n" >> $outfile
+            printf "\t}\n" >> $prefix__$name.tf
         fi
         
         
-        printf "}\n" >> $outfile
+        printf "}\n" >> $prefix__$name.tf
         #
         echo $prefix
         echo $prefix__$name
-        cat $outfile
+        cat $prefix__$name.tf
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

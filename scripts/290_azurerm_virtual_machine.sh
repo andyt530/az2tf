@@ -21,7 +21,8 @@ if [ "$count" -gt "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
     
         prefix=`printf "%s__%s" $prefixa $rg`
-
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
 
         avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
         avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
@@ -70,19 +71,19 @@ if [ "$count" -gt "0" ]; then
         #
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n"  $loc >> $prefix-$name.tf
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+ 
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n"  $loc >> $outfile
+        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         if [ "$avsid" != "null" ]; then 
-            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $prefix-$name.tf
+            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $outfile
         fi
         if [ "$vmlic" != "null" ]; then 
-            printf "\t license_type = \"%s\"\n" $vmlic >> $prefix-$name.tf
+            printf "\t license_type = \"%s\"\n" $vmlic >> $outfile
         fi
-        printf "\t vm_size = \"%s\"\n" $vmsize >> $prefix-$name.tf
+        printf "\t vm_size = \"%s\"\n" $vmsize >> $outfile
         #
         # Multiples
         #
@@ -93,79 +94,79 @@ if [ "$count" -gt "0" ]; then
                 vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f9 | tr -d '"'`
                 vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | tr -d '"'`
                 vmnetpri=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].primary" | tr -d '"'`
-                printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+                printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $outfile
                 if [ "$vmnetpri" == "true" ]; then
-                    printf "\t primary_network_interface_id = \"\${azurerm_network_interface.%s__%s.id}\"\n" $vmnetrg $vmnetid >> $prefix-$name.tf
+                    printf "\t primary_network_interface_id = \"\${azurerm_network_interface.%s__%s.id}\"\n" $vmnetrg $vmnetid >> $outfile
                 fi
             done
         fi
         #
         #
-        printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $prefix-$name.tf
-        printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $prefix-$name.tf
+        printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $outfile
+        printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $outfile
         #
         if [ "$vmcn" != "null" ];then
-        printf "os_profile {\n"  >> $prefix-$name.tf
-        printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $prefix-$name.tf
-        printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $prefix-$name.tf
+        printf "os_profile {\n"  >> $outfile
+        printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $outfile
+        printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $outfile
         if [ "$vmadminpw" != "null" ]; then 
-            printf "\t admin_password = \"%s\"\n" $vmadminpw >> $prefix-$name.tf
+            printf "\t admin_password = \"%s\"\n" $vmadminpw >> $outfile
         fi
 
         #  admin_password ?
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         fi
         #
         # OS Disk
         #
 
-        printf "storage_os_disk {\n"  >> $prefix-$name.tf
-        printf "\tname = \"%s\" \n"  $vmosdiskname >> $prefix-$name.tf
-        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $prefix-$name.tf
+        printf "storage_os_disk {\n"  >> $outfile
+        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
+        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
         if [ "$vmosacctype" != "" ]; then
-            printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $prefix-$name.tf
+            printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $outfile
         fi
         if [ "$vmosvhd" != "null" ]; then
-            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $prefix-$name.tf
+            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
         fi
-        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $prefix-$name.tf
-        printf "\tos_type = \"%s\" \n" $vmtype >> $prefix-$name.tf
+        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
+        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
         if [ "$vmoswa" != "null" ]; then
-            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $prefix-$name.tf
+            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
         fi
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
         #
         #
         if [ "$vmimid" = "null" ]; then
             if [ "$vmimpublisher" != "null" ];then
-            printf "storage_image_reference {\n"  >> $prefix-$name.tf
-            printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $prefix-$name.tf
-            printf "\t offer = \"%s\"\n"  $vmimoffer >> $prefix-$name.tf
-            printf "\t sku = \"%s\"\n"  $vmimsku >> $prefix-$name.tf
-            printf "\t version = \"%s\"\n"  $vmimversion >> $prefix-$name.tf
+            printf "storage_image_reference {\n"  >> $outfile
+            printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $outfile
+            printf "\t offer = \"%s\"\n"  $vmimoffer >> $outfile
+            printf "\t sku = \"%s\"\n"  $vmimsku >> $outfile
+            printf "\t version = \"%s\"\n"  $vmimversion >> $outfile
             
-            printf "}\n" >> $prefix-$name.tf
+            printf "}\n" >> $outfile
             fi
           
         fi
         if [ "$vmplname" != "null" ]; then
             vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
             vmplpub=`echo $azr | jq ".[(${i})].plan.publisher" | tr -d '"'` 
-            printf "plan {\n"  >> $prefix-$name.tf
-            printf "\t name = \"%s\"\n" $vmplname  >> $prefix-$name.tf
-            printf "\t publisher = \"%s\"\n" $vmplpub  >> $prefix-$name.tf
-            printf "\t product = \"%s\"\n" $vmplprod  >> $prefix-$name.tf
-            printf "}\n" >> $prefix-$name.tf
+            printf "plan {\n"  >> $outfile
+            printf "\t name = \"%s\"\n" $vmplname  >> $outfile
+            printf "\t publisher = \"%s\"\n" $vmplpub  >> $outfile
+            printf "\t product = \"%s\"\n" $vmplprod  >> $outfile
+            printf "}\n" >> $outfile
         fi
         #
         #
         #
         if [ "$vmdiags" != "null" ]; then
-            printf "boot_diagnostics {\n"  >> $prefix-$name.tf
-            printf "\t enabled = \"true\"\n"  >> $prefix-$name.tf
-            printf "\t storage_uri = \"%s\"\n" $vmbturi >> $prefix-$name.tf
-            printf "}\n" >> $prefix-$name.tf
+            printf "boot_diagnostics {\n"  >> $outfile
+            printf "\t enabled = \"true\"\n"  >> $outfile
+            printf "\t storage_uri = \"%s\"\n" $vmbturi >> $outfile
+            printf "}\n" >> $outfile
         fi
         #
         if [ $vmtype = "Windows" ]; then
@@ -173,31 +174,31 @@ if [ "$count" -gt "0" ]; then
             vmwvma=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
             vmwtim=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.timeZone"`
             if [ "$vmwau" != "null" ]; then
-                printf "os_profile_windows_config {\n"  >> $prefix-$name.tf
-                printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $prefix-$name.tf
-                printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $prefix-$name.tf
+                printf "os_profile_windows_config {\n"  >> $outfile
+                printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $outfile
+                printf "\t provision_vm_agent = \"%s\"\n" $vmwvma >> $outfile
                 if [ "$vmwtim" != "null" ]; then
-                    printf "\t timezone = %s \n" "$vmwtim" >> $prefix-$name.tf
+                    printf "\t timezone = %s \n" "$vmwtim" >> $outfile
                 fi
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
             fi
         fi
         #
         if [ $vmtype = "Linux" ]; then
-            printf "os_profile_linux_config {\n"  >> $prefix-$name.tf
+            printf "os_profile_linux_config {\n"  >> $outfile
             if [ $vmdispw = "null" ]; then
             # osprofile can by null for vhd imported images - must make an artificial one.
             vmdispw="false"
             fi
-            printf "\tdisable_password_authentication = \"%s\" \n" $vmdispw >> $prefix-$name.tf
+            printf "\tdisable_password_authentication = \"%s\" \n" $vmdispw >> $outfile
             if [ "$vmdispw" != "false" ]; then
-               printf "\tssh_keys {\n"  >> $prefix-$name.tf
-                printf "\t\tpath = \"%s\" \n" $vmsshpath >> $prefix-$name.tf
-                echo "		key_data = \"$vmsshkey\""  >> $prefix-$name.tf
-                printf "\t}\n" >> $prefix-$name.tf
+               printf "\tssh_keys {\n"  >> $outfile
+                printf "\t\tpath = \"%s\" \n" $vmsshpath >> $outfile
+                echo "		key_data = \"$vmsshkey\""  >> $outfile
+                printf "\t}\n" >> $outfile
             fi
             
-            printf "}\n" >> $prefix-$name.tf
+            printf "}\n" >> $outfile
         fi
         #
         # Data disks
@@ -213,10 +214,10 @@ if [ "$count" -gt "0" ]; then
                 ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
                 ddvhd=`echo $datadisks | jq ".[(${j})].vhd.uri" | tr -d '"'`
                 ddmd=`echo $datadisks | jq ".[(${j})].managedDisk" | tr -d '"'`
-                printf "storage_data_disk {\n"  >> $prefix-$name.tf
-                printf "\t name = \"%s\"\n" $ddname >> $prefix-$name.tf
-                printf "\t create_option = \"%s\"\n" $ddcreopt >> $prefix-$name.tf
-                printf "\t lun = \"%s\"\n" $ddlun >> $prefix-$name.tf
+                printf "storage_data_disk {\n"  >> $outfile
+                printf "\t name = \"%s\"\n" $ddname >> $outfile
+                printf "\t create_option = \"%s\"\n" $ddcreopt >> $outfile
+                printf "\t lun = \"%s\"\n" $ddlun >> $outfile
                 # caching , disk_size_gn, write_accelerator_enabled 
                 
                 if [ "$ddcreopt" = "Attach" ]; then
@@ -230,14 +231,14 @@ if [ "$count" -gt "0" ]; then
                     #if not will have to get from terraform state - convert ddmdrg to lc and terraform state output
                     #
                     
-                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rg $ddmdid >> $prefix-$name.tf
+                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rg $ddmdid >> $outfile
                     fi
                 fi
                 if [ "$ddvhd" != "null" ]; then
-                    printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $prefix-$name.tf
+                    printf "\t vhd_uri = \"%s\"\n" $ddvhd >> $outfile
                 fi
                 
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
             fi
         done
         
@@ -247,7 +248,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -255,14 +256,14 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
-        printf "}\n" >> $prefix-$name.tf
-        cat $prefix-$name.tf
+        printf "}\n" >> $outfile
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

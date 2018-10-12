@@ -28,12 +28,12 @@ if [ "$count" -gt "0" ]; then
         actions=`echo $azr | jq ".[(${i})].permissions[0].actions"`
         nactions=`echo $azr | jq ".[(${i})].permissions[0].notActions"`
 
-
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $prefix-$rdid.tf
         
-
- #       printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$rdid.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
+ #      printf "data \"azurerm_subscription\" \"primary\" {}\n\n" $prefix-$rdid.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid >> $prefix-$rdid.tf
         printf "name = %s\n" "$name"  >> $prefix-$rdid.tf
         printf "role_definition_id = \"%s\"\n" >> $prefix-$rdid.tf
         printf "description = %s\n" "$desc" >> $prefix-$rdid.tf

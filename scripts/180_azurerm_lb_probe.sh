@@ -33,30 +33,33 @@ if [ "$count" -gt "0" ]; then
                 rpath=`echo $azr | jq ".[(${i})].probes[(${j})].requestPath" | tr -d '"'`
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
                 lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
-                prefix=`printf "%s__%s--%s" $prefixa $rg $lbname`
+                
+                prefix=`printf "%s__%s__%s" $prefixa $rg $lbname`
+                outfile=`printf "%s.%s__%s__%s.tf" $tfp $rg $lbname $name`
+                echo $az2tfmess > $outfile
 
-                printf "resource \"%s\" \"%s__%s--%s\" {\n" $tfp $rg $lbname $name > $prefix-$name.tf
-                #printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
-                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $prefix-$name.tf
-                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
-                printf "\t\t protocol = \"%s\" \n"  $proto >> $prefix-$name.tf
-                printf "\t\t port = \"%s\" \n"  $port >> $prefix-$name.tf
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $tfp $rg $lbname $name >> $outfile
+                #printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $outfile
+                printf "\t\t name = \"%s\" \n"  $name >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
+                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
+                printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile
+                printf "\t\t port = \"%s\" \n"  $port >> $outfile
                 if [ "$rpath" != "null" ]; then
-                printf "\t\t request_path = \"%s\" \n"  $rpath >> $prefix-$name.tf
+                printf "\t\t request_path = \"%s\" \n"  $rpath >> $outfile
                 fi
                 if [ "$int" != "null" ]; then
-                printf "\t\t interval_in_seconds = \"%s\" \n"  $int >> $prefix-$name.tf
+                printf "\t\t interval_in_seconds = \"%s\" \n"  $int >> $outfile
                 fi
-                printf "\t\t number_of_probes = \"%s\" \n"  $np >> $prefix-$name.tf
+                printf "\t\t number_of_probes = \"%s\" \n"  $np >> $outfile
 
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
         #
-                cat $prefix-$name.tf
-                statecomm=`printf "terraform state rm %s.%s__%s--%s" $tfp $rg $lbname $name`
+                cat $outfile
+                statecomm=`printf "terraform state rm %s.%s__%s__%s" $tfp $rg $lbname $name`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s--%s %s" $tfp $rg $lbname $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s__%s %s" $tfp $rg $lbname $name $id`
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 

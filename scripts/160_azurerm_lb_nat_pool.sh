@@ -30,24 +30,26 @@ if [ "$count" -gt "0" ]; then
                 feps=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortStart" | tr -d '"'`
                 fepe=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortEnd" | tr -d '"'`
                 bep=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].backendPort" | tr -d '"'`
-                prefix=`printf "%s__%s" $prefixa $rg`    
+                prefix=`printf "%s__%s" $prefixa $rg`   
+                outfile=`printf "%s.%s__%s.tf" $tfp $rg $name` 
+                echo $az2tfmess > $outfile
                 
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
                 lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
-                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $prefix-$name.tf
-                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
-                printf "\t\t protocol = \"%s\" \n"  $proto >> $prefix-$name.tf
-                printf "\t\t frontend_port_start = \"%s\" \n"  $feps >> $prefix-$name.tf
-                printf "\t\t frontend_port_end = \"%s\" \n"  $fepe >> $prefix-$name.tf
-                printf "\t\t backend_port = \"%s\" \n"  $bep >> $prefix-$name.tf
-                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $prefix-$name.tf
+                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+                printf "\t\t name = \"%s\" \n"  $name >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
+                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
+                printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile
+                printf "\t\t frontend_port_start = \"%s\" \n"  $feps >> $outfile
+                printf "\t\t frontend_port_end = \"%s\" \n"  $fepe >> $outfile
+                printf "\t\t backend_port = \"%s\" \n"  $bep >> $outfile
+                printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $outfile
 
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
         #
-                cat $prefix-$name.tf
+                cat $outfile
                 statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm

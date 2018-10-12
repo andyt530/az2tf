@@ -31,8 +31,10 @@ if [ "$count" -gt "0" ]; then
             meta=`echo $azr | jq ".[(${i})].metadata"`
             
             prefix=`printf "%s__%s" $prefixa $rg`
+            outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+            echo $az2tfmess > $prefix-$rdid.tf
             
-            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid > $prefix-$rdid.tf
+            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rdid >> $prefix-$rdid.tf
             printf "name = \"%s\"\n" "$rdid"  >> $prefix-$rdid.tf
             if [ "$dname" != "null" ]; then
             printf "display_name = %s\n" "$dname"  >> $prefix-$rdid.tf

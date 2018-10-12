@@ -32,21 +32,23 @@ if [ "$count" -gt "0" ]; then
         ap=`echo $kvshow | jq ".properties.accessPolicies"`
         
         prefix=`printf "%s__%s" $prefixa $rg`
-        echo $az2tfmess > $prefix-$name.tf
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "location = %s\n" "$loc" >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
+
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "location = %s\n" "$loc" >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         #
-        printf "\t sku { \n" >> $prefix-$name.tf
+        printf "\t sku { \n" >> $outfile
         
-        printf "\t\t name=\"%s\"\n" $sku >> $prefix-$name.tf
-        printf "\t } \n" >> $prefix-$name.tf
+        printf "\t\t name=\"%s\"\n" $sku >> $outfile
+        printf "\t } \n" >> $outfile
         
-        printf "\t tenant_id=\"%s\"\n" $ten >> $prefix-$name.tf
-        printf "\t enabled_for_deployment=\"%s\"\n" $endep >> $prefix-$name.tf
-        printf "\t enabled_for_disk_encryption=\"%s\"\n" $endisk >> $prefix-$name.tf
-        printf "\t enabled_for_template_deployment=\"%s\"\n" $entemp >> $prefix-$name.tf
+        printf "\t tenant_id=\"%s\"\n" $ten >> $outfile
+        printf "\t enabled_for_deployment=\"%s\"\n" $endep >> $outfile
+        printf "\t enabled_for_disk_encryption=\"%s\"\n" $endisk >> $outfile
+        printf "\t enabled_for_template_deployment=\"%s\"\n" $entemp >> $outfile
         
         #
         # Access Policies
@@ -57,13 +59,13 @@ if [ "$count" -gt "0" ]; then
             pcount=`expr $pcount - 1`
             for j in `seq 0 $pcount`; do
                 
-                printf "\taccess_policy {\n" >> $prefix-$name.tf
+                printf "\taccess_policy {\n" >> $outfile
                 
                 apten=`echo $kvshow | jq ".properties.accessPolicies[(${j})].tenantId" | tr -d '"'`
                 apoid=`echo $kvshow | jq ".properties.accessPolicies[(${j})].objectId" | tr -d '"'`
                 
-                printf "\t\t tenant_id=\"%s\"\n" $apten >> $prefix-$name.tf
-                printf "\t\t object_id=\"%s\"\n" $apoid >> $prefix-$name.tf
+                printf "\t\t tenant_id=\"%s\"\n" $apten >> $outfile
+                printf "\t\t object_id=\"%s\"\n" $apoid >> $outfile
                 
                 kl=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.keys" | jq '. | length'`
                 sl=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.secrets" | jq '. | length'`
@@ -73,7 +75,7 @@ if [ "$count" -gt "0" ]; then
                 sl=`expr $sl - 1`
                 cl=`expr $cl - 1`
                 
-                printf "\t\t key_permissions = [\n" >> $prefix-$name.tf
+                printf "\t\t key_permissions = [\n" >> $outfile
                 if [ "$kl" -ge "0" ]; then
                     
                     for k in `seq 0 $kl`; do
@@ -81,26 +83,26 @@ if [ "$count" -gt "0" ]; then
                         if [ $k -lt $kl ]; then
                             tk=`printf "%s," $tk`
                         fi
-                        printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                        printf "\t\t\t%s\n" $tk >> $outfile
                     done
-                    #printf "\t\t ]\n" >> $prefix-$name.tf
+                    #printf "\t\t ]\n" >> $outfile
                 fi
-                printf "\t\t ]\n" >> $prefix-$name.tf
+                printf "\t\t ]\n" >> $outfile
                 
                 if [ "$sl" -ge "0" ]; then
-                    printf "\t\t secret_permissions = [\n" >> $prefix-$name.tf
+                    printf "\t\t secret_permissions = [\n" >> $outfile
                     for k in `seq 0 $sl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.secrets[(${k})]"`
                         if [ $k -lt $sl ]; then
                             tk=`printf "%s," $tk`
                         fi
-                        printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                        printf "\t\t\t%s\n" $tk >> $outfile
                     done
-                    printf "\t\t ]\n" >> $prefix-$name.tf
+                    printf "\t\t ]\n" >> $outfile
                 fi
                 
                 if [ "$cl" -ge "0" ]; then
-                    printf "\t\t certificate_permissions = [\n" >> $prefix-$name.tf
+                    printf "\t\t certificate_permissions = [\n" >> $outfile
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
                         ttk=`echo $tk | tr -d '"'`
@@ -114,15 +116,15 @@ if [ "$count" -gt "0" ]; then
                                 if [ $k -lt $cl ]; then
                                     tk=`printf "%s," $tk`   # add comma to all but last
                                 fi
-                                printf "\t\t\t%s\n" $tk >> $prefix-$name.tf
+                                printf "\t\t\t%s\n" $tk >> $outfile
                             ;;
                         esac
                         
                     done
-                    printf "\t\t ]\n" >> $prefix-$name.tf
+                    printf "\t\t ]\n" >> $outfile
                 fi
                 
-                printf "\t}\n" >> $prefix-$name.tf
+                printf "\t}\n" >> $outfile
             done
         fi
         
@@ -132,7 +134,7 @@ if [ "$count" -gt "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -140,14 +142,14 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

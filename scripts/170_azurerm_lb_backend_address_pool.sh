@@ -29,21 +29,22 @@ if [ "$count" -gt "0" ]; then
                 
                 lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
                 lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
-                prefix=`printf "%s__%s--%s" $prefixa $rg $lbname`
-                
-                
-                printf "resource \"%s\" \"%s__%s--%s\" {\n" $tfp $rg $lbname $name > $prefix-$name.tf
-                printf "\t\t name = \"%s\" \n"  $name >> $prefix-$name.tf
-                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $prefix-$name.tf
-                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $prefix-$name.tf
+                prefix=`printf "%s__%s__%s" $prefixa $rg $lbname`
+                outfile=`printf "%s.%s__%s__%s.tf" $tfp $rg $lbname $name`
+                echo $az2tfmess > $outfile
+                         
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $tfp $rg $lbname $name >> $outfile
+                printf "\t\t name = \"%s\" \n"  $name >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
+                printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
 
-                printf "}\n" >> $prefix-$name.tf
+                printf "}\n" >> $outfile
         #
-                cat $prefix-$name.tf
-                statecomm=`printf "terraform state rm %s.%s__%s--%s" $tfp $rg $lbname $name`
+                cat $outfile
+                statecomm=`printf "terraform state rm %s.%s__%s__%s" $tfp $rg $lbname $name`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s--%s %s" $tfp $rg $lbname $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s__%s %s" $tfp $rg $lbname $name $id`
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 

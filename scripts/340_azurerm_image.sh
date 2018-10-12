@@ -25,21 +25,23 @@ if [ "$count" != "0" ]; then
         oscache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
         blob_uri=`echo $azr | jq ".[(${i})].storageProfile.osDisk.blobUri" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         
         if [ "$odisk" != "null" ]; then
-            printf "\t os_disk { \n" >> $prefix-$name.tf
-            printf "\t os_type = \"%s\"\n" $ostype >> $prefix-$name.tf
-            printf "\t os_state = \"%s\"\n" $osstate >> $prefix-$name.tf
-            printf "\t caching = \"%s\"\n" $oscache >> $prefix-$name.tf
+            printf "\t os_disk { \n" >> $outfile
+            printf "\t os_type = \"%s\"\n" $ostype >> $outfile
+            printf "\t os_state = \"%s\"\n" $osstate >> $outfile
+            printf "\t caching = \"%s\"\n" $oscache >> $outfile
             if [ "$blob_uri" != "null" ]; then
-                printf "\t blob_uri = \"%s\"\n" $blob_uri >> $prefix-$name.tf
+                printf "\t blob_uri = \"%s\"\n" $blob_uri >> $outfile
             fi
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         
@@ -51,7 +53,7 @@ if [ "$count" != "0" ]; then
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
         if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $prefix-$name.tf
+            printf "\t tags { \n" >> $outfile
             tt=`echo $tags | jq .`
             keys=`echo $tags | jq 'keys'`
             tcount=`expr $tcount - 1`
@@ -59,15 +61,15 @@ if [ "$count" != "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
-            printf "\t}\n" >> $prefix-$name.tf
+            printf "\t}\n" >> $outfile
         fi
         
         #
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm

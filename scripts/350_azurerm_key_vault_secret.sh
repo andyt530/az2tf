@@ -45,6 +45,9 @@ if [ "$count" -gt "0" ]; then
                 id=`echo $asec | jq ".id" | tr -d '"'`
                 
                 prefix=`printf "%s__%s" $prefixa $rg`
+                outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+               
+
                 echo "$j of $pcount  $prefix-$name-$secid2.tf"
                 if [ ! -f $prefix-$name-$secid2.tf ]; then
                                         

@@ -24,25 +24,29 @@ if [ "$isok" != "yes" ]; then
     exit
 fi
 
+myrg=$2
 export ARM_SUBSCRIPTION_ID="$mysub"
 az account set -s $mysub
 
-#mkdir -p tf.$mysub
-#cd tf.$mysub
-#rm -rf .terraform
+mkdir -p tf.$mysub
+cd tf.$mysub
+rm -rf .terraform
+rm -f import.log
 
-if [ "$2" != "" ]; then
-    myrg=$2
-    mkdir -p tf.${mysub}_${myrg}
-    cd tf.${mysub}_${myrg}
-    rm -rf .terraform
-    ../scripts/resources.sh $myrg
-else
-    mkdir -p tf.$mysub
-    cd tf.$mysub
-    rm -rf .terraform
-    ../scripts/resources.sh
-fi
+../scripts/resources.sh 2>&1 | tee -a import.log
+
+#if [ "$2" != "" ]; then
+#    myrg=$2
+#    mkdir -p tf.${mysub}_${myrg}
+#    cd tf.${mysub}_${myrg}
+#    rm -rf .terraform
+#    ../scripts/resources.sh $myrg
+#else
+#    mkdir -p tf.$mysub
+#    cd tf.$mysub
+#    rm -rf .terraform
+#    ../scripts/resources.sh
+#fi
 
 pfx[1]="az group list"
 res[1]="azurerm_resource_group"
@@ -65,6 +69,8 @@ if [ "$2" != "" ]; then
         echo "Resource Group $2 does not exists in subscription $mysub  Exit ....."
         exit
     fi
+    grep $myrg resources2.txt > tmp.txt
+    mv tmp.txt resources2.txt
     
 fi
 
@@ -72,8 +78,8 @@ fi
 rm -f terraform*.backup
 rm -f tf*.sh
 cp ../stub/*.tf .
-echo "terraform init"
-terraform init
+echo "terraform init" 
+terraform init 2>&1 | tee -a import.log
 
 
 # subscription level stuff - roles & policies
@@ -81,10 +87,18 @@ if [ "$2" = "" ]; then
     for j in `seq 51 54`; do
         docomm="../scripts/${res[$j]}.sh $mysub"
         echo $docomm
-        eval $docomm
+        eval $docomm 2>&1 | tee -a import.log
+        if grep -q Error: import.log ; then
+            echo "Error in log file exiting ...."
+            exit
+        fi
     done
 fi
 
+#echo $myrg
+#../scripts/193_azurerm_application_gateway.sh $myrg
+
+date
 # top level stuff
 j=1
 if [ "$2" != "" ]; then
@@ -101,10 +115,14 @@ if [ "$count" -gt "0" ]; then
         echo -n $i of $count " "
         docomm="../scripts/${res[$j]}.sh $myrg"
         echo "$docomm"
-        eval $docomm       
+        eval $docomm  2>&1 | tee -a import.log     
+        if grep Error: import.log ; then
+            echo "Error in log file exiting ...."
+            exit
+        fi
     done
 fi
-
+date
 for j in `seq 2 2`; do
     c1=`echo ${pfx[${j}]}`
     gr=`printf "%s-" ${res[$j]}`
@@ -123,8 +141,12 @@ for j in `seq 2 2`; do
             echo -n "$c5 of $tc "
             docomm="../scripts/${res[$j]}.sh $j2"
             echo "$docomm"
-            eval $docomm
+            eval $docomm 2>&1 | tee -a import.log
             c5=`expr $c5 + 1`
+            if grep -q Error: import.log ; then
+                echo "Error in log file exiting ...."
+                exit
+            fi
         done
     fi
     
@@ -132,15 +154,7 @@ done
 
 # loop through providers
 
-for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
-#for com in `ls ../scripts/*_azurerm*.sh | grep 290 | cut -d'/' -f3 | sort -g`; do
-    if [ "$2" != "" ]; then
-        myrg=$2
-        #echo $myrg
-        docomm="../scripts/$com $myrg"
-        echo "$j $docomm"
-        eval $docomm
-    else
+for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do   
         gr=`echo $com | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}'`
         echo $gr
         lc="1"
@@ -152,13 +166,16 @@ for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
             #echo "debug $j prov=$prov  res=${res[$j]}"
             docomm="../scripts/$com $myrg"
             echo "$docomm"
-            eval $docomm
+            eval $docomm 2>&1 | tee -a import.log
             lc=`expr $lc + 1`
+            if grep Error: import.log; then
+                echo "Error in log file exiting ...."
+                exit
+            fi
         done
-    fi
     rm -f terraform*.backup
 done
-
+date
 #
 echo "Cleanup Cloud Shell"
 rm -f *cloud-shell-storage*.tf

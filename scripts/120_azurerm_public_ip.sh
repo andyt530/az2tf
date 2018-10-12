@@ -24,19 +24,22 @@ if [ "$count" -gt "0" ]; then
         dnsfqdn=`echo $azr | jq ".[(${i})].dnsSettings.fqdn" | tr -d '"'`
 
         prefix=`printf "%s__%s" $prefixa $rg`
-        subipalloc=`echo $azr | jq ".[(${i})].publicIpAllocationMethod" | tr -d '"'`
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name > $prefix-$name.tf
-        printf "\t name = \"%s\"\n" $name >> $prefix-$name.tf
-        printf "\t location = \"%s\"\n" $loc >> $prefix-$name.tf
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        echo $az2tfmess > $outfile
 
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $prefix-$name.tf
-        printf "\t public_ip_address_allocation = \"%s\" \n"  $subipalloc >> $prefix-$name.tf
+        subipalloc=`echo $azr | jq ".[(${i})].publicIpAllocationMethod" | tr -d '"'`
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "\t name = \"%s\"\n" $name >> $outfile
+        printf "\t location = \"%s\"\n" $loc >> $outfile
+
+        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t public_ip_address_allocation = \"%s\" \n"  $subipalloc >> $outfile
         if [ "$sku" != "null" ]; then
-            printf "\t sku = \"%s\" \n"  $sku >> $prefix-$name.tf
+            printf "\t sku = \"%s\" \n"  $sku >> $outfile
         fi
-        #printf "\t idle_timeout_in_minutes = \"%s\" \n"  $timo >> $prefix-$name.tf
+        #printf "\t idle_timeout_in_minutes = \"%s\" \n"  $timo >> $outfile
         if [ "$dnsname" != "null" ]; then
-        printf "\t domain_name_label = \"%s\"\n" $dnsname >> $prefix-$name.tf
+        printf "\t domain_name_label = \"%s\"\n" $dnsname >> $outfile
         fi
         #
 
@@ -46,7 +49,7 @@ if [ "$count" -gt "0" ]; then
             tt=`echo $tags | jq .`
             tcount=`echo $tags | jq '. | length'`
             if [ "$tcount" -gt "0" ]; then
-                printf "\t tags { \n" >> $prefix-$name.tf
+                printf "\t tags { \n" >> $outfile
                 tt=`echo $tags | jq .`
                 keys=`echo $tags | jq 'keys'`
                 tcount=`expr $tcount - 1`
@@ -54,14 +57,14 @@ if [ "$count" -gt "0" ]; then
                     k1=`echo $keys | jq ".[(${j})]"`
                     tval=`echo $tt | jq .$k1`
                     tkey=`echo $k1 | tr -d '"'`
-                    printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name.tf
+                    printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
                 done
-                printf "\t}\n" >> $prefix-$name.tf
+                printf "\t}\n" >> $outfile
             fi
 
-        printf "}\n" >> $prefix-$name.tf
+        printf "}\n" >> $outfile
         #
-        cat $prefix-$name.tf
+        cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
