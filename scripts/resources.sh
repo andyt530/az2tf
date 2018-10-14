@@ -138,6 +138,11 @@ if [ "$count2" -gt "0" ]; then
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
                 prov="azurerm_servicebus_queue"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;       
+            "Microsoft.Network/trafficmanagerprofiles") prov="azurerm_traffic_manager_profile"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_traffic_manager_endpoint"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
 
             *) printf "%s\n" $prov >> noprovider.txt
