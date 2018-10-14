@@ -26,6 +26,7 @@ if [ "$count2" -gt "0" ]; then
         id=`echo $azr2 | jq ".[(${j})].id"`
         rg=`echo $id | cut -f5 -d'/'`
         prov=`echo $id | cut -f7,8 -d'/'`
+        echo $prov | grep mos
         case "$prov" in
             "Microsoft.Compute/availabilitySets") prov="azurerm_availability_set"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
@@ -130,6 +131,10 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Network/applicationGateways") prov="azurerm_application_gateway"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.DocumentDb/databaseAccounts") prov="azurerm_cosmosdb_account"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
