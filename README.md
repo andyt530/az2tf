@@ -12,6 +12,48 @@ And finally runs a
 
 There should hopefully be no subsequent additions or deletions reported by the terraform plan command as all the approriate terraform configuration files will have have automatically been created.
 
+
+## Quickstart guide to using the tool
+
+Running the tool required these steps:
+1. Unzip or clone this git repo into an empty directory
+2. login to the Azure cli2  (az login)
+3. run the tool 
+
+
+## Usage Guide
+
+To generate the terraform files for an entire Azure subscription:
+```
+./az2tf.sh -s <Subscription ID>
+```
+
+To generate the terraform files for a specific Resource Group in a subscription:
+```
+./az2tf.sh -s <Subscription ID> -g <Resource Group>
+```
+
+To include the secrets from a Key Vault in terraform files (secrets will be in plain text):
+```
+./az2tf.sh -s <Subscription ID> -g <Resource Group> -x yes
+```
+
+To filter the terraform resource type: (eg: just availability sets)
+```
+./az2tf.sh -s <Subscription ID> -g <Resource Group> -r azurerm_availability_set
+```
+
+
+Be patient - lots of output is given as az2tf:
+
++ Loops for each provider through your resource groups &
++ Creates the requited *.tf configuration files
++ Performs the necessary 'terraform import' commands
++ And finally runs a 'terraform plan'
+
+
+
+
 ## Supported Resource Types
 
 The following terraform resource types are supported by this tool at this time:
@@ -54,6 +96,7 @@ Management Resources
 * azurerm_management_lock  (full)
 
 Network Resources
+* azurerm_application_gateway 
 * azurerm_application_security_group (full)
 * azurerm_express_route_circuit (full)
 * azurerm_express_route_circuit_authorization (full)
@@ -92,27 +135,8 @@ Storage Resources
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 **version 2.0.31 or higher** needs to be installed and you need a login with at least "Read" priviledges
-+ terraform needs to be installed
-
-
-## Quickstart guide to using the tool
-
-Running the tool required these steps:
-1. Unzip or clone this git repo into an empty directory
-2. login to the Azure cli2  (az login)
-3. run the tool giving the ID of a subscription as a paremeter  ./az2tf.sh  Your-subscription-ID 
-
-Be patient - lots of output is given as az2tf:
-
-+ Loops for each provider through your resource groups &
-+ Creates the requited *.tf configuration files
-+ Performs the necessary 'terraform import' commands
-+ And finally runs a 'terraform plan'
-
-For smaller tests where all resources are contained in a single Resource Group run 
-
-./az2tf.sh Your-subscription-ID  RG-Name
++ Azure cli2 **version 2.0.46 or higher** needs to be installed and you need a login with at least "Read" priviledges
++ terraform **version v0.11.8** needs to be installed
 
 
 ## Planned Additions

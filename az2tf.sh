@@ -1,6 +1,42 @@
+usage() 
+{ echo "Usage: $0 -s <Subscription ID> [-g <Resource Group>] [-r azurerm_<resource_type>] [-x <yes|no(default)>] [-p <yes|no(default)>]" 1>&2; exit 1; 
+}
+x="no"
+p="no"
+while getopts ":s:g:r:x:p:" o; do
+    case "${o}" in
+        s)
+            s=${OPTARG}
+            ;;
+        g)
+            g=${OPTARG}
+            ;;
+        r)
+            r=${OPTARG}
+            ;;
+        x)
+            x="yes"
+            ;;
+        p)
+            p="yes"
+            ;;
+
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${s}" ]; then
+    usage
+fi
+
+
+
 export az2tfmess="# File auto generate by az2tf see https://github.com/andyt530/az2tf"
-if [ "$1" != "" ]; then
-    mysub=$1
+if [ "$s" != "" ]; then
+    mysub=$s
 else
     echo -n "Enter id of Subscription [$mysub] > "
     read response
@@ -24,16 +60,23 @@ if [ "$isok" != "yes" ]; then
     exit
 fi
 
-myrg=$2
+myrg=$g
 export ARM_SUBSCRIPTION_ID="$mysub"
 az account set -s $mysub
 
 mkdir -p tf.$mysub
 cd tf.$mysub
 rm -rf .terraform
-rm -f import.log
+rm -f import.log resources*.txt
 
 ../scripts/resources.sh 2>&1 | tee -a import.log
+echo " "
+echo "Subscription ID = ${s}"
+echo "Azure Resource Group Filter = ${g}"
+echo "Terraform Resource Type Filter = ${r}"
+echo "Get Subscription Policies & RBAC = ${p}"
+echo "Extract Key Vault Secrets to .tf files (insecure) = ${x}"
+echo " "
 
 #if [ "$2" != "" ]; then
 #    myrg=$2
@@ -62,17 +105,29 @@ res[54]="azurerm_policy_assignment"
 # uncomment following line if you want to use an SPN login
 #../setup-env.sh
 
-if [ "$2" != "" ]; then
+if [ "$g" != "" ]; then
+    lcg=`echo $g | awk '{print tolower($0)}'`
     # check provided resource group exists in subscription
-    exists=`az group exists -g $2`
+    exists=`az group exists -g $g`
     if  ! $exists ; then
-        echo "Resource Group $2 does not exists in subscription $mysub  Exit ....."
+        echo "Resource Group $g does not exists in subscription $mysub  Exit ....."
         exit
     fi
-    grep $myrg resources2.txt > tmp.txt
-    mv tmp.txt resources2.txt
+    echo "Filtering by Azure RG $g"
+    grep $lcg resources2.txt > tmp.txt
+    rm -f resources2.txt
+    cp tmp.txt resources2.txt
     
 fi
+
+if [ "$r" != "" ]; then
+    lcr=`echo $r | awk '{print tolower($0)}'`
+    echo "Filtering by Terraform resource $lcr"
+    grep $lcr resources2.txt > tmp2.txt
+    rm -f resources2.txt
+    cp tmp2.txt resources2.txt
+fi
+
 
 # cleanup from any previous runs
 rm -f terraform*.backup
@@ -83,7 +138,7 @@ terraform init 2>&1 | tee -a import.log
 
 
 # subscription level stuff - roles & policies
-if [ "$2" = "" ]; then
+if [ "$p" = "yes" ]; then
     for j in `seq 51 54`; do
         docomm="../scripts/${res[$j]}.sh $mysub"
         echo $docomm
@@ -95,13 +150,14 @@ if [ "$2" = "" ]; then
     done
 fi
 
+
 #echo $myrg
 #../scripts/193_azurerm_application_gateway.sh $myrg
 
 date
 # top level stuff
 j=1
-if [ "$2" != "" ]; then
+if [ "$g" != "" ]; then
     trgs=`az group list --query "[?name=='$myrg']"`
 else
     trgs=`az group list`
@@ -135,24 +191,28 @@ for j in `seq 2 2`; do
     tc=`echo $tc | tr -d ' '`
     trgs=`eval $comm`
     count=`echo ${#trgs}`
-    if [ "$count" -gt "0" ]; then
-        c5="1"
-        for j2 in `echo $trgs`; do
-            echo -n "$c5 of $tc "
-            docomm="../scripts/${res[$j]}.sh $j2"
-            echo "$docomm"
-            eval $docomm 2>&1 | tee -a import.log
-            c5=`expr $c5 + 1`
-            if grep -q Error: import.log ; then
-                echo "Error in log file exiting ...."
-                exit
-            fi
-        done
-    fi
-    
+    if [ "$g" != "" ]; then
+        ../scripts/${res[$j]}.sh $g
+        else
+        if [ "$count" -gt "0" ]; then
+            c5="1"
+            for j2 in `echo $trgs`; do
+                echo -n "$c5 of $tc "
+                docomm="../scripts/${res[$j]}.sh $j2"
+                echo "$docomm"
+                eval $docomm 2>&1 | tee -a import.log
+                c5=`expr $c5 + 1`
+                if grep -q Error: import.log ; then
+                    echo "Error in log file exiting ...."
+                    exit
+                fi
+            done
+        fi
+    fi   
 done
 
-# loop through providers
+
+echo loop through providers
 
 for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do   
         gr=`echo $com | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}'`
@@ -176,6 +236,13 @@ for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
     rm -f terraform*.backup
 done
 date
+
+if [ "$x" = "yes" ]; then
+    echo "Attempting to extract secrets"
+    ../scripts/350_key_vault_secret.sh 
+fi
+
+
 #
 echo "Cleanup Cloud Shell"
 rm -f *cloud-shell-storage*.tf

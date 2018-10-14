@@ -52,7 +52,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t tier = \"%s\"\n" $skut >> $outfile
         printf "}\n" $sku >> $outfile
         
-        # gateway ip config block
+# gateway ip config block
         
         icount=`echo $gwipc | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
@@ -70,7 +70,7 @@ if [ "$count" -gt "0" ]; then
             done
         fi
         
-        # front end port
+# front end port
         icount=`echo $feps | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
@@ -84,7 +84,7 @@ if [ "$count" -gt "0" ]; then
             done
         fi
         
-        # front end ip config block
+# front end ip config block
         icount=`echo $fronts | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
@@ -119,7 +119,9 @@ if [ "$count" -gt "0" ]; then
                 
             done
         fi
-        
+
+# backend_address_pool          beap=`echo $azr | jq ".[(${i})].backendAddressPools"`
+
         icount=`echo $beap | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
@@ -127,10 +129,21 @@ if [ "$count" -gt "0" ]; then
                 bname=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].name" | tr -d '"'`
                 printf "backend_address_pool {\n" >> $outfile
                 printf "\t name = \"%s\" \n"  $bname >> $outfile
+                beaddr=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].backendAddresses"`          
+                kcount=`echo $beaddr | jq '. | length'`    
+                if [ "$kcount" -gt "0" ]; then
+                    kcount=`expr $kcount - 1`
+                    for k in `seq 0 $kcount`; do
+                        beadip=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].backendAddresses[(${k})].ipAddress" | tr -d '"'`
+                        printf "\t ip_address_list = [\"%s\"] \n"  $beadip >> $outfile
+                    done
+                fi
+
                 printf "}\n" >> $outfile
             done
         fi
 
+# backend_http_settings
         icount=`echo $bhttps | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
@@ -141,6 +154,7 @@ if [ "$count" -gt "0" ]; then
                 bcook=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].cookieBasedAffinity" | tr -d '"'`
                 btimo=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].requestTimeout" | tr -d '"'`
                 pname=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].probe.id" | cut -d'/' -f11 | tr -d '"'`
+                acert=`echo $azr | jq ".[(${i})].backendHttpSettingsCollection[(${j})].authenticationCertificates[0].id" | cut -d'/' -f11 | tr -d '"'`
 
                 printf "backend_http_settings {\n" >> $outfile
                 printf "\t name = \"%s\" \n"  $bname >> $outfile
@@ -148,14 +162,19 @@ if [ "$count" -gt "0" ]; then
                 printf "\t protocol = \"%s\" \n"  $bproto >> $outfile
                 printf "\t cookie_based_affinity = \"%s\" \n"  $bcook >> $outfile
                 printf "\t request_timeout = \"%s\" \n"  $btimo >> $outfile
+                if [ "$pname" != "null" ]; then
                 printf "\t probe_name = \"%s\" \n"  $pname >> $outfile
-
+                fi
+                if [ "$acert" != "null" ]; then
+                    printf "\t authentication_certificate {\n" >> $outfile
+                    printf "\t\t name = \"%s\" \n"  $acert >> $outfile
+                    printf "\t}\n" >> $outfile
+                fi
                 printf "}\n" >> $outfile
             done
         fi     
         
 # http listener block          httpl=`echo $azr | jq ".[(${i})].httpListeners"`
-
 
         icount=`echo $httpl | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
@@ -166,8 +185,8 @@ if [ "$count" -gt "0" ]; then
                 fepn=`echo $azr | jq ".[(${i})].httpListeners[(${j})].frontendPort.id" | cut -d'/' -f11 | tr -d '"'`  
                 bproto=`echo $azr | jq ".[(${i})].httpListeners[(${j})].protocol" | tr -d '"'`
                 bhn=`echo $azr | jq ".[(${i})].httpListeners[(${j})].hostName" | tr -d '"'`
-                bssl=`echo $azr | jq ".[(${i})].httpListeners[(${j})].sslCertificate" | tr -d '"'`
-                                
+                bssl=`echo $azr | jq ".[(${i})].httpListeners[(${j})].sslCertificate.id" | cut -d'/' -f11 | tr -d '"'`
+                rsni=`echo $azr | jq ".[(${i})].httpListeners[(${j})].requireServerNameIndication" | tr -d '"'`                               
 
                 printf "http_listener {\n" >> $outfile
                 printf "\t name = \"%s\" \n"  $bname >> $outfile
@@ -180,8 +199,9 @@ if [ "$count" -gt "0" ]; then
                 if [ "$bssl" != "null" ]; then
                 printf "\t ssl_certificate_name = \"%s\" \n"  $bssl >> $outfile
                 fi
-                #printf "\t require_sni = \"%s\" \n"  $rsni >> $outfile
-
+                if [ "$rsni" != "null" ]; then
+                printf "\t require_sni = \"%s\" \n"  $rsni >> $outfile
+                fi
                 printf "}\n" >> $outfile
             done
         fi   
@@ -236,9 +256,9 @@ if [ "$count" -gt "0" ]; then
             done
         fi   
 
-# request routing rules block rrrs=`echo $azr | jq ".[(${i})].requestRoutingRules"`
+# request routing rules    block rrrs=`echo $azr | jq ".[(${i})].requestRoutingRules"`
 
-        icount=`echo $probes | jq '. | length'`
+        icount=`echo $rrrs | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
@@ -264,27 +284,50 @@ if [ "$count" -gt "0" ]; then
         fi
 
 
+# ssl_certificate block   sslcerts=`echo $azr | jq ".[(${i})].sslCertificates"`
+
+        icount=`echo $rrrs | jq '. | length'`
+        if [ "$icount" -gt "0" ]; then
+            icount=`expr $icount - 1`
+            for j in `seq 0 $icount`; do
+                bname=`echo $azr | jq ".[(${i})].sslCertificates[(${j})].name" | tr -d '"'`
+                bdata=`echo $azr | jq ".[(${i})].sslCertificates[(${j})].publicCertData" | tr -d '"'`
+                bpw=`echo $azr | jq ".[(${i})].sslCertificates[(${j})].password" | tr -d '"'`
+
+                printf "ssl_certificate {\n" >> $outfile
+                printf "\t name = \"%s\" \n"  $bname >> $outfile
+
+                if [ "$bdata" != "null" ]; then
+                printf "\t data = \"%s\" \n"  $bdata >> $outfile
+                else
+                printf "\t data = \"\" \n"  >> $outfile                
+                fi
+                
+                if [ "$bpw" != "null" ]; then
+                printf "\t password = \"%s\" \n"  $bpw >> $outfile
+                else
+                printf "\t password = \"\" \n"  >> $outfile
+                fi
+                printf "\t }\n" >> $outfile
+            done
+        fi
+
 # waf configuration block     wafc=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration"`
 # - not an array like the other blocks 
 #
-
-        if [ "wafc" != "null" ]; then
-            
-                fmode=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.firewallMode" | tr -d '"'`
+        fmode=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.firewallMode" | tr -d '"'`
+        if [ "$fmode" != "null" ]; then
                 rst=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.ruleSetType" | tr -d '"'`
                 rsv=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.ruleSetVersion" | tr -d '"'`
                 fen=`echo $azr | jq ".[(${i})].webApplicationFirewallConfiguration.enabled" | tr -d '"'`
-
+                
                 printf "waf_configuration {\n" >> $outfile
-
                 printf "\t firewall_mode = \"%s\" \n"  $fmode >> $outfile
                 printf "\t rule_set_type = \"%s\" \n"  $rst >> $outfile
                 printf "\t rule_set_version = \"%s\" \n"  $rsv >> $outfile
                 printf "\t enabled = \"%s\" \n"  $fen >> $outfile
-                printf "\t }\n" >> $outfile
-            
+                printf "\t }\n" >> $outfile          
         fi
-
 
         #
         # New Tags block

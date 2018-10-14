@@ -50,6 +50,9 @@ if [ "$count" -gt "0" ]; then
         vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
         vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
         vmoswa=`echo $azr | jq ".[(${i})].storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
+        vmossiz=`echo $azr | jq ".[(${i})].storageProfile.osDisk.diskSizeGb" | tr -d '"'`
+        vmosmdid=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.id" | tr -d '"'`
+        vmosmdtyp=`echo $azr | jq ".[(${i})].storageProfile.osDisk.ManagedDisk.storageAccountType" | tr -d '"'`
         #
         
         osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
@@ -116,25 +119,7 @@ if [ "$count" -gt "0" ]; then
         #  admin_password ?
         printf "}\n" >> $outfile
         fi
-        #
-        # OS Disk
-        #
-
-        printf "storage_os_disk {\n"  >> $outfile
-        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
-        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
-        if [ "$vmosacctype" != "" ]; then
-            printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $outfile
-        fi
-        if [ "$vmosvhd" != "null" ]; then
-            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
-        fi
-        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
-        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
-        if [ "$vmoswa" != "null" ]; then
-            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
-        fi
-        printf "}\n" >> $outfile
+        
         #
         #
         #
@@ -200,6 +185,41 @@ if [ "$count" -gt "0" ]; then
             
             printf "}\n" >> $outfile
         fi
+
+        #
+        # OS Disk
+        #
+        printf "storage_os_disk {\n"  >> $outfile
+        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
+        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
+        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
+        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
+
+ 
+        if [ "$vmossiz" != "null" ]; then
+            printf "\t disk_size_gb = \"%s\" \n" $vmossiz >> $outfile
+        fi       
+
+        if [ "$vmosvhd" != "null" ]; then
+            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
+        fi
+        if [ "$vmoswa" != "null" ]; then
+            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
+        fi
+
+        if [ "$vmosacctype" = "Attach" ]; then
+            if [ "$vmosmdtyp" != "null" ]; then
+                printf "\tmanaged_disk_type = \"%s\" \n" $vmosmdtyp >> $outfile
+            fi
+            if [ "$vmosmdid" != "null" ]; then
+                printf "\tmanaged_disk_id = \"%s\" \n" $vmosmdid >> $outfile
+            fi
+        fi
+
+
+
+        printf "}\n" >> $outfile
+
         #
         # Data disks
         #
@@ -221,7 +241,7 @@ if [ "$count" -gt "0" ]; then
                 # caching , disk_size_gn, write_accelerator_enabled 
                 
                 if [ "$ddcreopt" = "Attach" ]; then
-                    if ["$ddmd" != "null" ];then
+                    if [ "$ddmd" != "null" ];then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
                     ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
                     ## ddmdrg  from cut is upper case - not good
