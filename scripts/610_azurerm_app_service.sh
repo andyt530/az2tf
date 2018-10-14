@@ -16,10 +16,15 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup"  | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
-      
+        prg=`echo $azr | jq ".[(${i})].appServicePlanId" | cut -d'/' -f5  | tr -d '"'`
+        pnam=`echo $azr | jq ".[(${i})].appServicePlanId" | cut -d'/' -f9 | tr -d '"'`
+        lcrg=`echo $azr | jq ".[(${i})].resourceGroup" | awk '{print tolower($0)}' | tr -d '"'`
+        appplid=`echo $azr | jq ".[(${i})].appServicePlanId" | tr -d '"'`
+        
+
         prefix=`printf "%s.%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile  
@@ -27,8 +32,12 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
-        
+        printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
+        # case issues - so use resource id directly
+        # printf "\t app_service_plan_id = \"\${azurerm_app_service_plan.%s__%s.id}\"\n" $prg $pnam >> $outfile
+        printf "\t app_service_plan_id = \"%s\"\n" $appplid >> $outfile
+
+
 # geo location block
         
 #        icount=`echo $geol | jq '. | length'`
@@ -59,7 +68,7 @@ if [ "$count" -gt "0" ]; then
                 k1=`echo $keys | jq ".[(${j})]"`
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                #printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
             done
             printf "\t}\n" >> $outfile
         fi

@@ -17,9 +17,15 @@ if [ "$count" -gt "0" ]; then
         
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
-      
+        tier=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
+        size=`echo $azr | jq ".[(${i})].sku.size" | tr -d '"'`
+        kind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
+        lcrg=`echo $azr | jq ".[(${i})].resourceGroup" | awk '{print tolower($0)}' | tr -d '"'`
+
+        #if [ "$kind" = "app" ];then kind="Windows"; fi
         prefix=`printf "%s.%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile  
@@ -27,7 +33,14 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
+        printf "\t kind = \"%s\"\n" $kind >> $outfile
+
+        printf "\t sku {\n" >> $outfile
+        printf "\t\t tier = \"%s\"\n" $tier >> $outfile
+        printf "\t\t size = \"%s\"\n" $size >> $outfile
+        printf "\t }\n" >> $outfile
+
         
 # geo location block
         
