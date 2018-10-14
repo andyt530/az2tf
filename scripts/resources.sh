@@ -147,8 +147,10 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Web/serverFarms") prov="azurerm_app_service_plan"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Web/sites") prov="azurerm_app_service"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
 
-#Microsoft.Web/sites   azurerm_app_servive
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
