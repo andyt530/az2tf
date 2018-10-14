@@ -134,15 +134,16 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.DocumentDb/databaseAccounts") prov="azurerm_cosmosdb_account"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-
             "Microsoft.ServiceBus/namespaces") prov="azurerm_servicebus_namespace"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_servicebus_queue"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac
-        
-        
+       
     done
     
 fi

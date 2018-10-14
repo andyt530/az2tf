@@ -85,6 +85,9 @@ Container Resources
 * azurerm_container_registry (full)
 * azurerm_kubernetes_cluster
 
+CosmosDB (DocumentDB) Resources
+* azurerm_cosmosdb_account
+
 Key Vault Resources
 * azurerm_key_vault (Common)
 * azurerm_key_vault_secret (full)
@@ -99,6 +102,10 @@ Load Balancer Resources
 
 Management Resources
 * azurerm_management_lock  (full)
+
+Messaging Resources
+* azurerm_servicebus_namespace  (full)
+* azurerm_servicebus_queue  (psrtial)
 
 Network Resources
 * azurerm_application_gateway 
