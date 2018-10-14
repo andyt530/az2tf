@@ -135,7 +135,9 @@ if [ "$count2" -gt "0" ]; then
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
 
-
+            "Microsoft.ServiceBus/namespaces") prov="azurerm_servicebus_namespace"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac
