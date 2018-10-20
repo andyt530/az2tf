@@ -24,12 +24,13 @@ if [ "$count" -gt "0" ]; then
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile
 
-
-
+        upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
 
         vmlic=`echo $azr | jq ".[(${i})].licenseType" | tr -d '"'`
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
-        vmsize=`echo $azr | jq ".[(${i})].hardwareProfile.vmSize" | tr -d '"'`
+        skun=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
+        skuc=`echo $azr | jq ".[(${i})].sku.capacity" | tr -d '"'`
+        skut=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         vmdiags=`echo $azr | jq ".[(${i})].diagnosticsProfile" | tr -d '"'`
         vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
         netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
@@ -71,7 +72,14 @@ if [ "$count" -gt "0" ]; then
         if [ "$vmlic" != "null" ]; then 
             printf "\t license_type = \"%s\"\n" $vmlic >> $outfile
         fi
-        printf "\t vm_size = \"%s\"\n" $vmsize >> $outfile
+        printf "\t upgrade_policy_mode = \"%s\"\n" $upm >> $outfile
+        
+        printf "\t sku {\n" $upm >> $outfile
+        printf "\t\t name = \"%s\"\n" $skun >> $outfile
+        printf "\t\t tier = \"%s\"\n" $skut >> $outfile
+        printf "\t\t capacity = \"%s\"\n" $skuc >> $outfile
+
+        printf "\t }\n" $upm >> $outfile
         #
         # Multiples
         #

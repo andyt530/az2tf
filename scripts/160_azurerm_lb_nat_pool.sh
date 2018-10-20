@@ -27,11 +27,12 @@ if [ "$count" -gt "0" ]; then
                 proto=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].protocol" | tr -d '"'`
 
                 feipc=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendIpConfiguration.id" | cut -d'/' -f11 | tr -d '"'`
-                if [ "$feps" = "null" ]; then feps=bep; fi
-                if [ "$fepe" = "null" ]; then fepe=bep; fi
+
                 feps=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortStart" | tr -d '"'`
                 fepe=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].frontendPortEnd" | tr -d '"'`
                 bep=`echo $azr | jq ".[(${i})].inboundNatPools[(${j})].backendPort" | tr -d '"'`
+                if [ "$feps" = "null" ]; then feps=`echo $bep`; fi
+                if [ "$fepe" = "null" ]; then fepe=`echo $bep`; fi
                 prefix=`printf "%s__%s" $prefixa $rg`   
                 outfile=`printf "%s.%s__%s.tf" $tfp $rg $name` 
                 echo $az2tfmess > $outfile
