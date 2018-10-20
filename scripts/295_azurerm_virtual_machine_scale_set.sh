@@ -24,18 +24,8 @@ if [ "$count" -gt "0" ]; then
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile
 
-        avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
-        avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
-        lavs=`printf "%s__%s" $avsrg $avsid`
 
-        lavs=`echo $lavs | awk '{print tolower($0)}'`
-        for tavs in `terraform state list | grep azurerm_availability_set`; do     
-            uavs=`echo $tavs | cut -f2 -d'.' | awk '{print tolower($0)}'` 
-            if [ "$uavs" == "$lavs" ]; then            
-                myavs=`echo $tavs | cut -f2 -d'.'` 
-            fi 
-        done
-        #echo "myavs=$myavs"
+
 
         vmlic=`echo $azr | jq ".[(${i})].licenseType" | tr -d '"'`
         vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
@@ -77,9 +67,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t location = \"%s\"\n"  $loc >> $outfile
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $outfile
         printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
-        if [ "$avsid" != "null" ]; then 
-            printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $outfile
-        fi
+        
         if [ "$vmlic" != "null" ]; then 
             printf "\t license_type = \"%s\"\n" $vmlic >> $outfile
         fi
@@ -120,7 +108,7 @@ if [ "$count" -gt "0" ]; then
         # OS Disk
         #
 
-        printf "storage_os_disk {\n"  >> $outfile
+        printf "storage_profile_os_disk {\n"  >> $outfile
         printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
         printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
         if [ "$vmosacctype" != "" ]; then
@@ -140,7 +128,7 @@ if [ "$count" -gt "0" ]; then
         #
         if [ "$vmimid" = "null" ]; then
             if [ "$vmimpublisher" != "null" ];then
-            printf "storage_image_reference {\n"  >> $outfile
+            printf "storage_profile_image_reference {\n"  >> $outfile
             printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $outfile
             printf "\t offer = \"%s\"\n"  $vmimoffer >> $outfile
             printf "\t sku = \"%s\"\n"  $vmimsku >> $outfile
@@ -214,7 +202,7 @@ if [ "$count" -gt "0" ]; then
                 ddlun=`echo $datadisks | jq ".[(${j})].lun" | tr -d '"'`
                 ddvhd=`echo $datadisks | jq ".[(${j})].vhd.uri" | tr -d '"'`
                 ddmd=`echo $datadisks | jq ".[(${j})].managedDisk" | tr -d '"'`
-                printf "storage_data_disk {\n"  >> $outfile
+                printf "storage_profile_data_disk {\n"  >> $outfile
                 printf "\t name = \"%s\"\n" $ddname >> $outfile
                 printf "\t create_option = \"%s\"\n" $ddcreopt >> $outfile
                 printf "\t lun = \"%s\"\n" $ddlun >> $outfile
