@@ -42,8 +42,8 @@ if [ "$count" -gt "0" ]; then
                 printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
                 printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile
-                printf "\t\t frontend_port_start = \"%s\" \n"  $feps >> $outfile
-                printf "\t\t frontend_port_end = \"%s\" \n"  $fepe >> $outfile
+                if [ "$feps" != "null" ]; then printf "\t\t frontend_port_start = \"%s\" \n"  $feps >> $outfile ; fi
+                if [ "$fepe" != "null" ]; then printf "\t\t frontend_port_end = \"%s\" \n"  $fepe >> $outfile  ; fi
                 printf "\t\t backend_port = \"%s\" \n"  $bep >> $outfile
                 printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $outfile
 

@@ -24,6 +24,7 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $icount`; do
                 
                 name=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
+                rname=`echo $name | sed 's/\./-/g'`
                 id=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].id" | tr -d '"'`
                 rg=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].resourceGroup" | tr -d '"'`
                 prefix=`printf "%s__%s" $prefixa $rg`
@@ -40,7 +41,7 @@ if [ "$count" -gt "0" ]; then
                 enfip=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].enableFloatingIp" | cut -d'/' -f11 | tr -d '"'`
 
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
                 printf "\t\t name = \"%s\" \n"  $name >> $outfile
                 printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
@@ -54,10 +55,10 @@ if [ "$count" -gt "0" ]; then
                 printf "}\n" >> $outfile
         #
                 cat $outfile
-                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 

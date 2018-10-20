@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az vm list -g $rgsource`
+azr=`az vmss list -g $rgsource`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -102,8 +102,8 @@ if [ "$count" -gt "0" ]; then
         fi
         #
         #
-        printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $outfile
-        printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $outfile
+        #printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $outfile
+        #printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $outfile
         #
         if [ "$vmcn" != "null" ];then
         printf "os_profile {\n"  >> $outfile
