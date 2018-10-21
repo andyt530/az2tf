@@ -19,14 +19,17 @@ if [ "$count" -gt "0" ]; then
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
-    
+        upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
+        op=`echo $azr | jq ".[(${i})].overprovision" | tr -d '"'`
+        spg=`echo $azr | jq ".[(${i})].singlePlacementGroup" | tr -d '"'`
+        vmlic=`echo $azr | jq ".[(${i})].virtualMachineProfile.licenseType" | tr -d '"'`
+
         prefix=`printf "%s__%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile
 
-        vmlic=`echo $azr | jq ".[(${i})].licenseType" | tr -d '"'`
-        vmtype=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.osType" | tr -d '"'`
 
+        vmtype=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.osType" | tr -d '"'`
 
 
         datadisks=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.dataDisks"`
@@ -55,157 +58,47 @@ if [ "$count" -gt "0" ]; then
         #
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
-
+# basic settings 
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
-        printf "\t name = \"%s\"\n" $name >> $outfile
-        printf "\t location = \"%s\"\n"  $loc >> $outfile
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
-        
-        if [ "$vmlic" != "null" ]; then 
-            printf "\t license_type = \"%s\"\n" $vmlic >> $outfile
-        fi
-
-        upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
-        printf "\t upgrade_policy_mode = \"%s\"\n" $upm >> $outfile
-        op=`echo $azr | jq ".[(${i})].overprovision" | tr -d '"'`
-        printf "\t overprovision = \"%s\"\n" $op >> $outfile
-
-
+        printf "name = \"%s\"\n" $name >> $outfile
+        printf "location = \"%s\"\n"  $loc >> $outfile
 # sku block
         skun=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         skuc=`echo $azr | jq ".[(${i})].sku.capacity" | tr -d '"'`
         skut=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
-        printf "\t sku {\n" $upm >> $outfile
-        printf "\t\t name = \"%s\"\n" $skun >> $outfile
-        printf "\t\t tier = \"%s\"\n" $skut >> $outfile
-        printf "\t\t capacity = \"%s\"\n" $skuc >> $outfile
-        printf "\t }\n" $upm >> $outfile
+        printf "sku {\n" $upm >> $outfile
+        printf "\tname = \"%s\"\n" $skun >> $outfile
+        printf "\ttier = \"%s\"\n" $skut >> $outfile
+        printf "\tcapacity = \"%s\"\n" $skuc >> $outfile
+        printf "}\n" $upm >> $outfile
+# basic settings continued
+        printf "resource_group_name = \"%s\"\n" $rg >> $outfile
+        if [ "$vmlic" != "null" ]; then 
+            printf "license_type = \"%s\"\n" $vmlic >> $outfile
+        fi     
+        printf "upgrade_policy_mode = \"%s\"\n" $upm >> $outfile
+        printf "overprovision = \"%s\"\n" $op >> $outfile
+        printf "single_placement_group = \"%s\"\n" $spg >> $outfile
 
 #os_profile block
         vmadmin=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.adminUsername" | tr -d '"'`
         vmadminpw=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.Password" | tr -d '"'`
         vmcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.computerNamePrefix" | tr -d '"'`
-        printf "\t os_profile {\n" >> $outfile
-        printf "\t\t computer_name_prefix = \"%s\"\n" $vmcn >> $outfile
-        printf "\t\t admin_username = \"%s\"\n" $vmadmin >> $outfile
+        printf "os_profile {\n" >> $outfile
+        printf "\tcomputer_name_prefix = \"%s\"\n" $vmcn >> $outfile
+        printf "\tadmin_username = \"%s\"\n" $vmadmin >> $outfile
         if [ "$vmadminpw" != "null" ]; then
-        printf "\t\t admin_password = \"%s\"\n" $vmadminpw >> $outfile
+        printf "\tadmin_password = \"%s\"\n" $vmadminpw >> $outfile
         fi
-        printf "\t }\n" >> $outfile
-
-# network profile block
-        netifs=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations"`
-        
-        #echo "*************************************************"
-        #echo "-------------------------------------------------"
-        #echo "================================================="
-        # Multiples
-        #
-        icount=`echo $netifs | jq '. | length'`
-        if [ "$icount" -gt "0" ]; then
-            icount=`expr $icount - 1`
-            for j in `seq 0 $icount`; do
-                printf "\t network_profile {\n" >> $outfile
-                echo "$i $j"
-                nn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].name" | tr -d '"'`
-                echo "nn=$nn"
-                pri=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].primary" | tr -d '"'`
-                ipc=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations"`
-                printf "\t\t name = \"%s\"\n" $nn >> $outfile
-                printf "\t\t primary = \"%s\"\n" $pri >> $outfile
-
-                kcount=`echo $ipc | jq '. | length'`
-                echo "$i $j $kcount"
-                if [ "$kcount" -gt "0" ]; then
-                    kcount=`expr $kcount - 1`
-                        for k in `seq 0 $kcount`; do
-                            printf "\t\t ip_configuration {\n" >> $outfile
-                                ipcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].name" | tr -d '"'`
-                                ipcp=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].primary" | tr -d '"'`
-                                ipcsrg=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f5 -d'/' | tr -d '"'`
-                                ipcsn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f11 -d'/' | tr -d '"'`
-                                
-                                
-                                if [ "$ipcp" = "null" ]; then ipcp="";fi
-                                printf "\t\t\t name = \"%s\"\n" $ipcn >> $outfile
-                                printf "\t\t\t primary = \"%s\"\n" $ipcp >> $outfile
-                                printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $ipcsrg $ipcsn >> $outfile
-                            printf "\t\t }\n" >> $outfile
-                        done
-                fi        
-                printf "\t }\n" >> $outfile
-            done
-        fi
-
-# OS Disk block
-        #
-
-        printf "storage_profile_os_disk {\n"  >> $outfile
-        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
-        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
-        if [ "$vmosacctype" != "" ]; then
-            printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $outfile
-        fi
-
-        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
-        if [ "$vmtype" = "null" ]; then vmtype="" ; fi
-        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
-        if [ "$vmoswa" != "null" ]; then
-            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
-        fi
-        vmosvhdc=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.vhdContainers"`
-        echo "*************************************************"
-        echo $vmosvhdc
-        echo "-------------------------------------------------"
-        if [ "$vmosvhdc" != "null" ]; then
-            printf "\tvhd_containers =  %s \n" "$vmosvhdc" >> $outfile
-        fi
-
-
-
         printf "}\n" >> $outfile
-        #
-        #
-        #
-        if [ "$vmimid" = "null" ]; then
-            if [ "$vmimpublisher" != "null" ];then
-            printf "storage_profile_image_reference {\n"  >> $outfile
-            printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $outfile
-            printf "\t offer = \"%s\"\n"  $vmimoffer >> $outfile
-            printf "\t sku = \"%s\"\n"  $vmimsku >> $outfile
-            printf "\t version = \"%s\"\n"  $vmimversion >> $outfile
-            
-            printf "}\n" >> $outfile
-            fi
-          
-        fi
-        if [ "$vmplname" != "null" ]; then
-            vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
-            vmplpub=`echo $azr | jq ".[(${i})].plan.publisher" | tr -d '"'` 
-            printf "plan {\n"  >> $outfile
-            printf "\t name = \"%s\"\n" $vmplname  >> $outfile
-            printf "\t publisher = \"%s\"\n" $vmplpub  >> $outfile
-            printf "\t product = \"%s\"\n" $vmplprod  >> $outfile
-            printf "}\n" >> $outfile
-        fi
-        #
-        #
-        #
-# boot diagnostics block
 
-        vmdiags=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile" | tr -d '"'`
-        vmbturi=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
-        vmbten=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.enabled" | tr -d '"'`
+# os_profile_secrets - not used ?
 
-        if [ "$vmdiags" != "null" ]; then
-            printf "boot_diagnostics {\n"  >> $outfile
-            printf "\t enabled = \"%s\"\n" $vmbten >> $outfile
-            printf "\t storage_uri = \"%s\"\n" $vmbturi >> $outfile
-            printf "}\n" >> $outfile
-        fi
-        #
-        if [ "$vmtype" = "Windows" ]; then
+# os_profile_windows_config
+        winb=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration"`
+        
+       #
+        if [ "$winb" != "null" ]; then
             vmwau=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
             vmwvma=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
             vmwtim=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.timeZone"`
@@ -219,8 +112,12 @@ if [ "$count" -gt "0" ]; then
                 printf "}\n" >> $outfile
             fi
         fi
-        #
-        if [ "$vmtype" = "Linux" ]; then
+
+# os_profile_linux_config block
+        linuxb=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration"`
+        
+
+        if [ "$linuxb" != "null" ]; then
             printf "os_profile_linux_config {\n"  >> $outfile
             if [ $vmdispw = "null" ]; then
             # osprofile can by null for vhd imported images - must make an artificial one.
@@ -236,9 +133,73 @@ if [ "$count" -gt "0" ]; then
             
             printf "}\n" >> $outfile
         fi
+
+# network profile block
+        netifs=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations"`      
+        icount=`echo $netifs | jq '. | length'`
+        if [ "$icount" -gt "0" ]; then
+            icount=`expr $icount - 1`
+            for j in `seq 0 $icount`; do
+                printf "network_profile {\n" >> $outfile
+                nn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].name" | tr -d '"'`
+                pri=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].primary" | tr -d '"'`
+                ipc=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations"`
+                printf "\tname = \"%s\"\n" $nn >> $outfile
+                printf "\tprimary = \"%s\"\n" $pri >> $outfile
+                kcount=`echo $ipc | jq '. | length'`
+                if [ "$kcount" -gt "0" ]; then
+                    kcount=`expr $kcount - 1`
+                        for k in `seq 0 $kcount`; do
+                            printf "\tip_configuration {\n" >> $outfile
+                                ipcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].name" | tr -d '"'`
+                                ipcp=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].primary" | tr -d '"'`
+                                ipcsrg=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f5 -d'/' | tr -d '"'`
+                                ipcsn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f11 -d'/' | tr -d '"'`                    
+                                beapids=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].loadBalancerBackendAddressPools"`
+                                natrids=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].loadBalancerInboundNatPools"`                                
+                                echo "*************************************************"
+                                echo $beapids
+                                echo $natrids  
+                                echo "-------------------------------------------------"               
+                                if [ "$ipcp" = "null" ]; then ipcp="";fi
+                                printf "\t\tname = \"%s\"\n" $ipcn >> $outfile
+                                printf "\t\tprimary = \"%s\"\n" $ipcp >> $outfile
+                                printf "\t\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $ipcsrg $ipcsn >> $outfile
+                            printf "\t}\n" >> $outfile
+                        done
+                fi        
+                printf "}\n" >> $outfile
+            done
+        fi
+
+        #echo "*************************************************"
+        #echo "-------------------------------------------------"
+        #echo "================================================="
+
+# storage_profile_os_disk  block
+        printf "storage_profile_os_disk {\n"  >> $outfile
+        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
+        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
+        if [ "$vmosacctype" != "" ]; then
+            printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $outfile
+        fi
+
+        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
+        if [ "$vmtype" = "null" ]; then vmtype="" ; fi
+        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
+        if [ "$vmoswa" != "null" ]; then
+            printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
+        fi
+        vmosvhdc=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.vhdContainers"`
+
+        if [ "$vmosvhdc" != "null" ]; then
+            printf "\tvhd_containers =  %s \n" "$vmosvhdc" >> $outfile
+        fi
+        printf "}\n" >> $outfile
         #
-        # Data disks
-        #
+       
+# storage_profile_data_disk  block
+        
         #echo $datadisks | jq .
         dcount=`echo $datadisks | jq '. | length'`
         dcount=$(($dcount-1))
@@ -260,7 +221,7 @@ if [ "$count" -gt "0" ]; then
                     if ["$ddmd" != "null" ];then
                     ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
                     ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
-                    ## ddmdrg  from cut is upper case - not good
+                    ## ddmdrg from cut is upper case - not good
                     ## probably safe to assume managed disk in same RG as VM ??
                     # check id lowercase rg = ddmdrg if so use rg
                     #
@@ -277,9 +238,50 @@ if [ "$count" -gt "0" ]; then
                 printf "}\n" >> $outfile
             fi
         done
-        
-        #
-        # New Tags block
+
+# storage_profile_image_reference block
+
+        if [ "$vmimid" = "null" ]; then
+            if [ "$vmimpublisher" != "null" ];then
+            printf "storage_profile_image_reference {\n"  >> $outfile
+            printf "\t publisher = \"%s\"\n" $vmimpublisher  >> $outfile
+            printf "\t offer = \"%s\"\n"  $vmimoffer >> $outfile
+            printf "\t sku = \"%s\"\n"  $vmimsku >> $outfile
+            printf "\t version = \"%s\"\n"  $vmimversion >> $outfile
+            
+            printf "}\n" >> $outfile
+            fi
+          
+        fi
+
+# extensions
+
+# boot diagnostics block
+
+        vmdiags=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile" | tr -d '"'`
+        vmbturi=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
+        vmbten=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.enabled" | tr -d '"'`
+
+        if [ "$vmdiags" != "null" ]; then
+            printf "boot_diagnostics {\n"  >> $outfile
+            printf "\t enabled = \"%s\"\n" $vmbten >> $outfile
+            printf "\t storage_uri = \"%s\"\n" $vmbturi >> $outfile
+            printf "}\n" >> $outfile
+        fi
+
+# plan block
+        if [ "$vmplname" != "null" ]; then
+            vmplprod=`echo $azr | jq ".[(${i})].plan.product" | tr -d '"'`
+            vmplpub=`echo $azr | jq ".[(${i})].plan.publisher" | tr -d '"'` 
+            printf "plan {\n"  >> $outfile
+            printf "\t name = \"%s\"\n" $vmplname  >> $outfile
+            printf "\t publisher = \"%s\"\n" $vmplpub  >> $outfile
+            printf "\t product = \"%s\"\n" $vmplprod  >> $outfile
+            printf "}\n" >> $outfile
+        fi        
+    
+# New Tags block
+
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
@@ -296,8 +298,11 @@ if [ "$count" -gt "0" ]; then
             done
             printf "\t}\n" >> $outfile
         fi
+
+# zones block
         
-        
+# finish
+
         printf "}\n" >> $outfile
         cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
