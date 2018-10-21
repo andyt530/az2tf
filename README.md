@@ -121,6 +121,8 @@ Network Resources
 * azurerm_public_ip  (Common)
 * azurerm_route_table (full)
 * azurerm_subnet (full)
+* azurerm_subnet_network_security_group_association (full)
+* azurerm_subnet_route_table_group_association (full)
 * azurerm_traffic_manager_endpoint (partial)
 * azurerm_traffic_manager_profile (partial)
 * azurerm_virtual_network (full)
