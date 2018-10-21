@@ -245,10 +245,10 @@ fi
 
 #
 echo "Cleanup Cloud Shell"
-rm -f *cloud-shell-storage*.tf
-states=`terraform state list | grep cloud-shell-storage`
-echo $states
-terraform state rm $states
+#rm -f *cloud-shell-storage*.tf
+#states=`terraform state list | grep cloud-shell-storage`
+#echo $states
+#terraform state rm $states
 #
 echo "Terraform Plan ..."
 terraform plan .

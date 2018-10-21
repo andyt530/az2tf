@@ -19,9 +19,7 @@ if [ "$count" -gt "0" ]; then
         saname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         k=`az storage account keys list --resource-group $rg --account-name $saname --query '[0].value'`
-        fs=`az storage share list --account-name $saname --account-key $k`
-        echo $fs | jq .
-        
+        fs=`az storage share list --account-name $saname --account-key $k`        
         jcount=`echo $fs | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
             jcount=`expr $jcount - 1`
@@ -30,6 +28,8 @@ if [ "$count" -gt "0" ]; then
                 quo=`echo $fs | jq ".[(${i})].properties.quota" | tr -d '"'`
                 prefix=`printf "%s__%s" $prefixa $rg`
                 outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+                fsid=`printf "%s/%s/%s" $name $rg $saname`
+
                 echo $az2tfmess > $outfile
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
                 printf "\t name = \"%s\"\n" $name >> $outfile
@@ -41,10 +41,10 @@ if [ "$count" -gt "0" ]; then
                 cat $outfile
                 statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
                 echo $statecomm >> tf-staterm.sh
-                #eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+                eval $statecomm
+                evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $fsid`
                 echo $evalcomm >> tf-stateimp.sh
-                #eval $evalcomm
+                eval $evalcomm
 
             done
         fi
