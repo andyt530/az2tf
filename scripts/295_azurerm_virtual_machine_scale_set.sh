@@ -24,41 +24,34 @@ if [ "$count" -gt "0" ]; then
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
         echo $az2tfmess > $outfile
 
-        upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
-
         vmlic=`echo $azr | jq ".[(${i})].licenseType" | tr -d '"'`
-        vmtype=`echo $azr | jq ".[(${i})].storageProfile.osDisk.osType" | tr -d '"'`
-        skun=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
-        skuc=`echo $azr | jq ".[(${i})].sku.capacity" | tr -d '"'`
-        skut=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
-        vmdiags=`echo $azr | jq ".[(${i})].diagnosticsProfile" | tr -d '"'`
-        vmbturi=`echo $azr | jq ".[(${i})].diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
-        netifs=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces"`
-        datadisks=`echo $azr | jq ".[(${i})].storageProfile.dataDisks"`
+        vmtype=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.osType" | tr -d '"'`
 
-        vmosdiskname=`echo $azr | jq ".[(${i})].storageProfile.osDisk.name" | tr -d '"'`
-        vmosdiskcache=`echo $azr | jq ".[(${i})].storageProfile.osDisk.caching" | tr -d '"'`
-        vmosvhd=`echo $azr | jq ".[(${i})].storageProfile.osDisk.vhd.uri" | tr -d '"'`
-        vmoscreoption=`echo $azr | jq ".[(${i})].storageProfile.osDisk.createOption" | tr -d '"'`
-        vmoswa=`echo $azr | jq ".[(${i})].storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
+
+
+        datadisks=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.dataDisks"`
+
+        vmosdiskname=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.name" | tr -d '"'`
+        vmosdiskcache=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.caching" | tr -d '"'`
+        vmosvhdc=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.vhdContainers"`
+        vmoscreoption=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.createOption" | tr -d '"'`
+        vmoswa=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
         #
         
-        osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
+        osvhd=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
         
         #
-        vmimid=`echo $azr | jq ".[(${i})].storageProfile.imageReference.id" | tr -d '"'`
+        vmimid=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.id" | tr -d '"'`
 
-        vmimoffer=`echo $azr | jq ".[(${i})].storageProfile.imageReference.offer" | tr -d '"'`
-        vmimpublisher=`echo $azr | jq ".[(${i})].storageProfile.imageReference.publisher" | tr -d '"'`
-        vmimsku=`echo $azr | jq ".[(${i})].storageProfile.imageReference.sku" | tr -d '"'`
-        vmimversion=`echo $azr | jq ".[(${i})].storageProfile.imageReference.version" | tr -d '"'`
+        vmimoffer=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.offer" | tr -d '"'`
+        vmimpublisher=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.publisher" | tr -d '"'`
+        vmimsku=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.sku" | tr -d '"'`
+        vmimversion=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.version" | tr -d '"'`
         #
-        vmadmin=`echo $azr | jq ".[(${i})].osProfile.adminUsername" | tr -d '"'`
-        vmadminpw=`echo $azr | jq ".[(${i})].osProfile.Password" | tr -d '"'`
-        vmcn=`echo $azr | jq ".[(${i})].osProfile.computerName" | tr -d '"'`
-        vmdispw=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
-        vmsshpath=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
-        vmsshkey=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
+
+        vmdispw=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration.disablePasswordAuthentication" | tr -d '"'`
+        vmsshpath=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration.ssh.publicKeys[0].path" | tr -d '"'`
+        vmsshkey=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
         #
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
@@ -72,48 +65,80 @@ if [ "$count" -gt "0" ]; then
         if [ "$vmlic" != "null" ]; then 
             printf "\t license_type = \"%s\"\n" $vmlic >> $outfile
         fi
+
+        upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
         printf "\t upgrade_policy_mode = \"%s\"\n" $upm >> $outfile
-        
+        op=`echo $azr | jq ".[(${i})].overprovision" | tr -d '"'`
+        printf "\t overprovision = \"%s\"\n" $op >> $outfile
+
+
+# sku block
+        skun=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
+        skuc=`echo $azr | jq ".[(${i})].sku.capacity" | tr -d '"'`
+        skut=`echo $azr | jq ".[(${i})].sku.tier" | tr -d '"'`
         printf "\t sku {\n" $upm >> $outfile
         printf "\t\t name = \"%s\"\n" $skun >> $outfile
         printf "\t\t tier = \"%s\"\n" $skut >> $outfile
         printf "\t\t capacity = \"%s\"\n" $skuc >> $outfile
-
         printf "\t }\n" $upm >> $outfile
-        #
+
+#os_profile block
+        vmadmin=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.adminUsername" | tr -d '"'`
+        vmadminpw=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.Password" | tr -d '"'`
+        vmcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.computerNamePrefix" | tr -d '"'`
+        printf "\t os_profile {\n" >> $outfile
+        printf "\t\t computer_name_prefix = \"%s\"\n" $vmcn >> $outfile
+        printf "\t\t admin_username = \"%s\"\n" $vmadmin >> $outfile
+        if [ "$vmadminpw" != "null" ]; then
+        printf "\t\t admin_password = \"%s\"\n" $vmadminpw >> $outfile
+        fi
+        printf "\t }\n" >> $outfile
+
+# network profile block
+        netifs=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations"`
+        
+        #echo "*************************************************"
+        #echo "-------------------------------------------------"
+        #echo "================================================="
         # Multiples
         #
         icount=`echo $netifs | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
-                vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f9 | tr -d '"'`
-                vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | tr -d '"'`
-                vmnetpri=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].primary" | tr -d '"'`
-                printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $outfile
-                if [ "$vmnetpri" == "true" ]; then
-                    printf "\t primary_network_interface_id = \"\${azurerm_network_interface.%s__%s.id}\"\n" $vmnetrg $vmnetid >> $outfile
-                fi
+                printf "\t network_profile {\n" >> $outfile
+                echo "$i $j"
+                nn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].name" | tr -d '"'`
+                echo "nn=$nn"
+                pri=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].primary" | tr -d '"'`
+                ipc=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations"`
+                printf "\t\t name = \"%s\"\n" $nn >> $outfile
+                printf "\t\t primary = \"%s\"\n" $pri >> $outfile
+
+                kcount=`echo $ipc | jq '. | length'`
+                echo "$i $j $kcount"
+                if [ "$kcount" -gt "0" ]; then
+                    kcount=`expr $kcount - 1`
+                        for k in `seq 0 $kcount`; do
+                            printf "\t\t ip_configuration {\n" >> $outfile
+                                ipcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].name" | tr -d '"'`
+                                ipcp=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].primary" | tr -d '"'`
+                                ipcsrg=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f5 -d'/' | tr -d '"'`
+                                ipcsn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f11 -d'/' | tr -d '"'`
+                                
+                                
+                                if [ "$ipcp" = "null" ]; then ipcp="";fi
+                                printf "\t\t\t name = \"%s\"\n" $ipcn >> $outfile
+                                printf "\t\t\t primary = \"%s\"\n" $ipcp >> $outfile
+                                printf "\t subnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $ipcsrg $ipcsn >> $outfile
+                            printf "\t\t }\n" >> $outfile
+                        done
+                fi        
+                printf "\t }\n" >> $outfile
             done
         fi
-        #
-        #
-        #printf "\t delete_data_disks_on_termination = \"false\"\n"  >> $outfile
-        #printf "\t delete_os_disk_on_termination = \"false\"\n"  >> $outfile
-        #
-        if [ "$vmcn" != "null" ];then
-        printf "os_profile {\n"  >> $outfile
-        printf "\tcomputer_name = \"%s\" \n"  $vmcn >> $outfile
-        printf "\tadmin_username = \"%s\" \n"  $vmadmin >> $outfile
-        if [ "$vmadminpw" != "null" ]; then 
-            printf "\t admin_password = \"%s\"\n" $vmadminpw >> $outfile
-        fi
 
-        #  admin_password ?
-        printf "}\n" >> $outfile
-        fi
-        #
-        # OS Disk
+# OS Disk block
         #
 
         printf "storage_profile_os_disk {\n"  >> $outfile
@@ -122,14 +147,23 @@ if [ "$count" -gt "0" ]; then
         if [ "$vmosacctype" != "" ]; then
             printf "\tmanaged_disk_type = \"%s\" \n" $vmosacctype >> $outfile
         fi
-        if [ "$vmosvhd" != "null" ]; then
-            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
-        fi
+
         printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
+        if [ "$vmtype" = "null" ]; then vmtype="" ; fi
         printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
         if [ "$vmoswa" != "null" ]; then
             printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
         fi
+        vmosvhdc=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.vhdContainers"`
+        echo "*************************************************"
+        echo $vmosvhdc
+        echo "-------------------------------------------------"
+        if [ "$vmosvhdc" != "null" ]; then
+            printf "\tvhd_containers =  %s \n" "$vmosvhdc" >> $outfile
+        fi
+
+
+
         printf "}\n" >> $outfile
         #
         #
@@ -158,17 +192,23 @@ if [ "$count" -gt "0" ]; then
         #
         #
         #
+# boot diagnostics block
+
+        vmdiags=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile" | tr -d '"'`
+        vmbturi=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.storageUri" | tr -d '"'`
+        vmbten=`echo $azr | jq ".[(${i})].virtualMachineProfile.diagnosticsProfile.bootDiagnostics.enabled" | tr -d '"'`
+
         if [ "$vmdiags" != "null" ]; then
             printf "boot_diagnostics {\n"  >> $outfile
-            printf "\t enabled = \"true\"\n"  >> $outfile
+            printf "\t enabled = \"%s\"\n" $vmbten >> $outfile
             printf "\t storage_uri = \"%s\"\n" $vmbturi >> $outfile
             printf "}\n" >> $outfile
         fi
         #
-        if [ $vmtype = "Windows" ]; then
-            vmwau=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
-            vmwvma=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
-            vmwtim=`echo $azr | jq ".[(${i})].osProfile.windowsConfiguration.timeZone"`
+        if [ "$vmtype" = "Windows" ]; then
+            vmwau=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.enableAutomaticUpdates" | tr -d '"'`
+            vmwvma=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.provisionVmAgent" | tr -d '"'`
+            vmwtim=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.windowsConfiguration.timeZone"`
             if [ "$vmwau" != "null" ]; then
                 printf "os_profile_windows_config {\n"  >> $outfile
                 printf "\t enable_automatic_upgrades = \"%s\"\n" $vmwau >> $outfile
@@ -180,7 +220,7 @@ if [ "$count" -gt "0" ]; then
             fi
         fi
         #
-        if [ $vmtype = "Linux" ]; then
+        if [ "$vmtype" = "Linux" ]; then
             printf "os_profile_linux_config {\n"  >> $outfile
             if [ $vmdispw = "null" ]; then
             # osprofile can by null for vhd imported images - must make an artificial one.
