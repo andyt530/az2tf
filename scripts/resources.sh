@@ -33,6 +33,10 @@ if [ "$count2" -gt "0" ]; then
             ;;
             "Microsoft.Storage/storageAccounts") prov="azurerm_storage_account"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_storage_share"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_storage_container"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
             "Microsoft.Network/networkSecurityGroups") prov="azurerm_network_security_group"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
