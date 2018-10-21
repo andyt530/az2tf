@@ -23,6 +23,8 @@ if [ "$count" -gt "0" ]; then
         op=`echo $azr | jq ".[(${i})].overprovision" | tr -d '"'`
         spg=`echo $azr | jq ".[(${i})].singlePlacementGroup" | tr -d '"'`
         vmlic=`echo $azr | jq ".[(${i})].virtualMachineProfile.licenseType" | tr -d '"'`
+        vmpri=`echo $azr | jq ".[(${i})].virtualMachineProfile.priority" | tr -d '"'`
+
 
         prefix=`printf "%s__%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
@@ -79,7 +81,9 @@ if [ "$count" -gt "0" ]; then
         printf "upgrade_policy_mode = \"%s\"\n" $upm >> $outfile
         printf "overprovision = \"%s\"\n" $op >> $outfile
         printf "single_placement_group = \"%s\"\n" $spg >> $outfile
-
+        if [ "$vmpri" != "null" ]; then 
+        printf "priority = \"%s\"\n" $vmpri >> $outfile
+        fi
 #os_profile block
         vmadmin=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.adminUsername" | tr -d '"'`
         vmadminpw=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.Password" | tr -d '"'`

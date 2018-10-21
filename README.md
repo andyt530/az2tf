@@ -80,6 +80,7 @@ Compute Resources
 * azurerm_image
 * azurerm_managed_disk  (Common)
 * azurerm_virtual_machine  (Common)
+* azurerm_virtual_machine_scale_sets  (Common)
 
 Container Resources
 * azurerm_container_registry (full)
@@ -140,7 +141,7 @@ Recovery Services
 
 Storage Resources
 * azurerm_storage_account (Common - tf full support lacking)
-
+* azurerm_storage_share (full)
 
 
 (Full) = full support for all terraform attributes
