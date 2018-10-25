@@ -28,7 +28,7 @@ To generate the terraform files for an entire Azure subscription:
 ./az2tf.sh -s <Subscription ID>
 ```
 
-To include Azure Subscription Policies and RBAC controlas and assignments:
+To include Azure Subscription Policies and RBAC controls and assignments:
 ```
 ./az2tf.sh -s <Subscription ID> -p yes
 ```
