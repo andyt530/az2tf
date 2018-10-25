@@ -144,6 +144,7 @@ Recovery Services
 Storage Resources
 * azurerm_storage_account (Common - tf full support lacking)
 * azurerm_storage_share (full)
+* * azurerm_storage_share (partial - tf full support lacking)
 
 
 (Full) = full support for all terraform attributes
