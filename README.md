@@ -159,7 +159,6 @@ Storage Resources
 
 ## Planned Additions
 
-+ Application Gateways
 + PaaS databases and apps
 + Storage firewall rules
 + ongoing better AKS support as AKS evolves
