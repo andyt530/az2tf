@@ -42,12 +42,12 @@ if [ "$count" != "0" ]; then
         #if [ "$suri" != "null" ]; then
         #    printf "\t source_uri = \"%s\"\n" $suri >> $outfile
         #fi
-        if [ "$srid" != "null" ]; then
-            printf "\t source_resource_id = \"%s\"\n" $srid >> $outfile
-        fi
-        if [ "$said" != "null" ]; then
-            printf "\t source_account_id = \"%s\"\n" $said >> $outfile
-        fi        
+        #if [ "$srid" != "null" ]; then
+        #    printf "\t source_resource_id = \"%s\"\n" $srid >> $outfile
+        #fi
+        #if [ "$said" != "null" ]; then
+        #    printf "\t source_account_id = \"%s\"\n" $said >> $outfile
+        #fi        
         
         #
         # New Tags block
