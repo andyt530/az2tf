@@ -1,3 +1,6 @@
+# problems with unauthorized
+# problems with too many calls to ?comp=list   
+
 prefixa=`echo $0 | awk -F 'azurerm_' '{print $2}' | cut -f1 -d'.'`
 tfp=`printf "azurerm_%s" $prefixa`
 
