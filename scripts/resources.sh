@@ -157,6 +157,12 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Compute/virtualMachineScaleSets") prov="azurerm_virtual_machine_scale_set"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.ManagedIdentity/userAssignedIdentities") prov="azurerm_user_assigned_identity"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+            "Microsoft.Compute/snapshots") prov="azurerm_snapshot"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
