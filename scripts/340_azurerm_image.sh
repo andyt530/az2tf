@@ -43,10 +43,12 @@ if [ "$count" != "0" ]; then
             fi
             printf "\t}\n" >> $outfile
         fi
-        
-        
-        
-        
+# hardwire this - as source vm may of been deleted after image created
+        svm=`echo $azr | jq ".[(${i})].sourceVirtualMachine.id" | tr -d '"'`
+        if [ "$svm" != "null" ]; then
+            printf "\t source_virtual_machine_id = \"%s\"\n" $svm >> $outfile
+        fi     
+               
         #
         # New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
