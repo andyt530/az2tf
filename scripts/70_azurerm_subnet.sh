@@ -47,6 +47,7 @@ if [ "$count" -gt "0" ]; then
             snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
             snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | tr -d '"'`
 
+# azurerm_subnet_network_security_group_association
             r1="skip"
             if [ "$snsg" != "null" ]; then
                 r1="azurerm_subnet_network_security_group_association"
@@ -63,18 +64,14 @@ if [ "$count" -gt "0" ]; then
             printf "\t name = \"%s\"\n" $name >> $outfile
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $outfile
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $outfile
+
+# zurerm_subnet_route_table_association
+
             rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | tr -d '"'`
             rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | tr -d '"'`
-
-# write 
-#  printf "resource "azurerm_subnet_route_table_association" "test" {
-#  subnet_id      = "${azurerm_subnet.test.id}"
-#  printf "\t route_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $outfile
-# 
-# }
             r2="skip"
             if [ "$rtbid" != "null" ]; then
-                r1="azurerm_subnet_route_table_association"
+                r2="azurerm_subnet_route_table_association"
                 outrtbid=`printf "%s.%s__%s__%s.tf" $r2 $rg $name $snsg`
                 echo $outrtbid
                 printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $name $rtbid > $outrtbid
