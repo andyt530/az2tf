@@ -31,13 +31,24 @@ tcount=`echo $tags | jq '. | length'`
 if [ "$tcount" -gt "0" ]; then
     printf "\t tags { \n" >> $prefix.tf
     tt=`echo $tags | jq .`
+ 
     keys=`echo $tags | jq 'keys'`
     tcount=`expr $tcount - 1`
     for j in `seq 0 $tcount`; do
         k1=`echo $keys | jq ".[(${j})]"`
+        #echo "key=$k1"
+        re="[[:space:]]+"
+        if [[ $k1 =~ $re ]]; then
+
+        tval=`echo $tt | jq ."$k1"`
+        tkey=`echo $k1 | tr -d '"'`
+        printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $prefix.tf
+        else
+ 
         tval=`echo $tt | jq .$k1`
         tkey=`echo $k1 | tr -d '"'`
         printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix.tf
+        fi
     done
     printf "\t}\n" >> $prefix.tf
 fi
