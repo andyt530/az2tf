@@ -43,7 +43,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t\t name = \"%s\"  \n" $srname >> $outfile
             srdesc=`echo $azr | jq ".[(${i})].securityRules[(${j})].description"`                       
             if [ "$srdesc" != "null" ]; then
-                printf "\t\tdescription = %s\n" "$srdesc" >> $outfile
+                printf "\t\t description = %s\n" "$srdesc" >> $outfile
             fi
 
             sraccess=`echo $azr | jq ".[(${i})].securityRules[(${j})].access" | tr -d '"'`                       
@@ -55,6 +55,7 @@ if [ "$count" -gt "0" ]; then
             srdir=`echo $azr | jq ".[(${i})].securityRules[(${j})].direction" | tr -d '"'` 
             printf "\t\t direction = \"%s\"  \n" $srdir >> $outfile
 
+#source address block
             srsp=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRange"` 
             if [ "$srsp" != "null" ];then
             printf "\t\t source_port_range = %s  \n" "$srsp" >> $outfile
@@ -63,18 +64,16 @@ if [ "$count" -gt "0" ]; then
             if [ "$srsps" != "[]" ];then
             printf "\t\t source_port_ranges = %s  \n" "$srsps" >> $outfile
             fi
-            
-            
             srsap=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceAddressPrefix"` 
             if [ "$srsap" != "null" ];then
-                printf "\t\t source_address_prefix = %s  \n" $srsap >> $outfile
+                printf "\t\t source_address_prefix = %s  \n" "$srsap" >> $outfile
             fi
             srsaps=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceAddressPrefixes"` 
             if [ "$srsaps" != "[]" ];then
                 printf "\t\t source_address_prefixes = %s  \n" "$srsaps" >> $outfile
             fi
 
-            # source asg's
+# source asg's
             srsasgs=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourceApplicationSecurityGroups"` 
             kcount=`echo $srsasgs | jq '. | length'`
             if [ "$kcount" -gt "0" ]; then
@@ -86,8 +85,9 @@ if [ "$count" -gt "0" ]; then
                 done
             fi
 
-            srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
+#destination address block
             
+            srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
             if [ "$srdp" != "null" ];then
                 printf "\t\t destination_port_range = %s  \n" "$srdp" >> $outfile
             fi
@@ -95,17 +95,16 @@ if [ "$count" -gt "0" ]; then
             if [ "$srdps" != "[]" ];then
                 printf "\t\t destination_port_ranges = %s \n" "$srdps" >> $outfile
             fi
-
             srdap=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationAddressPrefix"` 
             if [ "$srdap" != "null" ];then
-            printf "\t\t destination_address_prefix = %s  \n" $srdap >> $outfile
+            printf "\t\t destination_address_prefix = %s  \n" "$srdap" >> $outfile
             fi
             srdaps=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationAddressPrefixes"` 
             if [ "$srdaps" != "[]" ];then
             printf "\t\t destination_address_prefixes = %s  \n" "$srdaps" >> $outfile
             fi
 
-            # destination asg's
+# destination asg's
             srdasgs=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationApplicationSecurityGroups"` 
             kcount=`echo $srdasgs | jq '. | length'`
             if [ "$kcount" -gt "0" ]; then

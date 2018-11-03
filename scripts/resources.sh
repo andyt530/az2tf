@@ -163,6 +163,10 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Compute/snapshots") prov="azurerm_snapshot"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Databricks/workspaces") prov="azurerm_databricks_workspace"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+# 
 
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
