@@ -27,7 +27,6 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
         printf "\t name = \"%s\"  \n" $name >> $outfile
         printf "\t location = \"%s\"\n" $loc >> $outfile
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $outfile
         printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         #
         # Security Rules
@@ -44,7 +43,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t\t name = \"%s\"  \n" $srname >> $outfile
             srdesc=`echo $azr | jq ".[(${i})].securityRules[(${j})].description"`                       
             if [ "$srdesc" != "null" ]; then
-                echo "              description = $srdesc  "  >> $outfile   # printf does multiple lines with space delimited values
+                printf "\t\tdescription = %s\n" "$srdesc" >> $outfile
             fi
 
             sraccess=`echo $azr | jq ".[(${i})].securityRules[(${j})].access" | tr -d '"'`                       
@@ -55,12 +54,12 @@ if [ "$count" -gt "0" ]; then
             printf "\t\t protocol = %s  \n" $srproto >> $outfile
             srdir=`echo $azr | jq ".[(${i})].securityRules[(${j})].direction" | tr -d '"'` 
             printf "\t\t direction = \"%s\"  \n" $srdir >> $outfile
+
             srsp=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRange"` 
             if [ "$srsp" != "null" ];then
-            printf "\t\t source_port_range = %s  \n" $srsp >> $outfile
+            printf "\t\t source_port_range = %s  \n" "$srsp" >> $outfile
             fi
             srsps=`echo $azr | jq ".[(${i})].securityRules[(${j})].sourcePortRanges"` 
-            
             if [ "$srsps" != "[]" ];then
             printf "\t\t source_port_ranges = %s  \n" "$srsps" >> $outfile
             fi
@@ -90,7 +89,7 @@ if [ "$count" -gt "0" ]; then
             srdp=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRange"` 
             
             if [ "$srdp" != "null" ];then
-                printf "\t\t destination_port_range = %s  \n" $srdp >> $outfile
+                printf "\t\t destination_port_range = %s  \n" "$srdp" >> $outfile
             fi
             srdps=`echo $azr | jq ".[(${i})].securityRules[(${j})].destinationPortRanges"` 
             if [ "$srdps" != "[]" ];then
@@ -117,10 +116,6 @@ if [ "$count" -gt "0" ]; then
                     printf "\t\t destination_application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $outfile
                 done
             fi
-
-
-
-
             printf "\t}\n" >> $outfile
             done
         fi
@@ -137,9 +132,16 @@ if [ "$count" -gt "0" ]; then
                 tcount=`expr $tcount - 1`
                 for j in `seq 0 $tcount`; do
                     k1=`echo $keys | jq ".[(${j})]"`
-                    tval=`echo $tt | jq .$k1`
-                    tkey=`echo $k1 | tr -d '"'`
-                    printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                    re="[[:space:]]+"
+                    if [[ $k1 =~ $re ]]; then
+                        tval=`echo $tt | jq ."$k1"`
+                        tkey=`echo $k1 | tr -d '"'`
+                        printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                    else
+                        tval=`echo $tt | jq .$k1`
+                        tkey=`echo $k1 | tr -d '"'`
+                        printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                    fi
                 done
                 printf "\t}\n" >> $outfile
             fi
