@@ -16,6 +16,7 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         # note the fixup to name - as some folks put ".vhd" in the name
         oname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
+        name=`echo ${oname/.vhd/_vhd}` 
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
@@ -35,7 +36,6 @@ if [ "$count" -gt "0" ]; then
 
         stopt=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         imid=`echo $azr | jq ".[(${i})].creationData.imageReference.id" | tr -d '"'`
-        name=`echo ${oname/.vhd/_vhd}` 
 
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
         printf "\t name = \"%s\"\n" $oname >> $outfile
