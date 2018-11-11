@@ -16,6 +16,7 @@ echo $TF_VAR_rgtarget
 if [ "$1" != "" ]; then
     rgsource=$1
 fi
+
 at=`az account get-access-token`
 bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
@@ -46,7 +47,7 @@ cat $outfile
 statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
 echo $statecomm >> tf-staterm.sh
 eval $statecomm
-echo $outid 
+#echo $outid 
 evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $outid`
 echo $evalcomm >> tf-stateimp.sh
 eval $evalcomm
