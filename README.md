@@ -72,6 +72,10 @@ Authorization Resources
 
 Active Directory Resources
 
+App Service (Web Apps) Resources
+* azurerm_app_service
+* azurerm_app_service_plan
+
 Automation Resources
 * azurerm_automation_account
 
@@ -87,7 +91,10 @@ Container Resources
 * azurerm_kubernetes_cluster
 
 CosmosDB (DocumentDB) Resources
-* azurerm_cosmosdb_account
+* azurerm_cosmosdb_account (Common)
+
+Databricks Resources
+* azurerm_databricks_resources
 
 Key Vault Resources
 * azurerm_key_vault (Common)
@@ -151,8 +158,8 @@ Storage Resources
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 **version 2.0.46 or higher** needs to be installed and you need a login with at least "Read" priviledges
-+ terraform **version v0.11.8** needs to be installed
++ Azure cli2 **version 2.0.48 or higher** needs to be installed and you need a login with at least "Read" priviledges
++ terraform **version v0.11.10** needs to be installed
 
 
 ## Planned Additions
@@ -182,8 +189,8 @@ These attributes always get reported in terraform plan set to false by default  
 ### Storage Account
 
 awaiting terraform support for VNet service endpoints/firewalling
-
 Can fail if your login/SPN doesn't have acccess the KeyVault used for encryption
+Can also fail of resource locks are in place
 
 ### OMS
 
