@@ -12,6 +12,12 @@ And finally runs a
 
 There should hopefully be no subsequent additions or deletions reported by the terraform plan command as all the approriate terraform configuration files will have have automatically been created.
 
+## Requirements & Prerequisites
++ The tool is written for the bash shell script and has been tested on a MAC
++ Azure cli2 **version 2.0.50 or higher** needs to be installed and you need a login with at least "Read" priviledges
++ terraform **version v0.11.10** needs to be installed
+
+
 
 ## Quickstart guide to using the tool
 
@@ -155,11 +161,6 @@ Storage Resources
 (Full) = full support for all terraform attributes
 (Common) = support for the most Common terraform attributes
 (Partial) = support for some of the terraform attributes
-
-## Requirements & Prerequisites
-+ The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 **version 2.0.48 or higher** needs to be installed and you need a login with at least "Read" priviledges
-+ terraform **version v0.11.10** needs to be installed
 
 
 ## Planned Additions

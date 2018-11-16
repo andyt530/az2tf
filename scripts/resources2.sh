@@ -170,8 +170,12 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Databricks/workspaces") prov="azurerm_databricks_workspace"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-# 
-
+            "Microsoft.Sql/servers") prov="azurerm_sql_server"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_sql_database"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+#
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac
