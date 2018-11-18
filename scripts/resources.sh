@@ -19,11 +19,15 @@ key="id"
 echo "Writing Resources .."
 if [ "$count2" -gt "0" ]; then
     rm -f resources.txt noprovider.txt
+    printf "[\n" > data.json
     count2=`expr $count2 - 1`
     for j in `seq 0 $count2`; do
         tput cup 1 23
         echo -n $j
+        #echo $azr2 | jq .
         id=`echo $azr2 | jq ".[(${j})].id"`
+        name=`echo $azr2 | jq ".[(${j})].name"`
+        loc=`echo $azr2 | jq ".[(${j})].location"`
         rg=`echo $id | cut -f5 -d'/'`
         prov=`echo $id | cut -f7,8 -d'/'`
         echo $prov | grep mos
@@ -166,15 +170,31 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Databricks/workspaces") prov="azurerm_databricks_workspace"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-# 
-
+            "Microsoft.Sql/servers") prov="azurerm_sql_server"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_sql_database"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+#
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac
-       
-    done
-    
+        if [[ "$prov" =~ "azurerm" ]]; then
+        printf "    {\n" >> data.json
+        printf "\t\"id\" : %s,\n" $id >> data.json
+        printf "\t\"name\" : %s,\n" $name >> data.json
+        printf "\t\"rg\" : \"%s\",\n" "$rg" >> data.json
+        printf "\t\"provider\" : \"%s\"\n" "$prov" >> data.json
+        if [ $j -lt $count2 ] ; then
+        printf "    },\n" >> data.json
+        else
+        printf "    }\n" >> data.json
+        fi
+        fi
+    done    
 fi
+printf "]\n" >> data.json
+
 if [ "$1" != "" ]; then
     rgsource=$1
     cat resources.txt | awk '{print tolower($0)}' | sort -u | grep $rgsource > resources2.txt
