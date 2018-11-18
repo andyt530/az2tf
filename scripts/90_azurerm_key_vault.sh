@@ -21,7 +21,9 @@ if [ "$count" -gt "0" ]; then
         loc=`echo $azr | jq ".[(${i})].location"`
         
         sku=`echo $kvshow | jq ".properties.sku.name" | tr -d '"'`
-        
+        #if [ "$sku" = "premium" ]; then sku="Premium" ; fi
+        #if [ "$sku" = "standard" ]; then sku="Standard" ; fi
+
         ten=`echo $kvshow | jq ".properties.tenantId" | tr -d '"'`
         
         endep=`echo $kvshow | jq ".properties.enabledForDeployment" | tr -d '"'`
@@ -99,6 +101,9 @@ if [ "$count" -gt "0" ]; then
                         printf "\t\t\t%s\n" $tk >> $outfile
                     done
                     printf "\t\t ]\n" >> $outfile
+                else
+                    printf "\t\t secret_permissions = []\n" >> $outfile
+            
                 fi
                 
                 if [ "$cl" -ge "0" ]; then
