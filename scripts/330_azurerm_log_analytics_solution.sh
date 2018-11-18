@@ -14,6 +14,7 @@ sub=`echo $at | jq .subscription | tr -d '"'`
 ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.OperationsManagement/solutions?api-version=2015-11-01-preview" $bt $sub $rgsource`
 #echo $ris
 ret=`eval $ris`
+
 azr2=`echo $ret | jq .value`
 rg=$rgsource
 count2=`echo $azr2 | jq '. | length'`
@@ -24,6 +25,7 @@ if [ "$count2" -gt "0" ]; then
         azr=`echo $azr2 | jq ".[(${j})]"`
         count=`echo $azr | jq '. | length'`
         if [ "$count" -gt "0" ]; then
+ 
             name=`echo $azr | jq ".name" | tr -d '"'`
             pname=`echo $name`
             name=`echo $name | sed s/\(/-/`
@@ -44,8 +46,11 @@ if [ "$count2" -gt "0" ]; then
             prod=`echo $azr | jq ".plan.product" | tr -d '"'`
             soln=`echo $azr | jq ".plan.product" | cut -f2 -d'/' | tr -d '"'`
             workname=`echo $azr | jq ".properties.workspaceResourceId" | cut -d'/' -f9 | tr -d '"'`
+            workn1=`echo $azr | jq ".name" | cut -d'(' -f2`
+            workn=`echo $workn1 | cut -d')' -f1`
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
-            
+            echo "workname=$workn"
+  
             prefix=`printf "%s__%s" $prefixa $rg`
             outfile=`printf "%s.%s__%s.tf" $tfp $rg $name` 
             echo $az2tfmess > $outfile
@@ -57,7 +62,7 @@ if [ "$count2" -gt "0" ]; then
                 printf "\t location = %s\n" "$loc" >> $outfile
                 printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
                 printf "\t solution_name = \"%s\"\n" $soln >> $outfile
-                printf "\t workspace_name = \"%s\"\n" $workname >> $outfile
+                printf "\t workspace_name = \"%s\"\n" $workn >> $outfile
                 printf "\t workspace_resource_id = \"%s\"\n" $workid >> $outfile
                 
                 printf "\t plan {\n"  >> $outfile

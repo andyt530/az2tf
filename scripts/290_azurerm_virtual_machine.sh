@@ -52,7 +52,7 @@ if [ "$count" -gt "0" ]; then
         vmoswa=`echo $azr | jq ".[(${i})].storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
         vmossiz=`echo $azr | jq ".[(${i})].storageProfile.osDisk.diskSizeGb" | tr -d '"'`
         vmosmdid=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.id" | tr -d '"'`
-        vmosmdtyp=`echo $azr | jq ".[(${i})].storageProfile.osDisk.ManagedDisk.storageAccountType" | tr -d '"'`
+        vmosmdtyp=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.storageAccountType" | tr -d '"'`
         #
         
         osvhd=`echo $azr | jq ".[(${i})].osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
@@ -123,6 +123,7 @@ if [ "$count" -gt "0" ]; then
         #
         #
         #
+        havesir=0
         if [ "$vmimid" = "null" ]; then
             if [ "$vmimpublisher" != "null" ];then
             printf "storage_image_reference {\n"  >> $outfile
@@ -130,7 +131,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t offer = \"%s\"\n"  $vmimoffer >> $outfile
             printf "\t sku = \"%s\"\n"  $vmimsku >> $outfile
             printf "\t version = \"%s\"\n"  $vmimversion >> $outfile
-            
+            havesir=1
             printf "}\n" >> $outfile
             fi
           
@@ -189,25 +190,29 @@ if [ "$count" -gt "0" ]; then
         #
         # OS Disk
         #
-        printf "storage_os_disk {\n"  >> $outfile
-        printf "\tname = \"%s\" \n"  $vmosdiskname >> $outfile
-        printf "\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
-        printf "\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
-        printf "\tos_type = \"%s\" \n" $vmtype >> $outfile
+        printf "\t storage_os_disk {\n"  >> $outfile
+        printf "\t\tname = \"%s\" \n"  $vmosdiskname >> $outfile
+        printf "\t\tcaching = \"%s\" \n" $vmosdiskcache  >>  $outfile
+        printf "\t\tcreate_option = \"%s\" \n" $vmoscreoption >> $outfile
+        printf "\t\tos_type = \"%s\" \n" $vmtype >> $outfile
 
  
         if [ "$vmossiz" != "null" ]; then
-            printf "\t disk_size_gb = \"%s\" \n" $vmossiz >> $outfile
+            printf "\t\t disk_size_gb = \"%s\" \n" $vmossiz >> $outfile
         fi       
 
         if [ "$vmosvhd" != "null" ]; then
-            printf "\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
+            printf "\t\tvhd_uri = \"%s\" \n" $vmosvhd >> $outfile
         fi
         if [ "$vmoswa" != "null" ]; then
             printf "\t write_accelerator_enabled = \"%s\" \n" $vmoswa >> $outfile
         fi
 
-        if [ "$vmosacctype" = "Attach" ]; then
+        vmosmdid=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.id" | tr -d '"'`
+        vmosmdtyp=`echo $azr | jq ".[(${i})].storageProfile.osDisk.managedDisk.storageAccountType" | tr -d '"'`
+
+
+        if [ "$vmoscreoption" = "Attach" ]; then
             if [ "$vmosmdtyp" != "null" ]; then
                 printf "\tmanaged_disk_type = \"%s\" \n" $vmosmdtyp >> $outfile
             fi
@@ -216,9 +221,12 @@ if [ "$count" -gt "0" ]; then
             fi
         fi
 
-
-
         printf "}\n" >> $outfile
+        #if [ "$vmosmdid" != "null" ]; then
+        #    if [ $havesir -eq 0 ]; then
+                #printf "storage_image_reference {}\n"  >> $outfile
+        #    fi
+        #fi
 
         #
         # Data disks
