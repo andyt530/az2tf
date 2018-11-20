@@ -1,5 +1,5 @@
-usage() 
-{ echo "Usage: $0 -s <Subscription ID> [-g <Resource Group>] [-r azurerm_<resource_type>] [-x <yes|no(default)>] [-p <yes|no(default)>]" 1>&2; exit 1; 
+usage()
+{ echo "Usage: $0 -s <Subscription ID> [-g <Resource Group>] [-r azurerm_<resource_type>] [-x <yes|no(default)>] [-p <yes|no(default)>]" 1>&2; exit 1;
 }
 x="no"
 p="no"
@@ -7,23 +7,23 @@ while getopts ":s:g:r:x:p:" o; do
     case "${o}" in
         s)
             s=${OPTARG}
-            ;;
+        ;;
         g)
             g=${OPTARG}
-            ;;
+        ;;
         r)
             r=${OPTARG}
-            ;;
+        ;;
         x)
             x="yes"
-            ;;
+        ;;
         p)
             p="yes"
-            ;;
-
+        ;;
+        
         *)
             usage
-            ;;
+        ;;
     esac
 done
 shift $((OPTIND-1))
@@ -133,7 +133,7 @@ fi
 rm -f terraform*.backup
 rm -f tf*.sh
 cp ../stub/*.tf .
-echo "terraform init" 
+echo "terraform init"
 terraform init 2>&1 | tee -a import.log
 
 
@@ -171,7 +171,7 @@ if [ "$count" -gt "0" ]; then
         echo -n $i of $count " "
         docomm="../scripts/${res[$j]}.sh $myrg"
         echo "$docomm"
-        eval $docomm  2>&1 | tee -a import.log     
+        eval $docomm  2>&1 | tee -a import.log
         if grep Error: import.log ; then
             echo "Error in log file exiting ...."
             exit
@@ -180,66 +180,68 @@ if [ "$count" -gt "0" ]; then
 fi
 date
 for j in `seq 2 2`; do
-    c1=`echo ${pfx[${j}]}`
-    gr=`printf "%s-" ${res[$j]}`
-    #echo c1=$c1 gr=$gr
-    comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
-    comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
-    #echo comm=$comm2
-    tc=`eval $comm2`
-    #echo tc=$tc
-    tc=`echo $tc | tr -d ' '`
-    trgs=`eval $comm`
-    count=`echo ${#trgs}`
-    if [ "$g" != "" ]; then
-        ../scripts/${res[$j]}.sh $g
+    if [ "$r" = "" ]; then
+        c1=`echo ${pfx[${j}]}`
+        gr=`printf "%s-" ${res[$j]}`
+        #echo c1=$c1 gr=$gr
+        comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
+        comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
+        #echo comm=$comm2
+        tc=`eval $comm2`
+        #echo tc=$tc
+        tc=`echo $tc | tr -d ' '`
+        trgs=`eval $comm`
+        count=`echo ${#trgs}`
+        if [ "$g" != "" ]; then
+            ../scripts/${res[$j]}.sh $g
         else
-        if [ "$count" -gt "0" ]; then
-            c5="1"
-            for j2 in `echo $trgs`; do
-                echo -n "$c5 of $tc "
-                docomm="../scripts/${res[$j]}.sh $j2"
-                echo "$docomm"
-                eval $docomm 2>&1 | tee -a import.log
-                c5=`expr $c5 + 1`
-                if grep -q Error: import.log ; then
-                    echo "Error in log file exiting ...."
-                    exit
-                fi
-            done
+            if [ "$count" -gt "0" ]; then
+                c5="1"
+                for j2 in `echo $trgs`; do
+                    echo -n "$c5 of $tc "
+                    docomm="../scripts/${res[$j]}.sh $j2"
+                    echo "$docomm"
+                    eval $docomm 2>&1 | tee -a import.log
+                    c5=`expr $c5 + 1`
+                    if grep -q Error: import.log ; then
+                        echo "Error in log file exiting ...."
+                        exit
+                    fi
+                done
+            fi
         fi
-    fi   
+    fi
 done
 
 
 echo loop through providers
 
-for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do   
-        gr=`echo $com | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}'`
-        echo $gr
-        lc="1"
-        tc2=`cat resources2.txt | grep $gr | wc -l`
-        for l in `cat resources2.txt | grep $gr` ; do
-            echo -n $lc of $tc2 " "
-            myrg=`echo $l | cut -d':' -f1`
-            prov=`echo $l | cut -d':' -f2`
-            #echo "debug $j prov=$prov  res=${res[$j]}"
-            docomm="../scripts/$com $myrg"
-            echo "$docomm"
-            eval $docomm 2>&1 | tee -a import.log
-            lc=`expr $lc + 1`
-            if grep Error: import.log; then
-                echo "Error in log file exiting ...."
-                exit
-            fi
-        done
+for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
+    gr=`echo $com | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}'`
+    echo $gr
+    lc="1"
+    tc2=`cat resources2.txt | grep $gr | wc -l`
+    for l in `cat resources2.txt | grep $gr` ; do
+        echo -n $lc of $tc2 " "
+        myrg=`echo $l | cut -d':' -f1`
+        prov=`echo $l | cut -d':' -f2`
+        #echo "debug $j prov=$prov  res=${res[$j]}"
+        docomm="../scripts/$com $myrg"
+        echo "$docomm"
+        eval $docomm 2>&1 | tee -a import.log
+        lc=`expr $lc + 1`
+        if grep Error: import.log; then
+            echo "Error in log file exiting ...."
+            exit
+        fi
+    done
     rm -f terraform*.backup
 done
 date
 
 if [ "$x" = "yes" ]; then
     echo "Attempting to extract secrets"
-    ../scripts/350_key_vault_secret.sh 
+    ../scripts/350_key_vault_secret.sh
 fi
 
 
