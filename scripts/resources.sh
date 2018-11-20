@@ -175,6 +175,15 @@ if [ "$count2" -gt "0" ]; then
                 prov="azurerm_sql_database"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "Microsoft.Network/dnszones") prov="azurerm_dns_zone"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
+
+
+
+
+
+
 #
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
