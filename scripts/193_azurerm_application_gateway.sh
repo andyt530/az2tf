@@ -48,7 +48,11 @@ if [ "$count" -gt "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
         printf "sku {\n" $sku >> $outfile
         printf "\t name = \"%s\"\n" $skun >> $outfile
-        printf "\t capacity = \"%s\"\n" $skuc >> $outfile
+        if [ $skup != "null" ]; then
+            printf "\t capacity = \"%s\"\n" $skuc >> $outfile
+        else
+            printf "\t capacity = \"1\"\n"  >> $outfile
+        fi
         printf "\t tier = \"%s\"\n" $skut >> $outfile
         printf "}\n" $sku >> $outfile
         
