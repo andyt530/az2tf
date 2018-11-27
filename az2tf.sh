@@ -252,6 +252,8 @@ echo "Cleanup Cloud Shell"
 #echo $states
 #terraform state rm $states
 #
+echo "Terraform fmt ..."
+terraform fmt
 echo "Terraform Plan ..."
 terraform plan .
 exit
