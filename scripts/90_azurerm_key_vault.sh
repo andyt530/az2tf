@@ -48,10 +48,15 @@ if [ "$count" -gt "0" ]; then
         printf "\t } \n" >> $outfile
         
         printf "\t tenant_id=\"%s\"\n" $ten >> $outfile
-        printf "\t enabled_for_deployment=\"%s\"\n" $endep >> $outfile
-        printf "\t enabled_for_disk_encryption=\"%s\"\n" $endisk >> $outfile
+        if [ "$endep" != "null" ]; then
+            printf "\t enabled_for_deployment=\"%s\"\n" $endep >> $outfile
+        fi
+        if [ "$endisk" != "null" ] ; then
+            printf "\t enabled_for_disk_encryption=\"%s\"\n" $endisk >> $outfile
+        fi
+        if [ "$entemp" != "null" ]; then
         printf "\t enabled_for_template_deployment=\"%s\"\n" $entemp >> $outfile
-        
+        fi
         #
         # Access Policies
         #
@@ -111,30 +116,19 @@ if [ "$count" -gt "0" ]; then
                     for k in `seq 0 $cl`; do
                         tk=`echo $kvshow | jq ".properties.accessPolicies[(${j})].permissions.certificates[(${k})]"`
                         ttk=`echo $tk | tr -d '"'`
-                        case $ttk in
-                            "Backup")
-                                echo "In backup $tk"
-                            ;;
-                            "Restore")
-                            ;;
-                            *)
-                                if [ $k -lt $cl ]; then
-                                    tk=`printf "%s," $tk`   # add comma to all but last
-                                fi
-                                printf "\t\t\t%s\n" $tk >> $outfile
-                            ;;
-                        esac
-                        
+                        if [ $k -lt $cl ]; then
+                            tk=`printf "%s," $tk`   # add comma to all but last
+                        fi
+                        printf "\t\t\t%s\n" $tk >> $outfile                       
                     done
                     printf "\t\t ]\n" >> $outfile
-                fi
-                
+                fi              
                 printf "\t}\n" >> $outfile
             done
         fi
         
-        #
-        # New Tags block
+#
+# New Tags block
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
@@ -145,9 +139,19 @@ if [ "$count" -gt "0" ]; then
             tcount=`expr $tcount - 1`
             for j in `seq 0 $tcount`; do
                 k1=`echo $keys | jq ".[(${j})]"`
+                #echo "key=$k1"
+                re="[[:space:]]+"
+                if [[ $k1 =~ $re ]]; then
+                #echo "found a space"
+                tval=`echo $tt | jq ."$k1"`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                else
+                #echo "found no space"
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
                 printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                fi
             done
             printf "\t}\n" >> $outfile
         fi
