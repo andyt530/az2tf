@@ -1,6 +1,6 @@
 prefixa=`echo $0 | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}' `
 tfp=`printf "azurerm_%s" $prefixa`
-echo $ftp
+#echo $ftp
 if [ "$1" != "" ]; then
     rgsource=$1
 else
@@ -11,16 +11,22 @@ else
     fi
 fi
 azr=`az network nsg list -g $rgsource`
-#comm=`printf "cat %s.json | jq '. | select (.[].id | contains(\"%s\"))'" $tfp $rgsource`
+#comm=`printf "cat %s.json | jq '.[] | select (.id | contains(\"%s\"))'" $tfp $rgsource`
+#can't fileter RG here due to case issues
+#comm=`printf "cat %s.json" $tfp`
 #echo $comm
 #azr=`eval $comm`
+#echo $azr | jq .[0]
+#echo $rgsource
+#exit
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-
+        #lrg=`echo $rg | awk '{print tolower($0)}'`
+        #if [ "$rgsource" = "$lrg" ]; then
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         srules=`echo $azr | jq ".[(${i})].securityRules"`
@@ -158,6 +164,6 @@ if [ "$count" -gt "0" ]; then
         evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
-      
+        #fi
     done
 fi

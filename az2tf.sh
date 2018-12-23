@@ -115,7 +115,7 @@ if [ "$g" != "" ]; then
         exit
     fi
     echo "Filtering by Azure RG $g"
-    grep $lcg resources2.txt > tmp.txt
+    grep $g resources2.txt > tmp.txt
     rm -f resources2.txt
     cp tmp.txt resources2.txt
     
@@ -132,6 +132,7 @@ fi
 
 # cleanup from any previous runs
 rm -f terraform*.backup
+#rm -f terraform.tfstate
 rm -f tf*.sh
 cp ../stub/*.tf .
 echo "terraform init"

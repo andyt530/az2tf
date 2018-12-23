@@ -56,9 +56,6 @@ if [ "$tcount" -gt "0" ]; then
     printf "\t}\n" >> $prefix.tf
 fi
 
-
-
-
 echo "}" >> $prefix.tf
 cat $prefix.tf
 #

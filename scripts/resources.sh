@@ -8,7 +8,8 @@ tput clear
 rm -f resources.txt noprovider.txt *.json
 echo -n "Getting Resources .."
 
-ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resources?api-version=2017-05-10" $bt $sub`
+#ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resources?api-version=2017-05-10" $bt $sub`
+ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resources?api-version=2018-11-01" $bt $sub`
 ret=`eval $ris`
 rig=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups?api-version=2014-04-01" $bt $sub`
 eval $rig | jq .value > azurerm_resource_group.json
@@ -35,11 +36,14 @@ if [ "$count2" -gt "0" ]; then
         loc=`echo $azr2 | jq ".[(${j})].location"`
         rg=`echo $id | cut -f5 -d'/'`
         prov=`echo $id | cut -f7,8 -d'/'`
+        isext=`echo $id | cut -f10 -d'/'`
+   
 
         echo $prov | grep mos
 
         case "$prov" in
-            "Microsoft.Compute/availabilitySets") prov="azurerm_availability_set"
+            "Microsoft.Compute/availabilitySets") 
+                prov="azurerm_availability_set"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
             "Microsoft.Storage/storageAccounts") prov="azurerm_storage_account"
@@ -52,8 +56,12 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Network/networkSecurityGroups") prov="azurerm_network_security_group"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
-            "Microsoft.Compute/virtualMachines") prov="azurerm_virtual_machine"
-                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            "Microsoft.Compute/virtualMachines") 
+                #echo $isext
+                if [ "$isext" != "extensions" ]; then
+                    prov="azurerm_virtual_machine"
+                    printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                fi
             ;;
             "Microsoft.Network/networkInterfaces") prov="azurerm_network_interface"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
@@ -186,11 +194,6 @@ if [ "$count2" -gt "0" ]; then
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
 
-
-
-
-
-
 #
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
@@ -198,12 +201,17 @@ if [ "$count2" -gt "0" ]; then
     done    
 fi
 
+echo $rgsource $1
 if [ "$1" != "" ]; then
     rgsource=$1
-    cat resources.txt | awk '{print tolower($0)}' | sort -u | grep $rgsource > resources2.txt
+    echo $rgsource
+    #cat resources.txt | awk '{print tolower($0)}' | sort -u | grep $rgsource > resources2.txt
+    cat resources.txt | sort -u | grep $rgsource > resources2.txt
 else
-echo " "
-cat resources.txt |  awk '{print tolower($0)}' | sort -u > resources2.txt
+    echo " "
+    #cat resources.txt |  awk '{print tolower($0)}' | sort -u > resources2.txt
+    cat resources.txt | sort -u > resources2.txt
 fi
 echo "No provider for"
+cp resources2.txt resources3.txt
 cat noprovider.txt | sort -u
