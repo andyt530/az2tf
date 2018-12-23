@@ -5,21 +5,26 @@ at=`az account get-access-token`
 bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
 tput clear
+rm -f resources.txt noprovider.txt *.json
 echo -n "Getting Resources .."
+
 ris=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resources?api-version=2017-05-10" $bt $sub`
-#echo $ris
 ret=`eval $ris`
+rig=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups?api-version=2014-04-01" $bt $sub`
+eval $rig | jq .value > azurerm_resource_group.json
+rns=`printf "curl -s  -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/providers/Microsoft.Network/networkSecurityGroups?api-version=2018-07-01" $bt $sub`
+eval $rns | jq .value > azurerm_network_security_group.json
+
 azr2=`echo $ret | jq .value`
-#echo $azr2 | jq .
+#echo $rgs2 | jq .
 prefix=`printf "%s__resources" $prefixa`
 count2=`echo $azr2 | jq '. | length'`
 echo " found $count2"
 key="id"
 
+echo $azr2 | jq . > data.json
 echo "Writing Resources .."
 if [ "$count2" -gt "0" ]; then
-    rm -f resources.txt noprovider.txt
-    printf "[\n" > data.json
     count2=`expr $count2 - 1`
     for j in `seq 0 $count2`; do
         tput cup 1 23
@@ -30,7 +35,9 @@ if [ "$count2" -gt "0" ]; then
         loc=`echo $azr2 | jq ".[(${j})].location"`
         rg=`echo $id | cut -f5 -d'/'`
         prov=`echo $id | cut -f7,8 -d'/'`
+
         echo $prov | grep mos
+
         case "$prov" in
             "Microsoft.Compute/availabilitySets") prov="azurerm_availability_set"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
@@ -188,21 +195,8 @@ if [ "$count2" -gt "0" ]; then
             *) printf "%s\n" $prov >> noprovider.txt
             ;;
         esac
-        if [[ "$prov" =~ "azurerm" ]]; then
-        printf "    {\n" >> data.json
-        printf "\t\"id\" : %s,\n" $id >> data.json
-        printf "\t\"name\" : %s,\n" $name >> data.json
-        printf "\t\"rg\" : \"%s\",\n" "$rg" >> data.json
-        printf "\t\"provider\" : \"%s\"\n" "$prov" >> data.json
-        if [ $j -lt $count2 ] ; then
-        printf "    },\n" >> data.json
-        else
-        printf "    }\n" >> data.json
-        fi
-        fi
     done    
 fi
-printf "]\n" >> data.json
 
 if [ "$1" != "" ]; then
     rgsource=$1

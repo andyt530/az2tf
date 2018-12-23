@@ -10,8 +10,11 @@ else
         rgsource=$response
     fi
 fi
-azr=`az group show -n $rgsource`
-
+echo $rgsource
+#azr=`az group show -n $rgsource`
+comm=`printf "cat %s.json | jq '.[] | select (.name==\"%s\")'" $tfp $rgsource`
+azr=`eval $comm`
+#echo $azr | jq .
 name=`echo $azr | jq '.name' | tr -d '"'`
 loc=`echo $azr | jq '.location' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`

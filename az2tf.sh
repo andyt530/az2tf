@@ -70,6 +70,7 @@ rm -rf .terraform
 rm -f import.log resources*.txt
 
 ../scripts/resources.sh 2>&1 | tee -a import.log
+
 echo " "
 echo "Subscription ID = ${s}"
 echo "Azure Resource Group Filter = ${g}"
@@ -179,6 +180,7 @@ if [ "$count" -gt "0" ]; then
     done
 fi
 date
+
 for j in `seq 2 2`; do
     if [ "$r" = "" ]; then
         c1=`echo ${pfx[${j}]}`
