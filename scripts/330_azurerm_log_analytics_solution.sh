@@ -17,6 +17,7 @@ ret=`eval $ris`
 
 azr2=`echo $ret | jq .value`
 rg=$rgsource
+echo "anal sol=$rg"
 count2=`echo $azr2 | jq '. | length'`
 if [ "$count2" -gt "0" ]; then
     count2=`expr $count2 - 1`

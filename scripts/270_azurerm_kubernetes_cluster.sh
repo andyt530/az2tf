@@ -46,6 +46,12 @@ if [ "$count" != "0" ]; then
         printf "\t dns_prefix = \"%s\"\n" $dnsp >> $outfile
         printf "\t kubernetes_version = \"%s\"\n" $kv >> $outfile
         
+        if [ "$rbac" = "true" ]; then
+        printf "\t role_based_access_control {\n" >> $outfile
+        printf "\t\t enabled = \"true\"\n" >> $outfile
+        printf "\t }\n" >> $outfile
+        fi
+        
         if [ "$lp" != "null" ]; then
             printf "\t linux_profile {\n" >> $outfile
             printf "\t\t admin_username =  \"%s\"\n" $au >> $outfile

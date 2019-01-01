@@ -16,12 +16,13 @@ comm=`printf "cat %s.json | jq '.[] | select (.name==\"%s\")'" $tfp $rgsource`
 azr=`eval $comm`
 #echo $azr | jq .
 name=`echo $azr | jq '.name' | tr -d '"'`
+rname=`echo $name | sed 's/\./-/g'`
 loc=`echo $azr | jq '.location' | tr -d '"'`
 id=`echo $azr | jq '.id' | tr -d '"'`
 rg=$name
-prefix=`printf "%s__%s" $tfp $rg`
-printf "resource \"%s\" \"%s\" {\n"  $tfp $rg > $prefix.tf
-printf "\t name = \"%s\"\n" $rg >> $prefix.tf
+prefix=`printf "%s__%s" $tfp $rname`
+printf "resource \"%s\" \"%s\" {\n"  $tfp $rname > $prefix.tf
+printf "\t name = \"%s\"\n" $name >> $prefix.tf
 printf "\t location = \"%s\"\n" $loc >> $prefix.tf
 
 
@@ -42,12 +43,10 @@ if [ "$tcount" -gt "0" ]; then
         #echo "key=$k1"
         re="[[:space:]]+"
         if [[ $k1 =~ $re ]]; then
-
         tval=`echo $tt | jq ."$k1"`
         tkey=`echo $k1 | tr -d '"'`
         printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $prefix.tf
         else
- 
         tval=`echo $tt | jq .$k1`
         tkey=`echo $k1 | tr -d '"'`
         printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix.tf
@@ -59,8 +58,8 @@ fi
 echo "}" >> $prefix.tf
 cat $prefix.tf
 #
-terraform state rm  $tfp.$name
-echo "terraform state rm  $tfp.$name" >> tf-staterm.sh
-terraform import $tfp.$name $id
-echo "terraform import $tfp.$name $id" >> tf-stateimp.sh
+terraform state rm  $tfp.$rname
+echo "terraform state rm  $tfp.$rname" >> tf-staterm.sh
+terraform import $tfp.$rname $id
+echo "terraform import $tfp.$rname $id" >> tf-stateimp.sh
 #

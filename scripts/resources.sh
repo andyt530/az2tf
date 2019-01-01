@@ -193,6 +193,9 @@ if [ "$count2" -gt "0" ]; then
             "Microsoft.Network/dnszones") prov="azurerm_dns_zone"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
+            "microsoft.insights/autoscalesettings" ) prov="azurerm_autoscale_setting"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+            ;;
 
 #
             *) printf "%s\n" $prov >> noprovider.txt
