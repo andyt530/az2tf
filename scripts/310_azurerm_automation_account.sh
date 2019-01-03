@@ -18,9 +18,9 @@ rg=$rgsource
 count2=`echo $azr2 | jq '. | length'`
 if [ "$count2" -gt "0" ]; then
     count2=`expr $count2 - 1`
-    for j in `seq 0 $count2`; do
+    for i in `seq 0 $count2`; do
         
-        name2=`echo $azr2 | jq ".[(${j})].name" | tr -d '"'`
+        name2=`echo $azr2 | jq ".[(${i})].name" | tr -d '"'`
         ris2=`printf "curl -s -X GET -H \"Authorization: Bearer %s\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Automation/automationAccounts/%s?api-version=2015-10-31" $bt $sub $rgsource $name2`
         #echo $ris2
         ret2=`eval $ris2`
@@ -55,7 +55,8 @@ if [ "$count2" -gt "0" ]; then
             
             #
             # New Tags block v2
-            tags=`echo $azr | jq ".[(${i})].tags"`
+
+            tags=`echo $azr | jq ".tags"`
             tt=`echo $tags | jq .`
             tcount=`echo $tags | jq '. | length'`
             if [ "$tcount" -gt "0" ]; then

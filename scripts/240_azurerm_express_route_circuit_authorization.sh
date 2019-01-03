@@ -51,36 +51,7 @@ if [ "$count2" -gt "0" ]; then
                     printf "\t name = \"%s\"\n" $name >> $outfile
                     printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
                     printf "\t express_route_circuit_name = \"%s\"\n" $name2 >> $outfile
-                    
-                    
-                    # New Tags block v2
-                    tags=`echo $azr | jq ".[(${i})].tags"`
-                    tt=`echo $tags | jq .`
-                    tcount=`echo $tags | jq '. | length'`
-                    if [ "$tcount" -gt "0" ]; then
-                        printf "\t tags { \n" >> $outfile
-                        tt=`echo $tags | jq .`
-                        keys=`echo $tags | jq 'keys'`
-                        tcount=`expr $tcount - 1`
-                        for j in `seq 0 $tcount`; do
-                            k1=`echo $keys | jq ".[(${j})]"`
-                            #echo "key=$k1"
-                            re="[[:space:]]+"
-                            if [[ $k1 =~ $re ]]; then
-                                #echo "found a space"
-                                tval=`echo $tt | jq ."$k1"`
-                                tkey=`echo $k1 | tr -d '"'`
-                                printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
-                            else
-                                #echo "found no space"
-                                tval=`echo $tt | jq .$k1`
-                                tkey=`echo $k1 | tr -d '"'`
-                                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
-                            fi
-                        done
-                        printf "\t}\n" >> $outfile
-                    fi
-                    
+                                       
                     
                     printf "}\n" >> $outfile
                     cat $outfile

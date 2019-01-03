@@ -51,7 +51,7 @@ if [ "$count2" -gt "0" ]; then
             fi
             
             # New Tags block v2
-            tags=`echo $azr | jq ".[(${i})].tags"`
+            tags=`echo $azr | jq ".tags"`
             tt=`echo $tags | jq .`
             tcount=`echo $tags | jq '. | length'`
             if [ "$tcount" -gt "0" ]; then
