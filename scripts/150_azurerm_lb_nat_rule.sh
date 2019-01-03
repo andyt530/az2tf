@@ -25,14 +25,15 @@ if [ "$count" -gt "0" ]; then
                 
                 name=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
                 rname=`echo $name | sed 's/\./-/g'`
+
                 id=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].id" | tr -d '"'`
-                rg=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].resourceGroup" | tr -d '"'`
+                rg=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
                 prefix=`printf "%s__%s" $prefixa $rg`
-                outfile=`printf "%s.%s__%s.tf" $tfp $rg $name` 
+                outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname` 
                 echo $az2tfmess > $outfile
                 
-                lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
-                lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
+                lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
+                lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
 
                 fep=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].frontendPort" | tr -d '"'`
                 bep=`echo $azr | jq ".[(${i})].inboundNatRules[(${j})].backendPort" | tr -d '"'`
@@ -43,7 +44,7 @@ if [ "$count" -gt "0" ]; then
                 
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
                 printf "\t\t name = \"%s\" \n"  $name >> $outfile
-                printf "\t\t resource_group_name = \"%s\" \n"  $rg >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rgsource >> $outfile
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
                 printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $outfile
                 printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile
@@ -62,17 +63,9 @@ if [ "$count" -gt "0" ]; then
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 
-
-
-
         #
-
         done
         fi
-
-        
-
-
  
     done
 fi

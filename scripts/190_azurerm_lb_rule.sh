@@ -16,9 +16,9 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         beap=`echo $azr | jq ".[(${i})].loadBalancingRules"`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | tr -d '"'`
-        lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | tr -d '"'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+        lbrg=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
+        lbname=`echo $azr | jq ".[(${i})].id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
         
         icount=`echo $beap | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
@@ -26,8 +26,9 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $icount`; do
                 
                 name=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
+                rname=`echo $name | sed 's/\./-/g'`
                 id=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].id" | tr -d '"'`
-                rrg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].resourceGroup" | tr -d '"'`
+                rrg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
                 fep=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].frontendPort" | tr -d '"'`
                 bep=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendPort" | tr -d '"'`
                 proto=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].protocol" | tr -d '"'`
@@ -36,18 +37,19 @@ if [ "$count" -gt "0" ]; then
                 ld=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].loadDistribution" | tr -d '"'`
                 itm=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].idleTimeoutInMinutes" | tr -d '"'`
 
-                prg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f5 | tr -d '"'`
-                pid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f11 | tr -d '"'`
-                beadprg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f5 | tr -d '"'`
-                beadpid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f11 | tr -d '"'`
+                prg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
+                pid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].probe.id" | cut -d'/' -f11 | sed 's/\./-/g' | tr -d '"'`
+                beadprg=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
+                beadpid=`echo $azr | jq ".[(${i})].loadBalancingRules[(${j})].backendAddressPool.id" | cut -d'/' -f11 | sed 's/\./-/g' | tr -d '"'`
 
                 prefix=`printf "%s__%s" $prefixa $rg` 
-                outfile=`printf "%s.%s__%s__%s.tf" $tfp $rrg $lbname $name`  
+                outfile=`printf "%s.%s__%s__%s.tf" $tfp $rrg $lbname $rname`  
                 echo $az2tfmess > $outfile 
              
-                printf "resource \"%s\" \"%s__%s__%s\" {\n" $tfp $rg $lbname $name >> $outfile
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $tfp $rg $lbname $rname >> $outfile
                 printf "\t\t name = \"%s\" \n"  $name >> $outfile
-                printf "\t\t resource_group_name = \"%s\" \n"  $rrg >> $outfile
+                #printf "\t\t resource_group_name = \"%s\" \n"  $rrg >> $outfile
+                printf "\t\t resource_group_name = \"%s\" \n"  $rgsource >> $outfile
                 printf "\t\t loadbalancer_id = \"\${azurerm_lb.%s__%s.id}\"\n" $lbrg $lbname >> $outfile
                 printf "\t\t frontend_ip_configuration_name = \"%s\" \n"  $feipc >> $outfile
                 printf "\t\t protocol = \"%s\" \n"  $proto >> $outfile   
@@ -66,25 +68,16 @@ if [ "$count" -gt "0" ]; then
         #
 
                 cat $outfile
-                statecomm=`printf "terraform state rm %s.%s__%s__%s" $tfp $rg $lbname $name`
+                statecomm=`printf "terraform state rm %s.%s__%s__%s" $tfp $rg $lbname $rname`
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s__%s %s" $tfp $rg $lbname $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s__%s %s" $tfp $rg $lbname $rname $id`
 
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm
 
-
-
-
         #
-
         done
         fi
-
-        
-
-
- 
     done
 fi

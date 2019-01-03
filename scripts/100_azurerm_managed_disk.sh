@@ -17,11 +17,13 @@ if [ "$count" -gt "0" ]; then
         # note the fixup to name - as some folks put ".vhd" in the name
         oname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         name=`echo ${oname/.vhd/_vhd}` 
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g'| tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
         echo $az2tfmess > $outfile
 
         dsize=`echo $azr | jq ".[(${i})].diskSizeGb" | tr -d '"'`
@@ -37,11 +39,10 @@ if [ "$count" -gt "0" ]; then
         stopt=`echo $azr | jq ".[(${i})].sku.name" | tr -d '"'`
         imid=`echo $azr | jq ".[(${i})].creationData.imageReference.id" | tr -d '"'`
 
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $oname >> $outfile
         printf "\t location = \"%s\"\n" $loc >> $outfile
-        #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "\t disk_size_gb = \"%s\"\n" $dsize >> $outfile
         if [ "$ostyp" != "null" ]; then 
             printf "\t os_type = \"%s\"\n" $ostyp >> $outfile
@@ -83,10 +84,10 @@ if [ "$count" -gt "0" ]; then
         printf "}\n" >> $outfile
         #
         cat $outfile
-        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
-        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done

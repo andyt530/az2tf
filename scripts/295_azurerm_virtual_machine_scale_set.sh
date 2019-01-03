@@ -16,7 +16,9 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         upm=`echo $azr | jq ".[(${i})].upgradePolicy.mode" | tr -d '"'`
@@ -27,13 +29,11 @@ if [ "$count" -gt "0" ]; then
 
 
         prefix=`printf "%s__%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
         echo $az2tfmess > $outfile
 
 
         vmtype=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.osType" | tr -d '"'`
-
-
         datadisks=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.dataDisks"`
 
         vmosdiskname=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.name" | tr -d '"'`
@@ -41,10 +41,8 @@ if [ "$count" -gt "0" ]; then
         vmosvhdc=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.vhdContainers"`
         vmoscreoption=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.createOption" | tr -d '"'`
         vmoswa=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.osDisk.writeAcceleratorEnabled" | tr -d '"'`
-        #
-        
+        #  
         osvhd=`echo $azr | jq ".[(${i})].virtualMachineProfile.osProfile.linuxConfiguration.ssh.publicKeys[0].keyData" | tr -d '"'`
-        
         #
         vmimid=`echo $azr | jq ".[(${i})].virtualMachineProfile.storageProfile.imageReference.id" | tr -d '"'`
 
@@ -61,7 +59,7 @@ if [ "$count" -gt "0" ]; then
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
 # basic settings 
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "name = \"%s\"\n" $name >> $outfile
         printf "location = \"%s\"\n"  $loc >> $outfile
 # sku block
@@ -74,7 +72,7 @@ if [ "$count" -gt "0" ]; then
         printf "\tcapacity = \"%s\"\n" $skuc >> $outfile
         printf "}\n" $upm >> $outfile
 # basic settings continued
-        printf "resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "resource_group_name = \"%s\"\n" $rgsource >> $outfile
         if [ "$vmlic" != "null" ]; then 
             printf "license_type = \"%s\"\n" $vmlic >> $outfile
         fi     
@@ -157,8 +155,8 @@ if [ "$count" -gt "0" ]; then
                             printf "\tip_configuration {\n" >> $outfile
                                 ipcn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].name" | tr -d '"'`
                                 ipcp=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].primary" | tr -d '"'`
-                                ipcsrg=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f5 -d'/' | tr -d '"'`
-                                ipcsn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f11 -d'/' | tr -d '"'`                    
+                                ipcsrg=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f5 -d'/' | sed 's/\./-/g' | tr -d '"'`
+                                ipcsn=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].subnet.id" | cut -f11 -d'/' | sed 's/\./-/g' | tr -d '"'`                    
                                 beapids=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].loadBalancerBackendAddressPools"`
                                 natrids=`echo $azr | jq ".[(${i})].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[(${j})].ipConfigurations[(${k})].loadBalancerInboundNatPools"`                                
                                 echo "*************************************************"
@@ -223,8 +221,8 @@ if [ "$count" -gt "0" ]; then
                 
                 if [ "$ddcreopt" = "Attach" ]; then
                     if ["$ddmd" != "null" ];then
-                    ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
-                    ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
+                    ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+                    ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                     ## ddmdrg from cut is upper case - not good
                     ## probably safe to assume managed disk in same RG as VM ??
                     # check id lowercase rg = ddmdrg if so use rg
@@ -284,8 +282,8 @@ if [ "$count" -gt "0" ]; then
             printf "}\n" >> $outfile
         fi        
     
-# New Tags block
-
+        #
+        # New Tags block v2
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
@@ -296,9 +294,19 @@ if [ "$count" -gt "0" ]; then
             tcount=`expr $tcount - 1`
             for j in `seq 0 $tcount`; do
                 k1=`echo $keys | jq ".[(${j})]"`
+                #echo "key=$k1"
+                re="[[:space:]]+"
+                if [[ $k1 =~ $re ]]; then
+                #echo "found a space"
+                tval=`echo $tt | jq ."$k1"`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                else
+                #echo "found no space"
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
                 printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                fi
             done
             printf "\t}\n" >> $outfile
         fi
@@ -309,10 +317,10 @@ if [ "$count" -gt "0" ]; then
 
         printf "}\n" >> $outfile
         cat $outfile
-        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
-        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done

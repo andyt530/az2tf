@@ -17,9 +17,7 @@ if [ "$count" != "0" ]; then
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rname=`echo $name | sed 's/\./-/g'`
-        echo "rname=$rname"
-
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         zt=`echo $azr | jq ".[(${i})].zoneType" | tr -d '"'`
         resvn=`echo $azr | jq ".[(${i})].resolutionVirtualNetworks" | tr -d '"'`
@@ -31,11 +29,11 @@ if [ "$count" != "0" ]; then
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "\t zone_type = \"%s\"\n" $zt >> $outfile
         
         #
-        # New Tags block
+        # New Tags block v2
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`

@@ -18,7 +18,9 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
         kvd=`az keyvault show -n $name -g $rg`
@@ -47,23 +49,23 @@ if [ "$count" -gt "0" ]; then
                 id=`echo $asec | jq ".id" | tr -d '"'`
                 
                 prefix=`printf "azurerm_%s__%s" $prefixa $rg`
-                outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+                outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
                
 
-                echo "$j of $pcount  $prefix-$name-$secid2.tf"
-                if [ ! -f $prefix-$name-$secid2.tf ]; then
+                echo "$j of $pcount  $prefix-$rname-$secid2.tf"
+                if [ ! -f $prefix-$rname-$secid2.tf ]; then
                                         
-                    echo $az2tfmess > $prefix-$name-$secid2.tf
+                    echo $az2tfmess > $prefix-$rname-$secid2.tf
                     
-                    printf "resource \"%s\" \"%s__%s-%s\" {\n" $tfp $rg $name $secid2 >> $prefix-$name-$secid2.tf
-                    printf "\t\t name=\"%s\"\n" $secid2 >> $prefix-$name-$secid2.tf
+                    printf "resource \"%s\" \"%s__%s-%s\" {\n" $tfp $rg $rname $secid2 >> $prefix-$rname-$secid2.tf
+                    printf "\t\t name=\"%s\"\n" $secid2 >> $prefix-$rname-$secid2.tf
                     if [ "$content_type" != "null" ]; then
                         if [ "$content_type" != "" ]; then
-                            printf "\t\t content_type=\"%s\"\n" "$content_type" >> $prefix-$name-$secid2.tf
+                            printf "\t\t content_type=\"%s\"\n" "$content_type" >> $prefix-$rname-$secid2.tf
                         fi
                     fi
-                    printf "\t\t vault_uri=\"%s\"\n" $kvuri >> $prefix-$name-$secid2.tf
-                    printf "\t\t value=\"%s\"\n" $value >> $prefix-$name-$secid2.tf
+                    printf "\t\t vault_uri=\"%s\"\n" $kvuri >> $prefix-$rname-$secid2.tf
+                    printf "\t\t value=\"%s\"\n" $value >> $prefix-$rname-$secid2.tf
                     
                     #
                     # New Tags block
@@ -71,7 +73,7 @@ if [ "$count" -gt "0" ]; then
                     tt=`echo $tags | jq .`
                     tcount=`echo $tags | jq '. | length'`
                     if [ "$tcount" -gt "0" ]; then
-                        printf "\t tags { \n" >> $prefix-$name-$secid2.tf
+                        printf "\t tags { \n" >> $prefix-$rname-$secid2.tf
                         tt=`echo $tags | jq .`
                         keys=`echo $tags | jq 'keys'`
                         tcount=`expr $tcount - 1`
@@ -79,20 +81,20 @@ if [ "$count" -gt "0" ]; then
                             k1=`echo $keys | jq ".[(${j})]"`
                             tval=`echo $tt | jq .$k1`
                             tkey=`echo $k1 | tr -d '"'`
-                            printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$name-$secid2.tf
+                            printf "\t\t%s = %s \n" $tkey "$tval" >> $prefix-$rname-$secid2.tf
                         done
-                        printf "\t}\n" >> $prefix-$name-$secid2.tf
+                        printf "\t}\n" >> $prefix-$rname-$secid2.tf
                     fi
                     
                     
-                    printf "\t}\n" >> $prefix-$name-$secid2.tf
+                    printf "\t}\n" >> $prefix-$rname-$secid2.tf
                     
                     
-                    cat $prefix-$name-$secid2.tf
-                    statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name-$secid2`
+                    cat $prefix-$rname-$secid2.tf
+                    statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname-$secid2`
                     echo $statecomm >> tf-staterm.sh
                     eval $statecomm
-                    evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name-$secid2 $id`
+                    evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname-$secid2 $id`
                     echo $evalcomm >> tf-stateimp.sh
                     eval $evalcomm
                 fi

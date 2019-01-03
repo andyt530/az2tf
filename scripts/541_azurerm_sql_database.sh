@@ -24,7 +24,8 @@ if [ "$count" != "0" ]; then
             jcount=`expr $jcount - 1`
             for j in `seq 0 $jcount`; do
                 name=`echo $azr | jq ".[(${j})].name" | tr -d '"'`
-                rg=`echo $azr | jq ".[(${j})].resourceGroup" | tr -d '"'`
+                rname=`echo $name | sed 's/\./-/g'`
+                rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
                 id=`echo $azr | jq ".[(${j})].id" | tr -d '"'`
                 loc=`echo $azr | jq ".[(${j})].location" | tr -d '"'`
                 col=`echo $azr | jq ".[(${j})].collation" | tr -d '"'`
@@ -34,13 +35,13 @@ if [ "$count" != "0" ]; then
                 
                 if [ "$ed" != "System" ]; then
                     prefix=`printf "%s__%s" $prefixa $rg`
-                    outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+                    outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
                     echo $az2tfmess > $outfile
                     
-                    printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+                    printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
                     printf "\t name = \"%s\"\n" $name >> $outfile
                     printf "\t location = \"%s\"\n" $loc >> $outfile
-                    printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+                    printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
                     printf "\t server_name = \"%s\"\n" $sname >> $outfile
                     printf "\t collation= \"%s\"\n" $col >> $outfile
                     printf "\t edition= \"%s\"\n" $ed >> $outfile
@@ -50,7 +51,7 @@ if [ "$count" != "0" ]; then
                     fi
                     
                     #
-                    # New Tags block
+                    # New Tags block v2
                     tags=`echo $azr | jq ".[(${i})].tags"`
                     tt=`echo $tags | jq .`
                     tcount=`echo $tags | jq '. | length'`
@@ -82,10 +83,10 @@ if [ "$count" != "0" ]; then
                     printf "}\n" >> $outfile
                     #
                     cat $outfile
-                    statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+                    statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
                     echo $statecomm >> tf-staterm.sh
                     eval $statecomm
-                    evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+                    evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
                     echo $evalcomm >> tf-stateimp.sh
                     eval $evalcomm
                 fi

@@ -26,7 +26,7 @@ if [ "$count2" -gt "0" ]; then
         azr=`echo $azr2 | jq ".[(${j})]"`
         count=`echo $azr | jq '. | length'`
         if [ "$count" -gt "0" ]; then
- 
+            
             name=`echo $azr | jq ".name" | tr -d '"'`
             pname=`echo $name`
             name=`echo $name | sed s/\(/-/`
@@ -36,13 +36,15 @@ if [ "$count2" -gt "0" ]; then
             id=`echo $azr | jq ".id" | tr -d '"'`
             skip="false"
             if [[ $id = *"["* ]]; then
-            echo "Skipping this soluion $pname - can't process currently"
-            skip="true"
+                echo "Skipping this soluion $pname - can't process currently"
+                skip="true"
             fi
-
-
+            
             loc=`echo $azr | jq ".location"`
-            rg=$rgsource
+            
+            rname=`echo $name | sed 's/\./-/g'`
+            rg=`echo $rgsource | sed 's/\./-/g'`
+            
             pub=`echo $azr | jq ".plan.publisher"`
             prod=`echo $azr | jq ".plan.product" | tr -d '"'`
             soln=`echo $azr | jq ".plan.product" | cut -f2 -d'/' | tr -d '"'`
@@ -51,17 +53,17 @@ if [ "$count2" -gt "0" ]; then
             workn=`echo $workn1 | cut -d')' -f1`
             workid=`echo $azr | jq ".properties.workspaceResourceId" | tr -d '"'`
             echo "workname=$workn"
-  
+            
             prefix=`printf "%s__%s" $prefixa $rg`
-            outfile=`printf "%s.%s__%s.tf" $tfp $rg $name` 
+            outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
             echo $az2tfmess > $outfile
             
             if [ "$skip" != "true" ]; then
                 
-                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+                printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
                 
                 printf "\t location = %s\n" "$loc" >> $outfile
-                printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+                printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
                 printf "\t solution_name = \"%s\"\n" $soln >> $outfile
                 printf "\t workspace_name = \"%s\"\n" $workn >> $outfile
                 printf "\t workspace_resource_id = \"%s\"\n" $workid >> $outfile
@@ -71,9 +73,8 @@ if [ "$count2" -gt "0" ]; then
                 printf "\t\t product = \"%s\"\n" "$prod" >> $outfile
                 printf "\t } \n" >> $outfile
                 
-                #
-                # New Tags block
-                tags=`echo $azr | jq ".tags"`
+                # New Tags block v2
+                tags=`echo $azr | jq ".[(${i})].tags"`
                 tt=`echo $tags | jq .`
                 tcount=`echo $tags | jq '. | length'`
                 if [ "$tcount" -gt "0" ]; then
@@ -83,9 +84,19 @@ if [ "$count2" -gt "0" ]; then
                     tcount=`expr $tcount - 1`
                     for j in `seq 0 $tcount`; do
                         k1=`echo $keys | jq ".[(${j})]"`
-                        tval=`echo $tt | jq .$k1`
-                        tkey=`echo $k1 | tr -d '"'`
-                        printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                        #echo "key=$k1"
+                        re="[[:space:]]+"
+                        if [[ $k1 =~ $re ]]; then
+                            #echo "found a space"
+                            tval=`echo $tt | jq ."$k1"`
+                            tkey=`echo $k1 | tr -d '"'`
+                            printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                        else
+                            #echo "found no space"
+                            tval=`echo $tt | jq .$k1`
+                            tkey=`echo $k1 | tr -d '"'`
+                            printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                        fi
                     done
                     printf "\t}\n" >> $outfile
                 fi
@@ -94,11 +105,11 @@ if [ "$count2" -gt "0" ]; then
                 printf "}\n" >> $outfile
                 cat $outfile
                 
-                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg '$name'`
+                statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg '$rname'`
                 echo $statecomm
                 echo $statecomm >> tf-staterm.sh
                 eval $statecomm
-                evalcomm=`printf "terraform import %s.%s__%s \"%s\"" $tfp $rg $name $id`
+                evalcomm=`printf "terraform import %s.%s__%s \"%s\"" $tfp $rg $rname $id`
                 echo $evalcomm
                 echo $evalcomm >> tf-stateimp.sh
                 eval $evalcomm

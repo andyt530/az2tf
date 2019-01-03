@@ -15,23 +15,24 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
         ipfor=`echo $azr | jq ".[(${i})].enableIpForwarding" | tr -d '"'`
         netacc=`echo $azr | jq ".[(${i})].enableAcceleratedNetworking" | tr -d '"'`
         prefix=`printf "%s__%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
         echo $az2tfmess > $outfile
 
-        snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | tr -d '"'`
-        snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f5 | tr -d '"'`
+        snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+        snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
         ipcon=`echo $azr | jq ".[(${i})].ipConfigurations"`
         
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "\t location = \"%s\"\n" $loc >> $outfile
         if [ "$snsg" != "null" ]; then
             printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outfile
@@ -51,14 +52,14 @@ if [ "$count" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
                 ipcname=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].name" | cut -d'/' -f11 | tr -d '"'`
-                subname=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | tr -d '"'`
-                subrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f5 | tr -d '"'`
+                subname=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f11 | sed 's/\./-/g' | tr -d '"'`
+                subrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].subnet.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                 subipid=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
                 subipalloc=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAllocationMethod" | tr -d '"'`
                 privip=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].privateIpAddress" | tr -d '"'`
                 prim=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].primary" | tr -d '"'`
-                pubipnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | tr -d '"'`
-                pubiprg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f5 | tr -d '"'`
+                pubipnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+                pubiprg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].publicIpAddress.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                 
                 
                 
@@ -84,8 +85,8 @@ if [ "$count" -gt "0" ]; then
                     if [ "$kcount" -gt "0" ]; then
                         kcount=`expr $kcount - 1`
                         for k in `seq 0 $kcount`; do
-                            asgnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | tr -d '"'`
-                            asgrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | tr -d '"'`
+                            asgnam=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+                            asgrg=`echo $azr | jq ".[(${i})].ipConfigurations[(${j})].applicationSecurityGroups[(${k})].id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                             
                             printf "\t\t application_security_group_ids = [\"\${azurerm_application_security_group.%s__%s.id}\"]\n" $asgrg $asgnam >> $outfile
                         done
@@ -99,32 +100,42 @@ if [ "$count" -gt "0" ]; then
         fi
         #printf "\t private_ip_address = \"%s\" \n"  $pprivip >> $outfile
         #
-        # New Tags block
-        tags=`echo $azr | jq ".[(${i})].tags"`
-        tt=`echo $tags | jq .`
-        tcount=`echo $tags | jq '. | length'`
-        if [ "$tcount" -gt "0" ]; then
-            printf "\t tags { \n" >> $outfile
+
+            #
+            # New Tags block v2
+            tags=`echo $azr | jq ".[(${i})].tags"`
             tt=`echo $tags | jq .`
-            keys=`echo $tags | jq 'keys'`
-            tcount=`expr $tcount - 1`
-            for j in `seq 0 $tcount`; do
-                k1=`echo $keys | jq ".[(${j})]"`
-                tval=`echo $tt | jq .$k1`
-                tkey=`echo $k1 | tr -d '"'`
-                printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
-            done
-            printf "\t}\n" >> $outfile
-        fi
+            tcount=`echo $tags | jq '. | length'`
+            if [ "$tcount" -gt "0" ]; then
+                printf "\t tags { \n" >> $outfile
+                tt=`echo $tags | jq .`
+                keys=`echo $tags | jq 'keys'`
+                tcount=`expr $tcount - 1`
+                for j in `seq 0 $tcount`; do
+                    k1=`echo $keys | jq ".[(${j})]"`
+                    re="[[:space:]]+"
+                    if [[ $k1 =~ $re ]]; then
+                        tval=`echo $tt | jq ."$k1"`
+                        tkey=`echo $k1 | tr -d '"'`
+                        printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                    else
+                        tval=`echo $tt | jq .$k1`
+                        tkey=`echo $k1 | tr -d '"'`
+                        printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                    fi
+                done
+                printf "\t}\n" >> $outfile
+            fi
+
         
         
         printf "}\n" >> $outfile
         #
         cat $outfile
-        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
-        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
         

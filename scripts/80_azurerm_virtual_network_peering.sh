@@ -32,7 +32,9 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $pcount`; do
             
             name=`echo $peers | jq ".[(${j})].name" | tr -d '"'`
-            rg=`echo $peers | jq ".[(${j})].resourceGroup" | tr -d '"'`
+            rname=`echo $name | sed 's/\./-/g'`
+            rg=`echo $peers | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+
             id=`echo $peers | jq ".[(${j})].id" | tr -d '"'`
             rvnid=`echo $peers | jq ".[(${j})].remoteVirtualNetwork.id" | tr -d '"'`
             aft=`echo $peers | jq ".[(${j})].allowForwardedTraffic" | tr -d '"'`
@@ -41,14 +43,14 @@ if [ "$count" -gt "0" ]; then
             urg=`echo $peers | jq ".[(${j})].useRemoteGateways" | tr -d '"'`
 
             prefix=`printf "%s__%s" $prefixa $rg`
-            outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+            outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
             echo $az2tfmess > $outfile
 
-            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
             #nsgnam=`echo $snnsgid | cut -d'/' -f9 | tr -d '"'`
             #nsgrg=`echo $snnsgid | cut -d'/' -f5 | tr -d '"'`
             printf "\t name = \"%s\"\n" $name >> $outfile
-            printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+            printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
             printf "\t virtual_network_name = \"%s\"\n" $vnname >> $outfile
             printf "\t remote_virtual_network_id = \"%s\"\n" $rvnid >> $outfile
             printf "\t allow_forwarded_traffic = \"%s\"\n" $aft >> $outfile
@@ -59,10 +61,10 @@ if [ "$count" -gt "0" ]; then
             printf "}\n" >> $outfile
             cat $outfile
 
-            statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+            statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+            evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
             done

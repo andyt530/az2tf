@@ -32,7 +32,7 @@ if [ "$count" -gt "0" ]; then
                 echo $az2tfmess > $outfile
                 printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
                 printf "\t name = \"%s\"\n" $name >> $outfile   
-                printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+                printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
                 printf "\t storage_account_name = \"%s\"\n" $saname >> $outfile
                 printf "}\n" >> $outfile
       

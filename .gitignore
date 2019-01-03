@@ -1,5 +1,6 @@
 t*.sh
 login.sh
+checksource.sh
 setup-vars.sh
 example1
 example2

@@ -16,7 +16,9 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
         kind=`echo $azr | jq ".[(${i})].kind" | tr -d '"'`
@@ -29,13 +31,13 @@ if [ "$count" -gt "0" ]; then
         
         af=`echo $azr | jq ".[(${i})].enableAutomaticFailover" | tr -d '"'`      
         prefix=`printf "%s.%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
         echo $az2tfmess > $outfile  
         
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "\t kind = \"%s\"\n" $kind >> $outfile
         printf "\t offer_type = \"%s\"\n" $offer >> $outfile
         printf "\t consistency_policy { \n" >> $outfile
@@ -68,9 +70,8 @@ if [ "$count" -gt "0" ]; then
             done
         fi
 
-        
         #
-        # New Tags block
+        # New Tags block v2
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
@@ -81,9 +82,19 @@ if [ "$count" -gt "0" ]; then
             tcount=`expr $tcount - 1`
             for j in `seq 0 $tcount`; do
                 k1=`echo $keys | jq ".[(${j})]"`
+                #echo "key=$k1"
+                re="[[:space:]]+"
+                if [[ $k1 =~ $re ]]; then
+                #echo "found a space"
+                tval=`echo $tt | jq ."$k1"`
+                tkey=`echo $k1 | tr -d '"'`
+                printf "\t\t\"%s\" = %s \n" "$tkey" "$tval" >> $outfile
+                else
+                #echo "found no space"
                 tval=`echo $tt | jq .$k1`
                 tkey=`echo $k1 | tr -d '"'`
                 printf "\t\t%s = %s \n" $tkey "$tval" >> $outfile
+                fi
             done
             printf "\t}\n" >> $outfile
         fi
@@ -91,13 +102,12 @@ if [ "$count" -gt "0" ]; then
         
         printf "}\n" >> $outfile
         #
-        echo $prefix
-        echo $prefix__$name
+
         cat $outfile
-        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
-        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done

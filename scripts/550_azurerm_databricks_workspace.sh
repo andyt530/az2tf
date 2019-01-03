@@ -29,26 +29,29 @@ echo $azr | jq .
 name=`echo $azr | jq ".properties.parameters.workspaceName.value" | tr -d '"'`
 id=`echo $azr | jq ".id" | tr -d '"'`
 loc=`echo $azr | jq ".properties.parameters.location.value"| tr -d '"'`
-rg=$rgsource
+
+rname=`echo $name | sed 's/\./-/g'`
+rg=`echo $rgsource| sed 's/\./-/g' | tr -d '"'`
+
 sku=`echo $azr | jq ".properties.parameters.tier.value"| tr -d '"'`
 if [ "$sku" = "standard" ]; then sku="Standard" ; fi
 if [ "$sku" = "premium" ]; then sku="Premium" ; fi
 prefix=`printf "%s__%s" $prefixa $rg`
-outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
 echo $az2tfmess > $outfile
-printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
-printf "\t name = \"%s\"\n" $name >> $outfile   
-printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
+printf "\t name = \"%s\"\n" $name >> $outfile
+printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
 printf "\t location = \"%s\"\n" $loc >> $outfile
 printf "\t sku = \"%s\"\n" $sku >> $outfile
 printf "}\n" >> $outfile
-outid=`echo $azr | jq ".properties.outputResources[0].id" | tr -d '"'`  
+outid=`echo $azr | jq ".properties.outputResources[0].id" | tr -d '"'`
 cat $outfile
-statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
 echo $statecomm >> tf-staterm.sh
 eval $statecomm
-#echo $outid 
-evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $outid`
+#echo $outid
+evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $outid`
 echo $evalcomm >> tf-stateimp.sh
 eval $evalcomm
 

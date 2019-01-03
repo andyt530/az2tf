@@ -16,16 +16,18 @@ if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+        rname=`echo $name | sed 's/\./-/g'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`
     
         prefix=`printf "%s__%s" $prefixa $rg`
-        outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+        outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
         echo $az2tfmess > $outfile
 
-        avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | tr -d '"'`
-        avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | tr -d '"'`
+        avsid=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f9 -d'/' | sed 's/\./-/g' | tr -d '"'`
+        avsrg=`echo $azr | jq ".[(${i})].availabilitySet.id" | cut -f5 -d'/' | sed 's/\./-/g' | tr -d '"'`
         lavs=`printf "%s__%s" $avsrg $avsid`
 
         lavs=`echo $lavs | awk '{print tolower($0)}'`
@@ -75,11 +77,11 @@ if [ "$count" -gt "0" ]; then
         vmplname=`echo $azr | jq ".[(${i})].plan.name" | tr -d '"'`  
         #
  
-        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+        printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = \"%s\"\n"  $loc >> $outfile
         #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" $myrg >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         if [ "$avsid" != "null" ]; then 
             printf "\t availability_set_id = \"\${azurerm_availability_set.%s.id}\"\n" $myavs >> $outfile
         fi
@@ -94,8 +96,8 @@ if [ "$count" -gt "0" ]; then
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`
             for j in `seq 0 $icount`; do
-                vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f9 | tr -d '"'`
-                vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | tr -d '"'`
+                vmnetid=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+                vmnetrg=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                 vmnetpri=`echo $azr | jq ".[(${i})].networkProfile.networkInterfaces[(${j})].primary" | tr -d '"'`
                 printf "\t network_interface_ids = [\"\${azurerm_network_interface.%s__%s.id}\"]\n" $vmnetrg $vmnetid >> $outfile
                 if [ "$vmnetpri" == "true" ]; then
@@ -120,7 +122,6 @@ if [ "$count" -gt "0" ]; then
         printf "}\n" >> $outfile
         fi
         
-        #
         #
         #
         havesir=0
@@ -250,8 +251,8 @@ if [ "$count" -gt "0" ]; then
                 
                 if [ "$ddcreopt" = "Attach" ]; then
                     if [ "$ddmd" != "null" ];then
-                    ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | tr -d '"'`
-                    ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | tr -d '"'`
+                    ddmdid=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+                    ddmdrg=`echo $datadisks | jq ".[(${j})].managedDisk.id" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
                     ## ddmdrg  from cut is upper case - not good
                     ## probably safe to assume managed disk in same RG as VM ??
                     # check id lowercase rg = ddmdrg if so use rg
@@ -271,7 +272,7 @@ if [ "$count" -gt "0" ]; then
         done
         
         #
-        # New Tags block
+        # New Tags block v2
         tags=`echo $azr | jq ".[(${i})].tags"`
         tt=`echo $tags | jq .`
         tcount=`echo $tags | jq '. | length'`
@@ -301,10 +302,10 @@ if [ "$count" -gt "0" ]; then
            
         printf "}\n" >> $outfile
         cat $outfile
-        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+        statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
         echo $statecomm >> tf-staterm.sh
         eval $statecomm
-        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+        evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
         echo $evalcomm >> tf-stateimp.sh
         eval $evalcomm
     done

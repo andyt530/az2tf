@@ -23,11 +23,12 @@ if [ "$count" -gt "0" ]; then
         scount=`expr $scount - 1`
         for i in `seq 0 $scount`; do
             name=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-            rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
+            rname=`echo $name | sed 's/\./-/g'`
+            rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
             id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
             # subnets don't have a location
             prefix=`printf "%s__%s" $prefixa $rg`
-            outfile=`printf "%s.%s__%s.tf" $tfp $rg $name`
+            outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
             echo $az2tfmess > $outfile
 
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
@@ -44,44 +45,44 @@ if [ "$count" -gt "0" ]; then
                 sep=`printf "[%s,%s]" $sep1 $sep2`
             fi
             
-            snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | tr -d '"'`
-            snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | tr -d '"'`
+            snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
+            snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
 
 # azurerm_subnet_network_security_group_association
             r1="skip"
             if [ "$snsg" != "null" ]; then
                 r1="azurerm_subnet_network_security_group_association"
-                outsnsg=`printf "%s.%s__%s__%s.tf" $r1 $rg $name $snsg`
+                outsnsg=`printf "%s.%s__%s__%s.tf" $r1 $rg $rname $snsg`
                 echo $outsnsg
-                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r1 $rg $name $snsg > $outsnsg
-                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $name >> $outsnsg
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r1 $rg $rname $snsg > $outsnsg
+                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outsnsg
                 printf "\tnetwork_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outsnsg
                 printf "}\n" >> $outsnsg
             fi
 
 
-            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $name >> $outfile
+            printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
             printf "\t name = \"%s\"\n" $name >> $outfile
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $outfile
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $outfile
 
 # zurerm_subnet_route_table_association
 
-            rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | tr -d '"'`
-            rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | tr -d '"'`
+            rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
+            rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
             r2="skip"
             if [ "$rtbid" != "null" ]; then
                 r2="azurerm_subnet_route_table_association"
-                outrtbid=`printf "%s.%s__%s__%s.tf" $r2 $rg $name $snsg`
+                outrtbid=`printf "%s.%s__%s__%s.tf" $r2 $rg $rname $snsg`
                 echo $outrtbid
-                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $name $rtbid > $outrtbid
-                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $name >> $outrtbid
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $rname $rtbid > $outrtbid
+                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outrtbid
                 printf "\troute_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $outrtbid
                 printf "}\n" >> $outrtbid
             fi
 
             #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $outfile
-            printf "\t resource_group_name = \"%s\"\n" $rg >> $outfile
+            printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
             if [ "$snsg" != "null" ]; then
                 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outfile
             fi
@@ -98,29 +99,29 @@ if [ "$count" -gt "0" ]; then
 
             if [ "$r1" != "skip" ]; then
             cat $outsnsg
-            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r1 $rg $name $snsg`
+            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r1 $rg $rname $snsg`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r1 $rg $name $snsg $id`
+            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r1 $rg $rname $snsg $id`
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
             fi
 
-#printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $name $rtbid > $outrtbid
+
             if [ "$r2" != "skip" ]; then
             cat $outrtbid
-            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r2 $rg $name $rtbid`
+            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r2 $rg $rname $rtbid`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r2 $rg $name $rtbid $id`
+            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r2 $rg $rname $rtbid $id`
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
             fi
 
-            statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $name`
+            statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $name $id`
+            evalcomm=`printf "terraform import %s.%s__%s %s" $tfp $rg $rname $id`
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
         done
