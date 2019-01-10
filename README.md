@@ -121,6 +121,9 @@ Messaging Resources
 * azurerm_servicebus_namespace  (full)
 * azurerm_servicebus_queue  (partial)
 
+Monitoring Resources
+* azurerm_autoscale_setting
+
 Network Resources
 * azurerm_application_gateway 
 * azurerm_application_security_group (full)
