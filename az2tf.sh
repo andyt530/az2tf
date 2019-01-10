@@ -187,7 +187,7 @@ for j in `seq 2 2`; do
         c1=`echo ${pfx[${j}]}`
         gr=`printf "%s-" ${res[$j]}`
         #echo c1=$c1 gr=$gr
-        comm=`printf "%s --query '[].resourceGroup -o json' | jq '.[]' | sort -u" "$c1"`
+        comm=`printf "%s --query '[].resourceGroup' -o json | jq '.[]' | sort -u" "$c1"`
         comm2=`printf "%s --query '[].resourceGroup' -o json | jq '.[]' | sort -u | wc -l" "$c1"`
         #echo comm=$comm2
         tc=`eval $comm2`
