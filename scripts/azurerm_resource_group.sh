@@ -11,7 +11,7 @@ else
     fi
 fi
 echo $rgsource
-#azr=`az group show -n $rgsource`
+#azr=`az group show -n $rgsource -o json`
 comm=`printf "cat %s.json | jq '.[] | select (.name==\"%s\")'" $tfp $rgsource`
 azr=`eval $comm`
 #echo $azr | jq .

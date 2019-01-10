@@ -1,7 +1,7 @@
 tfp="azurerm_resources"
 prefixa="tres"
 
-at=`az account get-access-token`
+at=`az account get-access-token -o json`
 bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
 tput clear

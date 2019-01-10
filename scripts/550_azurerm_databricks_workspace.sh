@@ -17,7 +17,7 @@ if [ "$1" != "" ]; then
     rgsource=$1
 fi
 
-at=`az account get-access-token`
+at=`az account get-access-token -o json`
 bt=`echo $at | jq .accessToken | tr -d '"'`
 sub=`echo $at | jq .subscription | tr -d '"'`
 

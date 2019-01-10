@@ -10,7 +10,7 @@ else
     fi
 fi
 #
-azr=`az network vnet list -g $rgsource`
+azr=`az network vnet list -g $rgsource -o json`
 #
 # loop around vnets
 #
@@ -22,7 +22,7 @@ if [ "$count" -gt "0" ]; then
         vnname=`echo $name`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
    
-        peers=`az network vnet peering list -g $rg --vnet $name`
+        peers=`az network vnet peering list -g $rg --vnet $name -o json`
         #echo $peers | jq .
      
         pcount=`echo $peers | jq '. | length'`

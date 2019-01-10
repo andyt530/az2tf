@@ -11,14 +11,14 @@ else
 fi
 #
 #
-vnets=`az network vnet list -g $rgsource`
+vnets=`az network vnet list -g $rgsource -o json`
 count=`echo $vnets | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for j in `seq 0 $count`; do
         vname=`echo $vnets | jq ".[(${j})].name" | tr -d '"'`
         #
-        azr=`az network vnet subnet list -g $rgsource --vnet-name $vname`
+        azr=`az network vnet subnet list -g $rgsource --vnet-name $vname -o json`
         scount=`echo $azr | jq '. | length'`
         scount=`expr $scount - 1`
         for i in `seq 0 $scount`; do

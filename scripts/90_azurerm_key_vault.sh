@@ -9,7 +9,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az keyvault list -g $rgsource`
+azr=`az keyvault list -g $rgsource -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -18,7 +18,7 @@ if [ "$count" -gt "0" ]; then
         rname=`echo $name | sed 's/\./-/g'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
 
-        kvshow=`az keyvault show -n $name`
+        kvshow=`az keyvault show -n $name -o json`
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
         

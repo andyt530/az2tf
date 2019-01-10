@@ -10,7 +10,7 @@ else
     fi
 fi
 #
-azr=`az network vnet list -g $rgsource`
+azr=`az network vnet list -g $rgsource -o json`
 #
 # loop around vnets
 #

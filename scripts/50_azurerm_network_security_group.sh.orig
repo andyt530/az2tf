@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az network nsg list -g $rgsource`
+azr=`az network nsg list -g $rgsource -o json`
 #comm=`printf "cat %s.json | jq '.[] | select (.id | contains(\"%s\"))'" $tfp $rgsource`
 #can't fileter RG here due to case issues
 #comm=`printf "cat %s.json" $tfp`

@@ -14,7 +14,7 @@ fi
 # Get rg and name for az lab from curl
 #
 #
-azr=`az lab get -g $rgsource -n $labname`
+azr=`az lab get -g $rgsource -n $labname -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`

@@ -9,13 +9,13 @@ else
         rgsource=$response
     fi
 fi
-azr=`az network traffic-manager profile list -g $rgsource`
+azr=`az network traffic-manager profile list -g $rgsource -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
     for i in `seq 0 $count`; do
         pname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
-        azr2=`az network traffic-manager endpoint list -g $rgsource --profile-name $pname`
+        azr2=`az network traffic-manager endpoint list -g $rgsource --profile-name $pname -o json`
         icount=`echo $azr2 | jq '. | length'`
         if [ "$icount" -gt "0" ]; then
             icount=`expr $icount - 1`

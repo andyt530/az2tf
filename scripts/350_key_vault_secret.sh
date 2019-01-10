@@ -12,7 +12,7 @@ tfp=`printf "azurerm_%s" $prefixa`
 #    fi
 #fi
 #azr=`az keyvault list -g $rgsource`
-azr=`az keyvault list`
+azr=`az keyvault list -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -23,10 +23,10 @@ if [ "$count" -gt "0" ]; then
 
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location"`
-        kvd=`az keyvault show -n $name -g $rg`
+        kvd=`az keyvault show -n $name -g $rg -o json`
         kvuri=`echo $kvd | jq ".properties.vaultUri" | tr -d '"'`
         
-        secs=`az keyvault secret list --vault-name $name`
+        secs=`az keyvault secret list --vault-name $name -o json`
         #echo $secs | jq .[0]
         #
         # Access Policies
@@ -42,7 +42,7 @@ if [ "$count" -gt "0" ]; then
                 secid2=`echo $secid | cut -d '/' -f5 `
           
                 content_type=`echo $secs | jq ".[(${j})].contentType" | tr -d '"'`
-                asec=`az keyvault secret show --vault-name $name -n $secid2`
+                asec=`az keyvault secret show --vault-name $name -n $secid2 -o json`
                 
                 content_type=`echo $asec | jq ".contentType" | tr -d '"'`
                 value=`echo $asec | jq ".value" | tr -d '"'`

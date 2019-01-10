@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az storage account list -g $rgsource`
+azr=`az storage account list -g $rgsource -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`
@@ -18,8 +18,8 @@ if [ "$count" -gt "0" ]; then
         #echo $i
         saname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         rg=`echo $azr | jq ".[(${i})].resourceGroup" | tr -d '"'`
-        k=`az storage account keys list --resource-group $rg --account-name $saname --query '[0].value'`
-        fs=`az storage container list --account-name $saname --account-key $k`        
+        k=`az storage account keys list --resource-group $rg --account-name $saname --query '[0].value' -o json`
+        fs=`az storage container list --account-name $saname --account-key $k -o json`        
         jcount=`echo $fs | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
             jcount=`expr $jcount - 1`

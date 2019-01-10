@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr=`az network local-gateway list -g $rgsource`
+azr=`az network local-gateway list -g $rgsource -o json`
 count=`echo $azr | jq '. | length'`
 if [ "$count" -gt "0" ]; then
     count=`expr $count - 1`

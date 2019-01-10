@@ -10,7 +10,7 @@ else
         rgsource=$response
     fi
 fi
-azr2=`az sql server list -g $rgsource`
+azr2=`az sql server list -g $rgsource -o json`
 count=`echo $azr2 | jq '. | length'`
 if [ "$count" != "0" ]; then
     count=`expr $count - 1`
@@ -18,7 +18,7 @@ if [ "$count" != "0" ]; then
         sname=`echo $azr2 | jq ".[(${i})].name" | tr -d '"'`
         srg=`echo $azr2 | jq ".[(${i})].resourceGroup" | tr -d '"'`
         
-        azr=`az sql db list --server $sname -g $srg`
+        azr=`az sql db list --server $sname -g $srg -o json`
         jcount=`echo $azr | jq '. | length'`
         if [ "$jcount" != "0" ]; then
             jcount=`expr $jcount - 1`

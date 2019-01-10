@@ -47,7 +47,7 @@ fi
 
 echo "Checking Subscription $mysub exists ..."
 isok="no"
-subs=`az account list --query '[].id' | jq '.[]' | tr -d '"'`
+subs=`az account list --query '[].id' -o json | jq '.[]' | tr -d '"'`
 for i in `echo $subs`
 do
     if [ "$i" = "$mysub" ] ; then
@@ -109,7 +109,7 @@ res[54]="azurerm_policy_assignment"
 if [ "$g" != "" ]; then
     lcg=`echo $g | awk '{print tolower($0)}'`
     # check provided resource group exists in subscription
-    exists=`az group exists -g $g`
+    exists=`az group exists -g $g -o json`
     if  ! $exists ; then
         echo "Resource Group $g does not exists in subscription $mysub  Exit ....."
         exit
@@ -160,9 +160,9 @@ date
 # top level stuff
 j=1
 if [ "$g" != "" ]; then
-    trgs=`az group list --query "[?name=='$myrg']"`
+    trgs=`az group list --query "[?name=='$myrg']" -o json`
 else
-    trgs=`az group list`
+    trgs=`az group list -o json`
 fi
 
 count=`echo $trgs | jq '. | length'`
@@ -187,8 +187,8 @@ for j in `seq 2 2`; do
         c1=`echo ${pfx[${j}]}`
         gr=`printf "%s-" ${res[$j]}`
         #echo c1=$c1 gr=$gr
-        comm=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u" "$c1"`
-        comm2=`printf "%s --query '[].resourceGroup' | jq '.[]' | sort -u | wc -l" "$c1"`
+        comm=`printf "%s --query '[].resourceGroup -o json' | jq '.[]' | sort -u" "$c1"`
+        comm2=`printf "%s --query '[].resourceGroup' -o json | jq '.[]' | sort -u | wc -l" "$c1"`
         #echo comm=$comm2
         tc=`eval $comm2`
         #echo tc=$tc
