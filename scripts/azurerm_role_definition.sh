@@ -25,6 +25,8 @@ if [ "$count" -gt "0" ]; then
         rg="roleDefinitions"
 
         scopes=`echo $azr | jq ".[(${i})].assignableScopes"`
+        dactions=`echo $azr | jq ".[(${i})].permissions[0].dataActions"`
+        ndactions=`echo $azr | jq ".[(${i})].permissions[0].notDataActions"`
         actions=`echo $azr | jq ".[(${i})].permissions[0].actions"`
         nactions=`echo $azr | jq ".[(${i})].permissions[0].notActions"`
 
@@ -43,6 +45,12 @@ if [ "$count" -gt "0" ]; then
         #
         printf "permissions { \n" >> $prefix-$rdid.tf
     
+        printf "data_actions = \n" >> $prefix-$rdid.tf
+        printf "%s\n" $dactions >> $prefix-$rdid.tf
+
+        printf "not_data_actions = \n" >> $prefix-$rdid.tf
+        printf "%s\n" $ndactions >> $prefix-$rdid.tf
+
         printf "actions = \n" >> $prefix-$rdid.tf
         printf "%s\n" $actions >> $prefix-$rdid.tf
     
