@@ -198,7 +198,8 @@ Can also fail of resource locks are in place
 
 ### OMS
 
-Not all OMS solutions can be imported (naming issues with Azure)
+If solutions have '[' & ']' in their names they wil be ignored.
+
 
 ### ExpressRoute
 
@@ -206,7 +207,7 @@ No support for MS peering (don't have one to test!)
 
 ### Key Vault
 
-terraform doesn't support Backup and Restore as certificate permissions
+terraform doesn't support Bthe "All" permission
 
 ### Virtual Network Gateway
 
