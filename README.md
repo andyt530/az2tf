@@ -14,8 +14,9 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 **version 2.0.50 or higher** needs to be installed and you need a login with at least "Read" priviledges
-+ terraform **version v0.11.10** needs to be installed
++ Azure cli2 **version 2.0.54 or higher** needs to be installed and you need a login with at least "Read" priviledges
++ terraform **version v0.11.11** needs to be installed
++ jq see:  https://stedolan.github.io/jq/  (On macOS also available via $ brew install jq)
 
 
 
