@@ -34,8 +34,8 @@ rname=`echo $name | sed 's/\./-/g'`
 rg=`echo $rgsource| sed 's/\./-/g' | tr -d '"'`
 
 sku=`echo $azr | jq ".properties.parameters.tier.value"| tr -d '"'`
-if [ "$sku" = "standard" ]; then sku="Standard" ; fi
-if [ "$sku" = "premium" ]; then sku="Premium" ; fi
+if [ "$sku" = "Standard" ]; then sku="standard" ; fi
+if [ "$sku" = "Premium" ]; then sku="premium" ; fi
 prefix=`printf "%s__%s" $prefixa $rg`
 outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
 echo $az2tfmess > $outfile
