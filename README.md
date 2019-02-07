@@ -208,7 +208,7 @@ No support for MS peering (don't have one to test!)
 
 ### Key Vault
 
-terraform doesn't support Bthe "All" permission
+terraform doesn't support the "All" permission
 
 ### Virtual Network Gateway
 
