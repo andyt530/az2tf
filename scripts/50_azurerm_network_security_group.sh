@@ -31,7 +31,7 @@ if [ "$count" -gt "0" ]; then
         echo $az2tfmess > $outfile
         
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
-        printf "\t name = \"%s\"  \n" $name >> $outfile
+        printf "\t name = \"%s\"  \n" "$name" >> $outfile
         printf "\t location = \"%s\"\n" $loc >> $outfile
         printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         #
@@ -46,7 +46,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t security_rule { \n" >> $outfile
             srname=`echo $azr | jq ".[(${i})].securityRules[(${j})].name" | tr -d '"'`  
             echo "Security Rule $srname   $j of $scount"                     
-            printf "\t\t name = \"%s\"  \n" $srname >> $outfile
+            printf "\t\t name = \"%s\"  \n" "$srname" >> $outfile
             srdesc=`echo $azr | jq ".[(${i})].securityRules[(${j})].description"`                       
             if [ "$srdesc" != "null" ]; then
                 printf "\t\t description = %s\n" "$srdesc" >> $outfile
