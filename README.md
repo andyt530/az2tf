@@ -14,7 +14,7 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 ## Requirements & Prerequisites
 + The tool is written for the bash shell script and has been tested on a MAC
-+ Azure cli2 **version 2.0.54 or higher** needs to be installed and you need a login with at least "Read" priviledges
++ Azure cli2 **version 2.0.55 or higher** needs to be installed and you need a login with at least "Read" priviledges
 + terraform **version v0.11.11** needs to be installed
 + jq see:  https://stedolan.github.io/jq/  (On macOS also available via $ brew install jq)
 
@@ -22,11 +22,18 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 ## Quickstart guide to using the tool
 
-Running the tool required these steps:
+Running the tool in your local shell (bash) required these steps:
 1. Unzip or clone this git repo into an empty directory
 2. login to the Azure cli2  (az login)
 3. run the tool 
 
+
+## Experimental: using the docker version
+1. Build with: $ docker build --rm -f "Dockerfile" -t az2tf:latest .
+2. If it doesn't already exist make a "generated" directory ($ mkdir generated)
+3. Run with "$ ./runme.sh"
+
+(would appreciate feedback on how to better use docker)
 
 ## Usage Guide
 
@@ -59,10 +66,9 @@ To filter the terraform resource type: (eg: just availability sets)
 Be patient - lots of output is given as az2tf:
 
 + Loops for each provider through your resource groups &
-+ Creates the requited *.tf configuration files
++ Creates the requited *.tf configuration files in the "generated" directory
 + Performs the necessary 'terraform import' commands
 + And finally runs a 'terraform plan'
-
 
 
 
