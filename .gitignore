@@ -29,3 +29,4 @@ az2tf-v2.sh
 go
 PDU-generic
 generated
+.vscode
