@@ -64,12 +64,12 @@ myrg=$g
 export ARM_SUBSCRIPTION_ID="$mysub"
 az account set -s $mysub
 
-mkdir -p tf.$mysub
-cd tf.$mysub
+mkdir -p generated/tf.$mysub
+cd generated/tf.$mysub
 rm -rf .terraform
 rm -f import.log resources*.txt
 
-../scripts/resources.sh 2>&1 | tee -a import.log
+../../scripts/resources.sh 2>&1 | tee -a import.log
 
 echo " "
 echo "Subscription ID = ${s}"
@@ -79,18 +79,6 @@ echo "Get Subscription Policies & RBAC = ${p}"
 echo "Extract Key Vault Secrets to .tf files (insecure) = ${x}"
 echo " "
 
-#if [ "$2" != "" ]; then
-#    myrg=$2
-#    mkdir -p tf.${mysub}_${myrg}
-#    cd tf.${mysub}_${myrg}
-#    rm -rf .terraform
-#    ../scripts/resources.sh $myrg
-#else
-#    mkdir -p tf.$mysub
-#    cd tf.$mysub
-#    rm -rf .terraform
-#    ../scripts/resources.sh
-#fi
 
 pfx[1]="az group list"
 res[1]="azurerm_resource_group"
@@ -104,7 +92,7 @@ res[54]="azurerm_policy_assignment"
 
 #
 # uncomment following line if you want to use an SPN login
-#../setup-env.sh
+#../../setup-env.sh
 
 if [ "$g" != "" ]; then
     lcg=`echo $g | awk '{print tolower($0)}'`
@@ -134,7 +122,7 @@ fi
 rm -f terraform*.backup
 #rm -f terraform.tfstate
 rm -f tf*.sh
-cp ../stub/*.tf .
+cp ../../stub/*.tf .
 echo "terraform init"
 terraform init 2>&1 | tee -a import.log
 
@@ -142,7 +130,7 @@ terraform init 2>&1 | tee -a import.log
 # subscription level stuff - roles & policies
 if [ "$p" = "yes" ]; then
     for j in `seq 51 54`; do
-        docomm="../scripts/${res[$j]}.sh $mysub"
+        docomm="../../scripts/${res[$j]}.sh $mysub"
         echo $docomm
         eval $docomm 2>&1 | tee -a import.log
         if grep -q Error: import.log ; then
@@ -171,7 +159,7 @@ if [ "$count" -gt "0" ]; then
     for i in `seq 0 $count`; do
         myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
         echo -n $i of $count " "
-        docomm="../scripts/${res[$j]}.sh $myrg"
+        docomm="../../scripts/${res[$j]}.sh $myrg"
         echo "$docomm"
         eval $docomm  2>&1 | tee -a import.log
         if grep Error: import.log ; then
@@ -196,13 +184,13 @@ for j in `seq 2 2`; do
         trgs=`eval $comm`
         count=`echo ${#trgs}`
         if [ "$g" != "" ]; then
-            ../scripts/${res[$j]}.sh $g
+            ../../scripts/${res[$j]}.sh $g
         else
             if [ "$count" -gt "0" ]; then
                 c5="1"
                 for j2 in `echo $trgs`; do
                     echo -n "$c5 of $tc "
-                    docomm="../scripts/${res[$j]}.sh $j2"
+                    docomm="../../scripts/${res[$j]}.sh $j2"
                     echo "$docomm"
                     eval $docomm 2>&1 | tee -a import.log
                     c5=`expr $c5 + 1`
@@ -219,7 +207,7 @@ done
 
 echo loop through providers
 
-for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
+for com in `ls ../../scripts/*_azurerm*.sh | cut -d'/' -f4 | sort -g`; do
     gr=`echo $com | awk -F 'azurerm_' '{print $2}' | awk -F '.sh' '{print $1}'`
     echo $gr
     lc="1"
@@ -229,7 +217,7 @@ for com in `ls ../scripts/*_azurerm*.sh | cut -d'/' -f3 | sort -g`; do
         myrg=`echo $l | cut -d':' -f1`
         prov=`echo $l | cut -d':' -f2`
         #echo "debug $j prov=$prov  res=${res[$j]}"
-        docomm="../scripts/$com $myrg"
+        docomm="../../scripts/$com $myrg"
         echo "$docomm"
         eval $docomm 2>&1 | tee -a import.log
         lc=`expr $lc + 1`
@@ -244,7 +232,7 @@ date
 
 if [ "$x" = "yes" ]; then
     echo "Attempting to extract secrets"
-    ../scripts/350_key_vault_secret.sh
+    ../../scripts/350_key_vault_secret.sh
 fi
 
 
@@ -259,4 +247,7 @@ echo "Terraform fmt ..."
 terraform fmt
 echo "Terraform Plan ..."
 terraform plan .
+echo "---------------------------------------------------------------------------"
+echo "az2tf output files are in generated/tf.$mysub"
+echo "---------------------------------------------------------------------------"
 exit

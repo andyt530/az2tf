@@ -33,7 +33,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = \"%s\"\n" $loc >> $outfile
         printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
-        printf "\t allocation_mathod = \"%s\" \n"  $subipalloc >> $outfile
+        printf "\t allocation_method = \"%s\" \n"  $subipalloc >> $outfile
         if [ "$sku" != "null" ]; then
             printf "\t sku = \"%s\" \n"  $sku >> $outfile
         fi

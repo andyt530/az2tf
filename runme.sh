@@ -1,0 +1,1 @@
+ docker run -it --rm -v $(pwd):/az2tf/generated az2tf /bin/ash
