@@ -1,1 +1,1 @@
- docker run -it --rm -v $(pwd):/az2tf/generated az2tf /bin/ash
+ docker run -it --rm -v $(pwd)/generated:/az2tf/generated az2tf:latest /bin/bash
