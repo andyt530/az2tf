@@ -32,91 +32,100 @@ if [ "$count" -gt "0" ]; then
             echo $az2tfmess > $outfile
 
             sprefix=`echo $azr | jq ".[(${i})].addressPrefix" | tr -d '"'`
-            
-            seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
-            sep1=`echo $azr | jq ".[(${i})].serviceEndpoints[0].service"`
-            sep2=`echo $azr | jq ".[(${i})].serviceEndpoints[1].service"`
             sep="null"
             rtbid="null"
-            if [ "$sep1" != "null" ]; then
-                sep=`printf "[%s]" $sep1`
-            fi
-            if [ "$sep2" != "null" ]; then
-                sep=`printf "[%s,%s]" $sep1 $sep2`
-            fi
+            seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
+            jcount=`echo $seps | jq '. | length'`
+            jcount=`expr $jcount - 1`
+            sep="["
+                    for j in `seq 0 $jcount`; do
+                        service=`echo $seps | jq ".[(${j})].service" | tr -d '"'`
+                        if [ $j -eq $jcount ] ; then 
+                            sep=`printf "%s\"%s\"" $sep $service`
+                        else
+                            sep=`printf "%s\"%s\"," $sep $service`
+                        fi
+                    done
+            sep=`printf "%s]" $sep`
             
-            snsg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
-            snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
-
-# azurerm_subnet_network_security_group_association
-            r1="skip"
-            if [ "$snsg" != "null" ]; then
-                r1="azurerm_subnet_network_security_group_association"
-                outsnsg=`printf "%s.%s__%s__%s.tf" $r1 $rg $rname $snsg`
-                echo $outsnsg
-                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r1 $rg $rname $snsg > $outsnsg
-                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outsnsg
-                printf "\tnetwork_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outsnsg
-                printf "}\n" >> $outsnsg
-            fi
-
+            snsgid=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
+            snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'` 
+            rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
+            rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
 
             printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
             printf "\t name = \"%s\"\n" $name >> $outfile
             printf "\t virtual_network_name = \"%s\"\n" $vname >> $outfile
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $outfile
-
-# zurerm_subnet_route_table_association
-
-            rtbid=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
-            rtrg=`echo $azr | jq ".[(${i})].routeTable.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
-            r2="skip"
-            if [ "$rtbid" != "null" ]; then
-                r2="azurerm_subnet_route_table_association"
-                outrtbid=`printf "%s.%s__%s__%s.tf" $r2 $rg $rname $snsg`
-                echo $outrtbid
-                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $rname $rtbid > $outrtbid
-                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outrtbid
-                printf "\troute_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $outrtbid
-                printf "}\n" >> $outrtbid
-            fi
-
-            #printf "\t resource_group_name = \"\${var.rgtarget}\"\n" >> $outfile
             printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
-            if [ "$snsg" != "null" ]; then
-                printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsg >> $outfile
+            
+            if [ "$snsgrg" != "null" ]; then
+                printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsgid >> $outfile
             fi
             if [ "$sep" != "null" ]; then
                 printf "\t service_endpoints = %s\n" $sep >> $outfile
             fi
-            if [ "$rtbid" != "null" ]; then
+            if [ "$rtrg" != "null" ]; then
                 printf "\t route_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $outfile
             fi
 
             printf "}\n" >> $outfile
-
             cat $outfile
+
+# azurerm_subnet_network_security_group_association
+
+            r1="skip"
+            if [ "$snsg" != "null" ]; then
+                r1="azurerm_subnet_network_security_group_association"
+                outsnsg=`printf "%s.%s__%s__%s.tf" $r1 $rg $rname $snsgid`
+                echo $az2tfmess > $outsnsg
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r1 $rg $rname $snsgid  >> $outsnsg
+                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outsnsg
+                printf "\tnetwork_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsgid >> $outsnsg
+                printf "}\n" >> $outsnsg
+                cat $outsnsg
+            fi
+
+# azurerm_subnet_route_table_association
+
+            r2="skip"
+            if [ "$rtbid" != "null" ]; then
+                r2="azurerm_subnet_route_table_association"
+                outrtbid=`printf "%s.%s__%s__%s.tf" $r2 $rg $rname $rtbid`
+                echo $az2tfmess > $outrtbid
+                printf "resource \"%s\" \"%s__%s__%s\" {\n" $r2 $rg $rname $rtbid >> $outrtbid
+                printf "\tsubnet_id = \"\${azurerm_subnet.%s__%s.id}\"\n" $rg $rname >> $outrtbid
+                printf "\troute_table_id = \"\${azurerm_route_table.%s__%s.id}\"\n" $rtrg $rtbid >> $outrtbid
+                printf "}\n" >> $outrtbid
+                cat $outrtbid
+            fi
+
+
+# azurerm_subnet_network_security_group_association
 
             if [ "$r1" != "skip" ]; then
             cat $outsnsg
-            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r1 $rg $rname $snsg`
+            statecomm=`printf "terraform state rm %s.%s__%s__%s" $r1 $rg $rname $snsgid`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r1 $rg $rname $snsg $id`
+            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r1 $rg $rname $snsgid $id` # uses subnet id
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
             fi
 
+# azurerm_subnet_route_table_association
 
             if [ "$r2" != "skip" ]; then
             cat $outrtbid
             statecomm=`printf "terraform state rm %s.%s__%s__%s" $r2 $rg $rname $rtbid`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
-            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r2 $rg $rname $rtbid $id`
+            evalcomm=`printf "terraform import %s.%s__%s__%s %s" $r2 $rg $rname $rtbid $id`  # uses subnet id
             echo $evalcomm >> tf-stateimp.sh
             eval $evalcomm
             fi
+
+# azurerm_subnet
 
             statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
             echo $statecomm >> tf-staterm.sh
