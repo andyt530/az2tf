@@ -116,7 +116,6 @@ if [ "$count" -gt "0" ]; then
 # azurerm_subnet_route_table_association
 
             if [ "$r2" != "skip" ]; then
-            cat $outrtbid
             statecomm=`printf "terraform state rm %s.%s__%s__%s" $r2 $rg $rname $rtbid`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm
