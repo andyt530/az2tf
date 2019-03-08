@@ -27,17 +27,8 @@ if [ "$count" -gt "0" ]; then
         lcrg=`echo $azr | jq ".[(${i})].resourceGroup" | awk '{print tolower($0)}' | tr -d '"'`
         appplid=`echo $azr | jq ".[(${i})].appServicePlanId" | tr -d '"'`
         rg=`echo $lcrg | sed 's/\./-/g'`
-
-        #appset=`az functionapp config appsettings list -n $name -g $rg -o json --query "[?name == 'AzureWebJobsStorage'].value"`
+ 
         appset=`az functionapp config appsettings list -n $name -g $rg -o json`
-        cnxstr=`echo $appset | jq '.[] | select(.name=="AzureWebJobsStorage")' | jq .value`
-        #appset=`az functionapp config appsettings list -n $name -g $rg -o json --query "[?name == 'FUNCTIONS_EXTENSION_VERSION'].value"`
-        vers=`echo $appset | jq '.[] | select(.name=="FUNCTIONS_EXTENSION_VERSION")' | jq .value`
-
-        aikey=`echo $appset | jq '.[] | select(.name=="APPINSIGHTS_INSTRUMENTATIONKEY")' | jq .value`
-        runtime=`echo $appset | jq '.[] | select(.name=="FUNCTIONS_WORKER_RUNTIME")' | jq .value`
-        webver=`echo $appset | jq '.[] | select(.name=="WEBSITE_NODE_DEFAULT_VERSION")' | jq .value`
-
 
         prefix=`printf "%s.%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
@@ -46,41 +37,47 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-
-
-
         printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
         # case issues - so use resource id directly
         # printf "\t app_service_plan_id = \"\${azurerm_app_service_plan.%s__%s.id}\"\n" $prg $pnam >> $outfile
         printf "\t app_service_plan_id = \"%s\"\n" $appplid >> $outfile
 # dummy entry
-        printf "\t storage_connection_string = %s \n"  "$cnxstr" >> $outfile
+
         printf "\t https_only = \"%s\" \n"  "$https" >> $outfile
-        printf "\t version = %s \n"  "$vers" >> $outfile
-        printf "\t enable_builtin_logging = \"%s\" \n"  "false" >> $outfile
+        printf "\t enable_builtin_logging = \"%s\" \n"  "true" >> $outfile
 
-        if [ "$aikey" != "" ]; then
-            printf "\t app_settings { \n" >> $outfile
-            printf "\t APPINSIGHTS_INSTRUMENTATIONKEY = %s\n" $aikey >> $outfile
-            printf "\t }\n" >> $outfile
-        fi
-        if [ "$runtime" != "" ]; then
-            printf "\t app_settings { \n" >> $outfile
-            printf "\t FUNCTIONS_WORKER_RUNTIME = %s\n" $runtime >> $outfile
-            printf "\t }\n" >> $outfile
-        fi
-        if [ "$webver" != "" ]; then
-            printf "\t app_settings { \n" >> $outfile
-            printf "\t WEBSITE_NODE_DEFAULT_VERSION = %s\n" $webver >> $outfile
-            printf "\t }\n" >> $outfile
-        fi
+        jcount=`echo $appset | jq '. | length'`
+        if [ "$jcount" -gt "0" ]; then
+            count=`expr $jcount - 1`
+            for j in `seq 0 $jcount`; do
 
-#        printf "output \"azurerm_storage_account.rg-functions__dwpfunctions.primary_connection_string\" {\n"  >> outputs.tf
-#        printf "value= \"\${azurerm_storage_account.rg-functions__dwpfunctions.primary_connection_string}\" \n" >> outputs.tf
-#        printf "}\n" >> outputs.tf
+                aname=`echo $appset | jq ".[(${j})].name" | tr -d '"'`
+                aval=`echo $appset | jq ".[(${j})].value" | tr -d '"'`
+
+                case "$aname" in 
+                
+                "AzureWebJobsStorage")
+                    printf "\t storage_connection_string = \"%s\" \n"  "$aval" >> $outfile
+                ;;
+                "FUNCTIONS_EXTENSION_VERSION")
+                    printf "\t version = \"%s\" \n"  "$aval" >> $outfile
+                ;;
+                "null")
+                ;;
+                "AzureWebJobsDashboard" | "WEBSITE_CONTENTSHARE" | "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
+                ;;
+
+                *) 
+                printf "\t app_settings { \n" >> $outfile
+                printf "\t %s=\"%s\"\n" $aname $aval >> $outfile
+                printf "\t } \n" >> $outfile
+                ;;
+                esac
+
+            done
+        fi
         
         printf "}\n" >> $outfile
-        #
 
         cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
