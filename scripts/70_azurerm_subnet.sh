@@ -40,6 +40,7 @@ if [ "$count" -gt "0" ]; then
             echo $jcount
             echo $seps
             if [ "$seps" != "null" ]; then
+            if [ "$seps" != "[]" ]; then
             sep="["
                     for j in `seq 0 $jcount`; do
                         service=`echo $seps | jq ".[(${j})].service" | tr -d '"'`
@@ -50,6 +51,7 @@ if [ "$count" -gt "0" ]; then
                         fi
                     done
             sep=`printf "%s]" $sep`
+            fi
             fi
             
             snsgid=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
@@ -68,6 +70,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsgid >> $outfile
             fi
             if [ "$sep" != "null" ]; then
+
                 printf "\t service_endpoints = %s\n" $sep >> $outfile
             fi
             if [ "$rtrg" != "null" ]; then
