@@ -59,17 +59,17 @@ if [ "$count" -gt "0" ]; then
         printf "\t version = %s \n"  "$vers" >> $outfile
         printf "\t enable_builtin_logging = \"%s\" \n"  "false" >> $outfile
 
-        if [ "$aikey" != "null" ]; then
+        if [ "$aikey" != "" ]; then
             printf "\t app_settings { \n" >> $outfile
             printf "\t APPINSIGHTS_INSTRUMENTATIONKEY = %s\n" $aikey >> $outfile
             printf "\t }\n" >> $outfile
         fi
-        if [ "$runtime" != "null" ]; then
+        if [ "$runtime" != "" ]; then
             printf "\t app_settings { \n" >> $outfile
             printf "\t FUNCTIONS_WORKER_RUNTIME = %s\n" $runtime >> $outfile
             printf "\t }\n" >> $outfile
         fi
-        if [ "$webver" != "null" ]; then
+        if [ "$webver" != "" ]; then
             printf "\t app_settings { \n" >> $outfile
             printf "\t WEBSITE_NODE_DEFAULT_VERSION = %s\n" $webver >> $outfile
             printf "\t }\n" >> $outfile
