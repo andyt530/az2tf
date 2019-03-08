@@ -37,6 +37,9 @@ if [ "$count" -gt "0" ]; then
             seps=`echo $azr | jq ".[(${i})].serviceEndpoints"`
             jcount=`echo $seps | jq '. | length'`
             jcount=`expr $jcount - 1`
+            echo $jcount
+            echo $seps
+            if [ "$seps" != "null" ]; then
             sep="["
                     for j in `seq 0 $jcount`; do
                         service=`echo $seps | jq ".[(${j})].service" | tr -d '"'`
@@ -47,6 +50,7 @@ if [ "$count" -gt "0" ]; then
                         fi
                     done
             sep=`printf "%s]" $sep`
+            fi
             
             snsgid=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
             snsgrg=`echo $azr | jq ".[(${i})].networkSecurityGroup.id" | cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'` 
@@ -59,6 +63,7 @@ if [ "$count" -gt "0" ]; then
             printf "\t address_prefix = \"%s\"\n" $sprefix >> $outfile
             printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
             
+
             if [ "$snsgrg" != "null" ]; then
                 printf "\t network_security_group_id = \"\${azurerm_network_security_group.%s__%s.id}\"\n" $snsgrg $snsgid >> $outfile
             fi
@@ -73,9 +78,9 @@ if [ "$count" -gt "0" ]; then
             cat $outfile
 
 # azurerm_subnet_network_security_group_association
-
+     
             r1="skip"
-            if [ "$snsg" != "null" ]; then
+            if [ "$snsgid" != "null" ]; then
                 r1="azurerm_subnet_network_security_group_association"
                 outsnsg=`printf "%s.%s__%s__%s.tf" $r1 $rg $rname $snsgid`
                 echo $az2tfmess > $outsnsg
@@ -104,7 +109,6 @@ if [ "$count" -gt "0" ]; then
 # azurerm_subnet_network_security_group_association
 
             if [ "$r1" != "skip" ]; then
-            cat $outsnsg
             statecomm=`printf "terraform state rm %s.%s__%s__%s" $r1 $rg $rname $snsgid`
             echo $statecomm >> tf-staterm.sh
             eval $statecomm

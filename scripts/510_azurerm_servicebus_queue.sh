@@ -23,7 +23,7 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $icount`; do
                 name=`echo $azr2 | jq ".[(${j})].name" | tr -d '"'`
                 rname=`echo $name | sed 's/\./-/g'`
-                rg=`echo $azr3 | jq ".[(${i})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
+                rg=`echo $azr2 | jq ".[(${j})].resourceGroup" | sed 's/\./-/g' | tr -d '"'`
                 id=`echo $azr2 | jq ".[(${j})].id" | tr -d '"'`
                 ep=`echo $azr2 | jq ".[(${j})].enablePartitioning" | tr -d '"'`
                 adoni=`echo $azr2 | jq ".[(${j})].autoDeleteOnIdle" | tr -d '"'`

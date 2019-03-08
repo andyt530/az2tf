@@ -49,7 +49,7 @@ if [ "$count" -gt "0" ]; then
         printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "sku {\n" $sku >> $outfile
         printf "\t name = \"%s\"\n" $skun >> $outfile
-        if [ $skup != "null" ]; then
+        if [ $skuc != "null" ]; then
             printf "\t capacity = \"%s\"\n" $skuc >> $outfile
         else
             printf "\t capacity = \"1\"\n"  >> $outfile
@@ -139,8 +139,14 @@ if [ "$count" -gt "0" ]; then
                 if [ "$kcount" -gt "0" ]; then
                     kcount=`expr $kcount - 1`
                     for k in `seq 0 $kcount`; do
-                        beadip=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].backendAddresses[(${k})].ipAddress" | tr -d '"'`
-                        printf "\t ip_address_list = [\"%s\"] \n"  $beadip >> $outfile
+                        beadip=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].backendAddresses[(${k})].ipAddress"`
+                        beadfq=`echo $azr | jq ".[(${i})].backendAddressPools[(${j})].backendAddresses[(${k})].fqdn"`
+                        if [ $beadip != "null" ]; then
+                            printf "\t ip_address = %s \n"  "$beadip" >> $outfile
+                        fi
+                        if [ $beadip != "null" ]; then
+                            printf "\t fqdns = [\"%s\"] \n"  "$beadfq" >> $outfile
+                        fi
                     done
                 fi
 

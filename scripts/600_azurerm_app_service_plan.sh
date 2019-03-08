@@ -36,7 +36,7 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         printf "\t kind = \"%s\"\n" $kind >> $outfile
 
         printf "\t sku {\n" >> $outfile

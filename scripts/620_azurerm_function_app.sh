@@ -37,7 +37,7 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         # case issues - so use resource id directly
         # printf "\t app_service_plan_id = \"\${azurerm_app_service_plan.%s__%s.id}\"\n" $prg $pnam >> $outfile
         printf "\t app_service_plan_id = \"%s\"\n" $appplid >> $outfile
@@ -45,6 +45,7 @@ if [ "$count" -gt "0" ]; then
 
         printf "\t https_only = \"%s\" \n"  "$https" >> $outfile
         blog="false"
+        strcon="dummy"
 
         jcount=`echo $appset | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
@@ -52,15 +53,15 @@ if [ "$count" -gt "0" ]; then
             for j in `seq 0 $jcount`; do
 
                 aname=`echo $appset | jq ".[(${j})].name" | tr -d '"'`
-                aval=`echo $appset | jq ".[(${j})].value" | tr -d '"'`
+                aval=`echo $appset | jq ".[(${j})].value"`
 
                 case "$aname" in 
                 
                 "AzureWebJobsStorage")
-                    printf "\t storage_connection_string = \"%s\" \n"  "$aval" >> $outfile
+                    strcon=`echo $aval`
                 ;;
                 "FUNCTIONS_EXTENSION_VERSION")
-                    printf "\t version = \"%s\" \n"  "$aval" >> $outfile
+                    printf "\t version = %s \n"  "$aval" >> $outfile
                 ;;
                 "null")
                 ;;
@@ -72,12 +73,17 @@ if [ "$count" -gt "0" ]; then
 
                 *) 
                 printf "\t app_settings { \n" >> $outfile
-                printf "\t %s=\"%s\"\n" $aname $aval >> $outfile
+                printf "\t %s=%s\n" $aname "$aval" >> $outfile
                 printf "\t } \n" >> $outfile
                 ;;
                 esac
 
             done
+        fi
+        if [ $strcon != "dummy" ] ;then
+            printf "\t storage_connection_string = %s \n"  "$strcon" >> $outfile
+        else
+            printf "\t storage_connection_string = \"%s\" \n"  "$strcon" >> $outfile
         fi
         printf "\t enable_builtin_logging = \"%s\" \n"  $blog >> $outfile
         printf "}\n" >> $outfile

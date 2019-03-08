@@ -33,7 +33,7 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "\t name = \"%s\"\n" $name >> $outfile
         printf "\t location = %s\n" "$loc" >> $outfile
-        printf "\t resource_group_name = \"%s\"\n" $lcrg >> $outfile
+        printf "\t resource_group_name = \"%s\"\n" $rgsource >> $outfile
         # case issues - so use resource id directly
         # printf "\t app_service_plan_id = \"\${azurerm_app_service_plan.%s__%s.id}\"\n" $prg $pnam >> $outfile
         printf "\t app_service_plan_id = \"%s\"\n" $appplid >> $outfile
