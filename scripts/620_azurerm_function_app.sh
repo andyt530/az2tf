@@ -44,7 +44,7 @@ if [ "$count" -gt "0" ]; then
 # dummy entry
 
         printf "\t https_only = \"%s\" \n"  "$https" >> $outfile
-        printf "\t enable_builtin_logging = \"%s\" \n"  "true" >> $outfile
+        blog="false"
 
         jcount=`echo $appset | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
@@ -64,7 +64,10 @@ if [ "$count" -gt "0" ]; then
                 ;;
                 "null")
                 ;;
-                "AzureWebJobsDashboard" | "WEBSITE_CONTENTSHARE" | "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
+                 "WEBSITE_CONTENTSHARE" | "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
+                ;;
+                "AzureWebJobsDashboard")
+                blog="true"
                 ;;
 
                 *) 
@@ -76,7 +79,7 @@ if [ "$count" -gt "0" ]; then
 
             done
         fi
-        
+        printf "\t enable_builtin_logging = \"%s\" \n"  $blog >> $outfile
         printf "}\n" >> $outfile
 
         cat $outfile
