@@ -172,6 +172,8 @@ if [ "$count2" -gt "0" ]; then
             ;;
             "Microsoft.Web/sites") prov="azurerm_app_service"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
+                prov="azurerm_function_app"
+                printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt
             ;;
             "Microsoft.Compute/virtualMachineScaleSets") prov="azurerm_virtual_machine_scale_set"
                 printf "%s:%s-\n"  "$rg" "$prov" >> resources.txt

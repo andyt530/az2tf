@@ -83,9 +83,6 @@ if [ "$count" -gt "0" ]; then
             fi
         fi
 
-
-
-        #
         
         #
         # New Tags block v2
@@ -115,8 +112,23 @@ if [ "$count" -gt "0" ]; then
             done
             printf "\t}\n" >> $outfile
         fi
+
                 
         printf "}\n" >> $outfile
+
+# output vars   
+
+#        printf "data \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> outputs.tf
+#        printf "\t name = \"%s\"\n" $name >> outputs.tf        
+#        printf "\t resource_group_name = \"%s\"\n" $rgsource >> outputs.tf
+#        printf "}\n" >> outputs.tf 
+
+#        printf "output \"%s__%s.primary_connection_string\" {\n" $rg $rname >> outputs.tf
+#        printf "value= \"\${%s.%s__%s.primary_connection_string}\" \n" $tfp $rg $rname >> outputs.tf
+#        printf "}\n" >> outputs.tf
+
+
+
         #
         cat $outfile
         statecomm=`printf "terraform state rm %s.%s__%s" $tfp $rg $rname`
