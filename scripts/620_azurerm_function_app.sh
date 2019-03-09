@@ -86,11 +86,13 @@ if [ "$count" -gt "0" ]; then
 
             done
         fi
-        if [[ $strcon != "dummy" ]] ;then
+        echo strconlen = ${#strcon}
+        if [ ${#strcon} -ge 3 ]; then
             printf "\t storage_connection_string = %s \n"  "$strcon" >> $outfile
         else
-            printf "\t storage_connection_string = \"%s\" \n"  "$strcon" >> $outfile
+            printf "\t storage_connection_string = \"\" \n"  >> $outfile
         fi
+
         printf "\t enable_builtin_logging = \"%s\" \n"  $blog >> $outfile
         printf "}\n" >> $outfile
 
