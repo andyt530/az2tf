@@ -69,7 +69,12 @@ if [ "$count" -gt "0" ]; then
                  "WEBSITE_CONTENTSHARE" | "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
                 ;;
                 "AzureWebJobsDashboard")
-                blog="true"
+                echo aval=$aval
+                echo ${#aval}
+        
+                if [ ${#aval} -ge 3 ]; then
+                  blog="true"
+                fi
                 ;;
 
                 *) 
@@ -81,7 +86,7 @@ if [ "$count" -gt "0" ]; then
 
             done
         fi
-        if [ $strcon != "dummy" ] ;then
+        if [[ $strcon != "dummy" ]] ;then
             printf "\t storage_connection_string = %s \n"  "$strcon" >> $outfile
         else
             printf "\t storage_connection_string = \"%s\" \n"  "$strcon" >> $outfile
