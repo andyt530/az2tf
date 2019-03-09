@@ -305,21 +305,23 @@ if [ "$count" -gt "0" ]; then
                 bdata=`echo $azr | jq ".[(${i})].sslCertificates[(${j})].publicCertData" | tr -d '"'`
                 bpw=`echo $azr | jq ".[(${i})].sslCertificates[(${j})].password" | tr -d '"'`
 
-                printf "ssl_certificate {\n" >> $outfile
-                printf "\t name = \"%s\" \n"  $bname >> $outfile
+                if [ $bname != "null" ]; then
+                    printf "ssl_certificate {\n" >> $outfile
+                    printf "\t name = \"%s\" \n"  $bname >> $outfile
 
-                if [ "$bdata" != "null" ]; then
-                printf "\t data = \"%s\" \n"  $bdata >> $outfile
-                else
-                printf "\t data = \"\" \n"  >> $outfile                
+                    if [ "$bdata" != "null" ]; then
+                    printf "\t data = \"%s\" \n"  $bdata >> $outfile
+                    else
+                    printf "\t data = \"\" \n"  >> $outfile                
+                    fi
+                    
+                    if [ "$bpw" != "null" ]; then
+                    printf "\t password = \"%s\" \n"  $bpw >> $outfile
+                    else
+                    printf "\t password = \"\" \n"  >> $outfile
+                    fi
+                    printf "\t }\n" >> $outfile
                 fi
-                
-                if [ "$bpw" != "null" ]; then
-                printf "\t password = \"%s\" \n"  $bpw >> $outfile
-                else
-                printf "\t password = \"\" \n"  >> $outfile
-                fi
-                printf "\t }\n" >> $outfile
             done
         fi
 
