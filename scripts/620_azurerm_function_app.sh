@@ -69,8 +69,6 @@ if [ "$count" -gt "0" ]; then
                  "WEBSITE_CONTENTSHARE" | "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
                 ;;
                 "AzureWebJobsDashboard")
-                echo aval=$aval
-                echo ${#aval}
         
                 if [ ${#aval} -ge 3 ]; then
                   blog="true"
@@ -86,7 +84,7 @@ if [ "$count" -gt "0" ]; then
 
             done
         fi
-        echo strconlen = ${#strcon}
+
         if [ ${#strcon} -ge 3 ]; then
             printf "\t storage_connection_string = %s \n"  "$strcon" >> $outfile
         else
