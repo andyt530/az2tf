@@ -30,6 +30,9 @@ if [ "$count" -gt "0" ]; then
                 wt=`echo $azr2 | jq ".[(${j})].weight" | tr -d '"'`
                 tgt=`echo $azr2 | jq ".[(${j})].target" | tr -d '"'`
                 eps=`echo $azr2 | jq ".[(${j})].endpointStatus" | tr -d '"'`
+                tgtid=`echo $azr2 | jq ".[(${j})].targetResourceId"`
+                tgtrrg=`echo $azr2 | jq ".[(${j})].targetResourceId"| cut -f5 -d"/" | sed 's/\./-/g' | tr -d '"'`
+                tgtrid=`echo $azr2 | jq ".[(${j})].targetResourceId"| cut -f9 -d"/" | sed 's/\./-/g' | tr -d '"'`
                 
                 prefix=`printf "%s.%s" $prefixa $rg`
                 outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
@@ -44,7 +47,7 @@ if [ "$count" -gt "0" ]; then
                 printf "\t weight = \"%s\"\n" $wt >> $outfile
                 printf "\t target = \"%s\"\n" $tgt >> $outfile
                 printf "\t endpoint_status = \"%s\"\n" $eps >> $outfile
-                
+                printf "\t target_resource_id = \"\${azurerm_public_ip.%s__%s.id}\"\n" $tgtrrg $tgtrid >> $outfile
                 #
                 # New Tags block v2
                 tags=`echo $azr | jq ".[(${i})].tags"`

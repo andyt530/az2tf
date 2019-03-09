@@ -57,7 +57,9 @@ if [ "$count" -gt "0" ]; then
         printf "\t monitor_config { \n"  >> $outfile
         printf "\t\t protocol = \"%s\" \n"  $prot >> $outfile
         printf "\t\t port  = \"%s\" \n"  $port >> $outfile
+        if [ $path != "null" ] ; then
         printf "\t\t path  = \"%s\" \n"  $path >> $outfile
+        fi
         printf "\t}\n" >> $outfile  
         
         #
