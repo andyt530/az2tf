@@ -37,10 +37,11 @@ if [ "$count" != "0" ]; then
         printf "\t version = \"%s\"\n" $ver >> $outfile
         printf "\t administrator_login= \"%s\"\n" $al >> $outfile
         
-        #if [ "$ap" != "null" ]; then
-        printf "\t administrator_login_password= \"%s\"\n" $ap >> $outfile
-        
-        #fi
+        if [ "$ap" != "null" ]; then
+            printf "\t administrator_login_password= \"%s\"\n" $ap >> $outfile
+        else
+            printf "\t administrator_login_password= \"\"\n"  >> $outfile
+        fi
 
         #
         # New Tags block v2

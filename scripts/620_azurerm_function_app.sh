@@ -46,7 +46,7 @@ if [ "$count" -gt "0" ]; then
 
         printf "\t https_only = \"%s\" \n"  "$https" >> $outfile
         blog="false"
-        strcon="dummy"
+        strcon=""
 
         jcount=`echo $appset | jq '. | length'`
         if [ "$jcount" -gt "0" ]; then
