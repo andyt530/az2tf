@@ -73,10 +73,10 @@ cd generated/tf.$mysub
 rm -rf .terraform
 rm -f import.log resources*.txt
 if [ "$f" = "no" ]; then
-rm -f processed.txt
+    rm -f processed.txt
 else
-sort -u processed.txt > pt.txt
-cp pt.txt processed.txt
+    sort -u processed.txt > pt.txt
+    cp pt.txt processed.txt
 fi
 
 ../../scripts/resources.sh 2>&1 | tee -a import.log
