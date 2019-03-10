@@ -71,8 +71,8 @@ az account set -s $mysub
 mkdir -p generated/tf.$mysub
 cd generated/tf.$mysub
 rm -rf .terraform
-rm -f import.log resources*.txt
 if [ "$f" = "no" ]; then
+    rm -f import.log resources*.txt
     rm -f processed.txt
 else
     sort -u processed.txt > pt.txt
