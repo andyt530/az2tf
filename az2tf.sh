@@ -1,9 +1,10 @@
 usage()
-{ echo "Usage: $0 -s <Subscription ID> [-g <Resource Group>] [-r azurerm_<resource_type>] [-x <yes|no(default)>] [-p <yes|no(default)>]" 1>&2; exit 1;
+{ echo "Usage: $0 -s <Subscription ID> [-g <Resource Group>] [-r azurerm_<resource_type>] [-x <yes|no(default)>] [-p <yes|no(default)>] [-f <yes|no(default)>] " 1>&2; exit 1;
 }
 x="no"
 p="no"
-while getopts ":s:g:r:x:p:" o; do
+f="no"
+while getopts ":s:g:r:x:p:f:" o; do
     case "${o}" in
         s)
             s=${OPTARG}
@@ -19,6 +20,9 @@ while getopts ":s:g:r:x:p:" o; do
         ;;
         p)
             p="yes"
+        ;;
+        f)
+            f="yes"
         ;;
         
         *)
@@ -68,6 +72,12 @@ mkdir -p generated/tf.$mysub
 cd generated/tf.$mysub
 rm -rf .terraform
 rm -f import.log resources*.txt
+if [ "$f" = "no" ]; then
+rm -f processed.txt
+else
+sort -u processed.txt > pt.txt
+cp pt.txt processed.txt
+fi
 
 ../../scripts/resources.sh 2>&1 | tee -a import.log
 
@@ -77,6 +87,7 @@ echo "Azure Resource Group Filter = ${g}"
 echo "Terraform Resource Type Filter = ${r}"
 echo "Get Subscription Policies & RBAC = ${p}"
 echo "Extract Key Vault Secrets to .tf files (insecure) = ${x}"
+echo "Fast Forward = ${f}"
 echo " "
 
 
@@ -192,7 +203,11 @@ for j in `seq 2 2`; do
                     echo -n "$c5 of $tc "
                     docomm="../../scripts/${res[$j]}.sh $j2"
                     echo "$docomm"
-                    eval $docomm 2>&1 | tee -a import.log
+                    if [ "$f" = "no" ]; then
+                        eval $docomm 2>&1 | tee -a import.log
+                    else
+                        echo "test if command in processed.txt"
+                    fi
                     c5=`expr $c5 + 1`
                     if grep -q Error: import.log ; then
                         echo "Error in log file exiting ...."
@@ -219,11 +234,23 @@ for com in `ls ../../scripts/*_azurerm*.sh | cut -d'/' -f4 | sort -g`; do
         #echo "debug $j prov=$prov  res=${res[$j]}"
         docomm="../../scripts/$com $myrg"
         echo "$docomm"
-        eval $docomm 2>&1 | tee -a import.log
+        if [ "$f" = "no" ]; then
+            eval $docomm 2>&1 | tee -a import.log
+        else
+            grep "$docomm" processed.txt
+            if [ $? -eq 0 ]; then
+                echo "skipping $docomm"
+            else
+                eval $docomm 2>&1 | tee -a import.log
+            fi
+        fi
+
         lc=`expr $lc + 1`
         if grep Error: import.log; then
             echo "Error in log file exiting ...."
             exit
+        else
+        echo "$docomm" >> processed.txt
         fi
     done
     rm -f terraform*.backup
