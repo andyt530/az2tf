@@ -78,9 +78,9 @@ else
     sort -u processed.txt > pt.txt
     cp pt.txt processed.txt
 fi
-
-../../scripts/resources.sh 2>&1 | tee -a import.log
-
+if [ "$f" = "no" ]; then
+    ../../scripts/resources.sh 2>&1 | tee -a import.log
+fi
 echo " "
 echo "Subscription ID = ${s}"
 echo "Azure Resource Group Filter = ${g}"
@@ -156,7 +156,8 @@ fi
 #../scripts/193_azurerm_application_gateway.sh $myrg
 
 date
-# top level stuff
+
+# top level stuff - resource groups
 if [ "$f" = "no" ]; then
     j=1
     if [ "$g" != "" ]; then
@@ -180,7 +181,7 @@ if [ "$f" = "no" ]; then
             fi
         done
     fi
-fi
+
 date
 
 # 2 - management locks
@@ -217,6 +218,7 @@ for j in `seq 2 2`; do
         fi
     fi
 done
+fi
 
 
 echo loop through providers
