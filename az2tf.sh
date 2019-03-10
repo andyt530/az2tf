@@ -157,30 +157,33 @@ fi
 
 date
 # top level stuff
-j=1
-if [ "$g" != "" ]; then
-    trgs=`az group list --query "[?name=='$myrg']" -o json`
-else
-    trgs=`az group list -o json`
-fi
+if [ "$f" = "no" ]; then
+    j=1
+    if [ "$g" != "" ]; then
+        trgs=`az group list --query "[?name=='$myrg']" -o json`
+    else
+        trgs=`az group list -o json`
+    fi
 
-count=`echo $trgs | jq '. | length'`
-if [ "$count" -gt "0" ]; then
-    count=`expr $count - 1`
-    for i in `seq 0 $count`; do
-        myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
-        echo -n $i of $count " "
-        docomm="../../scripts/${res[$j]}.sh $myrg"
-        echo "$docomm"
-        eval $docomm  2>&1 | tee -a import.log
-        if grep Error: import.log ; then
-            echo "Error in log file exiting ...."
-            exit
-        fi
-    done
+    count=`echo $trgs | jq '. | length'`
+    if [ "$count" -gt "0" ]; then
+        count=`expr $count - 1`
+        for i in `seq 0 $count`; do
+            myrg=`echo $trgs | jq ".[(${i})].name" | tr -d '"'`
+            echo -n $i of $count " "
+            docomm="../../scripts/${res[$j]}.sh $myrg"
+            echo "$docomm"
+            eval $docomm  2>&1 | tee -a import.log
+            if grep Error: import.log ; then
+                echo "Error in log file exiting ...."
+                exit
+            fi
+        done
+    fi
 fi
 date
 
+# 2 - management locks
 for j in `seq 2 2`; do
     if [ "$r" = "" ]; then
         c1=`echo ${pfx[${j}]}`
