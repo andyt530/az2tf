@@ -203,11 +203,7 @@ for j in `seq 2 2`; do
                     echo -n "$c5 of $tc "
                     docomm="../../scripts/${res[$j]}.sh $j2"
                     echo "$docomm"
-                    if [ "$f" = "no" ]; then
-                        eval $docomm 2>&1 | tee -a import.log
-                    else
-                        echo "test if command in processed.txt"
-                    fi
+                    eval $docomm 2>&1 | tee -a import.log
                     c5=`expr $c5 + 1`
                     if grep -q Error: import.log ; then
                         echo "Error in log file exiting ...."
