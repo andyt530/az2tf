@@ -25,7 +25,14 @@ if [ "$count" -gt "0" ]; then
         profs=`echo $azr | jq ".[(${i})].profiles"`
         nots=`echo $azr | jq ".[(${i})].notifications"`
         trrg=`echo $azr | jq ".[(${i})].targetResourceUri" | cut -d'/' -f5 | sed 's/\./-/g' | tr -d '"'`
+        trty=`echo $azr | jq ".[(${i})].targetResourceUri" | cut -d'/' -f7 | sed 's/\./-/g' | tr -d '"'`
         trid=`echo $azr | jq ".[(${i})].targetResourceUri" | cut -d'/' -f9 | sed 's/\./-/g' | tr -d '"'`
+        # assume trty = Microsoft.Compute
+        tftyp="azurerm_virtual_machine_scale_set"
+        if [ $trty = "Microsoft-Web" ]; then
+            tftyp="azurerm_app_service_plan"
+        fi
+        echo "$trty  $tftyp"
 
         prefix=`printf "%s__%s" $prefixa $rg`
         outfile=`printf "%s.%s__%s.tf" $tfp $rg $rname`
@@ -36,10 +43,10 @@ if [ "$count" -gt "0" ]; then
         printf "resource \"%s\" \"%s__%s\" {\n" $tfp $rg $rname >> $outfile
         printf "name = \"%s\"\n" $name >> $outfile
         printf "enabled = \"%s\"\n" $en >> $outfile
-        printf "location = \"%s\"\n"  $loc >> $outfile
+        printf "location = \"%s\"\n"  "$loc" >> $outfile
         printf "resource_group_name = \"%s\"\n"  $rgsource >> $outfile
         if [ "$trrg" != "null" ]; then
-        printf "target_resource_id = \"\${azurerm_virtual_machine_scale_set.%s__%s.id}\"\n" $trrg $trid >> $outfile      
+        printf "target_resource_id = \"\${%s.%s__%s.id}\"\n" $tftyp $trrg $trid >> $outfile      
         fi
 
 
@@ -119,7 +126,7 @@ if [ "$count" -gt "0" ]; then
                             mttw2=`echo $mttw | cut -f2 -d':' | sed 's/^0*//'`                           
                             printf "\t\tmetric_trigger {\n" >> $outfile
                             printf "\t\t\tmetric_name = \"%s\"\n" "$mtn" >> $outfile
-                            printf "\t\t\tmetric_resource_id = \"\${azurerm_virtual_machine_scale_set.%s__%s.id}\"\n" $mtrrg $mtrid >> $outfile
+                            printf "\t\t\tmetric_resource_id = \"\${%s.%s__%s.id}\"\n" $tftyp $mtrrg $mtrid >> $outfile
                             printf "\t\t\toperator = \"%s\"\n" $mtop >> $outfile
                             printf "\t\t\tstatistic= \"%s\"\n" $mtstat >> $outfile
                             printf "\t\t\tthreshold = \"%s\"\n" $mtthres >> $outfile
