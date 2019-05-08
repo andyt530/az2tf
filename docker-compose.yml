@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  shell:
+    image: az2tf
+    build:
+      context: .
+    volumes:
+      - .:/az2tf
+
