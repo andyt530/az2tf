@@ -26,7 +26,7 @@ There should hopefully be no subsequent additions or deletions reported by the t
 
 Running the tool in your local shell (bash) required these steps:
 1. Unzip or clone this git repo into an empty directory
-2. login to the Azure cli2  (az login)
+2. login to the Azure cli2  (`az login`)
 3. run the tool 
 
 
