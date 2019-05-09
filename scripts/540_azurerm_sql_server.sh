@@ -41,6 +41,9 @@ if [ "$count" != "0" ]; then
             printf "\t administrator_login_password= \"%s\"\n" $ap >> $outfile
         else
             printf "\t administrator_login_password= \"\"\n"  >> $outfile
+            printf "\t lifecycle= {\n"  >> $outfile
+            printf "\t\t ignore_changes= [ \"administrator_login_password\" ]\n"  >> $outfile
+            printf "\t}\n" >> $outfile
         fi
 
         #
