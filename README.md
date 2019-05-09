@@ -30,12 +30,16 @@ Running the tool in your local shell (bash) required these steps:
 3. run the tool 
 
 
-## Experimental: using the docker version
-1. Build with: $ docker build --rm -f "Dockerfile" -t az2tf:latest .
-2. If it doesn't already exist make a "generated" directory ($ mkdir generated)
-3. Run with "$ ./runme.sh"
+## Experimental: using the docker image
+1. Build with: `$ docker build --rm -f "Dockerfile" -t az2tf:latest`.
+2. If it doesn't already exist make a "generated" directory (`$ mkdir generated`)
+3. Run with `$ ./runme.sh`
 
 (would appreciate feedback on how to better use docker)
+
+## Using the docker image with docker-compose
+We can use docker-compose to simplify running the docker image.
+Simple execute `docker-compose run shell bash`.
 
 ## Usage Guide
 
