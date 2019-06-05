@@ -1,6 +1,6 @@
 # az2tf
 
-### *A newer version of this tool written in Python is now available aupporting Terraform v0.12 anb elso enabling execution from an Azure runbook as well as the command line   https://github.com/andyt530/py-az2tf .*
+### *A newer version of this tool written in Python is now available supporting terraform v0.12. It elso enables execution from an Azure runbook as well as the command line   https://github.com/andyt530/py-az2tf .*
 
 ###  Development of this (bash shell) version is now stopped in favour of the new version
 
