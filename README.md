@@ -2,7 +2,7 @@
 
 ### *A newer version of this tool written in Python is now available supporting terraform v0.12. It elso enables execution from an Azure runbook as well as the command line   https://github.com/andyt530/py-az2tf .*
 
-###  Development of this (bash shell) version is now stopped in favour of the new version
+###  Development of this (bash shell) version has now stopped in favour of the new version
 
 This utility 'Azure to Terraform' (az2tf) 
 reads an Azure Subscription and generates all the required terraform configuration files (.tf) from each of the composite Azure Resource Groups
