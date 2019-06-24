@@ -18,7 +18,7 @@ if [ "$count" -gt "0" ]; then
         oname=`echo $azr | jq ".[(${i})].name" | tr -d '"'`
         name=`echo ${oname/.vhd/_vhd}` 
         rname=`echo $name | sed 's/\./-/g'`
-        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g'| tr -d '"'`
+        rg=`echo $azr | jq ".[(${i})].resourceGroup" | sed 's/\./-/g'| tr -d '"' | tr '[:upper:]' '[:lower:]'`
 
         id=`echo $azr | jq ".[(${i})].id" | tr -d '"'`
         loc=`echo $azr | jq ".[(${i})].location" | tr -d '"'`

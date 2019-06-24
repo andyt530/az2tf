@@ -259,8 +259,11 @@ if [ "$count" -gt "0" ]; then
                     #
                     #if not will have to get from terraform state - convert ddmdrg to lc and terraform state output
                     #
-                    
-                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rg $ddmdid >> $outfile
+
+                    #@acorralortiz WORKAROUND to fix Azure API bug https://github.com/Azure/azure-sdk-for-java/issues/1508
+                    rgaux=`echo $rg | tr '[:upper:]' '[:lower:]'`
+
+                    printf "\t managed_disk_id = \"\${azurerm_managed_disk.%s__%s.id}\"\n" $rgaux $ddmdid >> $outfile
                     fi
                 fi
                 if [ "$ddvhd" != "null" ]; then
